@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+skillremix-wip-*/
+skillcompose-wip-*/
+randomupgrade-wip-*/
+.gemini/
+.claude/
+.cursor/
+.codex/
+.agents/

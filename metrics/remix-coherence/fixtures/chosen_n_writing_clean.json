@@ -1,0 +1,23 @@
+{
+  "chosen": [
+    {
+      "id": "haowjy/creative-writing-skills@writing-principles",
+      "query": "creative writing",
+      "github_description": "writing principles for fiction and creative prose",
+      "discovery_role": "domain_core"
+    },
+    {
+      "id": "haowjy/creative-writing-skills@story-architecture",
+      "query": "story writing",
+      "github_description": "story architecture outlines chapters and plot",
+      "discovery_role": "domain_core"
+    },
+    {
+      "id": "example/evals@eval-harness-first",
+      "query": "eval harness",
+      "github_description": "evaluation harness first for writing pipelines",
+      "discovery_role": "practice_support"
+    }
+  ],
+  "ids": []
+}

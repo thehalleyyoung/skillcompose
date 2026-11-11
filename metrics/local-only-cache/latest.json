@@ -1,0 +1,24 @@
+{
+  "metric_id": "local-only-cache",
+  "title": "local-only discover hit/miss exit contract",
+  "at": "2026-11-11T22:22:42.956367+00:00",
+  "ts": 1794435762.956804,
+  "values": {
+    "cases": [
+      {
+        "name": "cache_hit",
+        "ok": true,
+        "exit": 0
+      },
+      {
+        "name": "cache_miss",
+        "ok": true,
+        "exit": 2,
+        "error": "local_only_cache_miss"
+      }
+    ],
+    "passed": 2,
+    "total": 2,
+    "pass_rate": 1.0
+  }
+}

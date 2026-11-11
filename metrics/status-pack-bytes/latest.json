@@ -1,0 +1,31 @@
+{
+  "metric_id": "status-pack-bytes",
+  "title": "Compact status JSON byte budget vs --full",
+  "at": "2026-11-11T22:22:41.672376+00:00",
+  "ts": 1794435761.673354,
+  "values": {
+    "ok": true,
+    "wip": "/var/folders/2k/l7xypwwx2474dwm632fzs99c0000gn/T/tmp1uvgph9m/skillremix-wip-20260721T000000Z",
+    "compact_bytes": 1357,
+    "full_bytes": 18091,
+    "ratio": 0.075,
+    "max_ratio": 0.25,
+    "max_compact_bytes": 12000,
+    "chosen_ids_n": 8,
+    "checks": {
+      "compact_exit_0": true,
+      "full_exit_0": true,
+      "has_chosen_ids": true,
+      "has_progress": true,
+      "has_resume_hint": true,
+      "compact_omits_full_blob": true,
+      "ratio_under_max": true,
+      "compact_under_ceiling": true,
+      "smaller_than_full": true
+    },
+    "passed": 9,
+    "total": 9,
+    "pass_rate": 1.0,
+    "full_has_blob": true
+  }
+}

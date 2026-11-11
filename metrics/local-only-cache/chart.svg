@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="240">
+  <rect width="100%" height="100%" fill="#fff"/>
+  <text x="40" y="24" font-family="sans-serif" font-size="14">local-only discover hit/miss exit contract</text>
+  <text x="40" y="232" font-family="sans-serif" font-size="10">n=1 · y=0.00..2.00</text>
+  <polyline fill="none" stroke="#0F766E" stroke-width="2" points="40.0,120.0"/>
+</svg>

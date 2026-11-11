@@ -1,0 +1,126 @@
+{
+  "protocol": "Smoke checks for skillremix helpers. Run scripts directly; no network required except discover_skills.",
+  "cases": [
+    {
+      "id": "parse-args",
+      "prompt": "parse_args.py '--domain writing --discover-only foo'",
+      "success_criteria": [
+        "JSON has domain=writing",
+        "discover_only true",
+        "mode=upgrade"
+      ],
+      "primary_metrics": [
+        "success_rate"
+      ]
+    },
+    {
+      "id": "parse-args-remix-n",
+      "prompt": "parse_args.py '--n 3 --domain writing'",
+      "success_criteria": [
+        "mode=remix",
+        "n=3"
+      ],
+      "primary_metrics": [
+        "success_rate"
+      ]
+    },
+    {
+      "id": "pick-adoption-floor",
+      "prompt": "pick_eligible.py filters ghost installs; highly popular (mega) stays eligible by default",
+      "success_criteria": [
+        "installs >= 80 survive",
+        "mega installs eligible by default"
+      ],
+      "primary_metrics": [
+        "success_rate"
+      ]
+    },
+    {
+      "id": "pick-n-diverse",
+      "prompt": "pick_n_eligible.py --n 2 returns two complementary eligible ids (popular OK)",
+      "success_criteria": [
+        "decision PASS",
+        "len(chosen)==2"
+      ],
+      "primary_metrics": [
+        "success_rate"
+      ]
+    },
+    {
+      "id": "propose-remix",
+      "prompt": "propose_remix.py writes buffs + subskills + superskill",
+      "success_criteria": [
+        "remix_plan.json has buffs",
+        "subskills",
+        "superskill"
+      ],
+      "primary_metrics": [
+        "success_rate"
+      ]
+    },
+    {
+      "id": "license-gate-mit",
+      "prompt": "license_gate.py --license mit",
+      "success_criteria": [
+        "decision PASS"
+      ],
+      "primary_metrics": [
+        "success_rate"
+      ]
+    },
+    {
+      "id": "license-gate-gpl",
+      "prompt": "license_gate.py --license gpl-3.0",
+      "success_criteria": [
+        "decision FAIL"
+      ],
+      "primary_metrics": [
+        "success_rate"
+      ]
+    },
+    {
+      "id": "audit-locks-phases",
+      "prompt": "audit_incumbent locks 4 forge phases (unify/enhance/metrics/awesome), not T1-T5",
+      "success_criteria": [
+        "len(proposed_phases)==4",
+        "P1 kind=unify",
+        "forge_rounds==50"
+      ],
+      "primary_metrics": [
+        "success_rate"
+      ]
+    },
+    {
+      "id": "forge-refuse-thin-chars",
+      "prompt": "forge_log.py append refuses chars_changed < 1000",
+      "success_criteria": [
+        "non-zero exit",
+        "no log row written for thin round"
+      ],
+      "primary_metrics": [
+        "success_rate"
+      ]
+    },
+    {
+      "id": "forge-refuse-wrong-p1-kind",
+      "prompt": "forge_log.py append refuses kind=enhance on round 3 (P1-unify)",
+      "success_criteria": [
+        "non-zero exit"
+      ],
+      "primary_metrics": [
+        "success_rate"
+      ]
+    },
+    {
+      "id": "unify-wholeness-rejects-juxtaposition",
+      "prompt": "unify_wholeness.py FAILs side-by-side skills with thin router",
+      "success_criteria": [
+        "decision FAIL",
+        "failed_predicates non-empty"
+      ],
+      "primary_metrics": [
+        "success_rate"
+      ]
+    }
+  ]
+}

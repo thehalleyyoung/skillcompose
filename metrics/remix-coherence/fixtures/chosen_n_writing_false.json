@@ -1,0 +1,30 @@
+{
+  "chosen": [
+    {
+      "id": "storybookjs/react-native@writing-react-native-storybook-stories",
+      "query": "creative writing",
+      "github_description": "Storybook for React Native — write component stories",
+      "discovery_role": "domain_core",
+      "stars": 100
+    },
+    {
+      "id": "4444j99/a-i--skills@creative-writing-craft",
+      "query": "creative writing",
+      "github_description": "creative writing craft for novels and prose",
+      "discovery_role": "domain_core",
+      "stars": 50
+    },
+    {
+      "id": "nvidia/skillspector@creative-writing-coach",
+      "query": "creative writing",
+      "github_description": "Security scanner for AI agent skills. Detect vulnerabilities, malicious patterns, and security risks.",
+      "discovery_role": "domain_core",
+      "stars": 13474
+    }
+  ],
+  "ids": [
+    "storybookjs/react-native@writing-react-native-storybook-stories",
+    "4444j99/a-i--skills@creative-writing-craft",
+    "nvidia/skillspector@creative-writing-coach"
+  ]
+}

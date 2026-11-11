@@ -1,0 +1,23 @@
+{
+  "chosen": [
+    {
+      "id": "bytedance/deer-flow@systematic-literature-review",
+      "query": "literature review",
+      "github_description": "systematic literature review skill",
+      "discovery_role": "domain_core"
+    },
+    {
+      "id": "example/research@arxiv-search",
+      "query": "arxiv search",
+      "github_description": "search arxiv papers for research",
+      "discovery_role": "domain_core"
+    },
+    {
+      "id": "example/evals@eval-harness-first",
+      "query": "eval harness",
+      "github_description": "evaluation harness first",
+      "discovery_role": "practice_support"
+    }
+  ],
+  "ids": []
+}
