@@ -20,6 +20,21 @@ Full formal monograph: [`references/theory.md`](references/theory.md) · Offline
 
 ---
 
+## Empirical Evaluation (5 Task Families · Blinded Single-Call Claude Sonnet 5.5 Judge)
+
+Evaluated across 5 distinct domains (`f1_data` zero-downtime SQLite evolution, `f2_devops` multi-vulnerability webhook/archive/SSRF remediation, `f3_research` Simpson's paradox & survivorship synthesis, `f4_automation` RFC -> Kleene $K_3$ three-valued policy DSL, `f5_writing` epistemically-partitioned dual-POV fiction) with identical worker budgets (`gemini-3.8-flash-low`) and a single blinded folder-wide `agy --model claude-sonnet-5-5-medium` judge call (`208,642` total tokens across all 15 anonymized candidate outputs) plus 50 held-out executable Python checks:
+
+| Method | Mean Sonnet 5.5 Score | Mean Rank (`1`=Best) | `#1` Wins | Minimax Floor (Worst Family) | Held-Out Executable Oracle |
+|---|---|---|---|---|---|
+| **`skillcompose` ($N=4$)** | **`87.2 / 100`** | **`1.60`** | **`3 / 5`** | **`79.0`** | **`100.0%` (`50/50`)** |
+| `top4_github_compilation` ("Best of GitHub") | `82.0 / 100` | `2.00` | `2 / 5` | `69.0` | `100.0%` (`50/50`) |
+| `top1_github` (#1 GitHub Skill) | `79.6 / 100` | `2.40` | `0 / 5` | `68.0` | `96.0%` (`48/50`) |
+
+- **Online Nemhauser–Wolsey Optimality Certificates:** `90.2%–99.7%` of the theoretical global submodular coverage upper bound across all 5 families.
+- **Empirical Proof Against Unprincipled Concatenation:** In both `f2_devops` (`69` vs `80`) and `f5_writing` (`78` vs `83`), concatenating the top-4 GitHub skills degraded output quality *below* using the single `#1` GitHub skill alone (Attention SNR dilution + polysemy/contract conflict), whereas `skillcompose` ranked `#1` on both (`87` and `88`).
+
+---
+
 ## Install (Antigravity / `agy` + Claude Code + Cursor + Codex)
 
 ```bash

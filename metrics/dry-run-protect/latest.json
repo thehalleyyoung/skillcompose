@@ -1,8 +1,8 @@
 {
   "metric_id": "dry-run-protect",
   "title": "dry_run --fast protect full stamp",
-  "at": "2026-11-11T22:37:17.670704+00:00",
-  "ts": 1794436637.670719,
+  "at": "2026-11-11T22:48:46.304620+00:00",
+  "ts": 1794437326.304644,
   "values": {
     "skill_root": "/Users/halley/skillcompose",
     "cases": [
