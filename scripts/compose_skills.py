@@ -271,10 +271,14 @@ Full formal wiring contract: [WIRING_CONTRACT.md](./references/WIRING_CONTRACT.m
    - Read the `spec_grounding` / `static_contract` module reference(s) above and write a minimal sufficient-statistic contract `/tmp/locked_contract.json` enumerating every edge case, boundary condition, denominator/schema invariant, and required output artifact (plus any contract file explicitly requested by the task).
 2. **Stage 2 — Contract-Bound Synthesis & Pullback Reconciliation ($\\pi_K(O_1) = \\pi_K(O_2)$)**:
    - Read the `synthesis` / `state_recovery` module reference(s) above and build all requested deliverables.
+   - Enforce universal Kleisli synthesis invariants:
+     - **Idempotence ($f \\circ f = f$)**: Any state/schema transition (`up` or `down`) must succeed cleanly when called twice consecutively.
+     - **Zero TOCTOU & Strict Sort Separation**: Eliminate Time-of-Check-to-Time-of-Use re-resolution gaps (pin validated resources/addresses at use time) and enforce strict grammar sort boundaries (literal-only vs expression positions, flat scalar vs nested containers).
+     - **Exact Structural Envelope & Anti-Slop**: Match requested headings/schemas with zero unrequested wrapper titles, zero speculative unsupported causal claims in memos, and zero contrastive-negation clichés (`not X, but Y` / `was not X...`).
    - Enforce Pullback Invariant (`{pb.get('key')}`): `{pb.get('invariant')}`. Whenever two deliverables share schemas, numbers, function signatures, or state facts, verify exact equality programmatically via Python rather than by eye.
 3. **Stage 3 — Exogenous Observation & Read-Only Post-Dominator Gate ($\\mathcal{{W}}(S_{{\\text{{gate}}}}) = \\emptyset$)**:
    - Read the `exec_observation` / `adversarial_verify` module reference(s) above.{helper_block}
-   - Execute standalone tests (using `/tmp/` for any temporary copies or scratch harnesses so the workspace stays clean of unrequested files).
+   - Execute standalone tests (using `/tmp/` for any temporary copies or scratch harnesses so the workspace stays clean of unrequested files, and **never cite ephemeral `/tmp/` or `.agents/` paths inside delivered reports** — keep all shipped documentation 100% self-contained!).
    - Certify completion through the read-only post-dominator gate:
      ```bash
      python3 {skill_rel_base}/scripts/verify_dominator_gate.py \\

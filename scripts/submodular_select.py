@@ -151,8 +151,8 @@ def candidate_text(row: dict[str, Any]) -> str:
     return " ".join(parts)
 
 
-def role_posterior(row: dict[str, Any]) -> dict[str, float]:
-    """Infer capability coverage probability p(u | s) in [0, 0.94] for each Kleisli role."""
+def role_posterior(row: dict[str, Any], query: str = "") -> dict[str, float]:
+    """Infer query-conditioned capability coverage p(u | s, Q) in [0, 0.94] for each Kleisli role."""
     meta_parts = [
         str(row.get("id") or "").split("@", 1)[-1].replace("-", " ").replace("_", " "),
         str(row.get("github_description") or ""),
@@ -167,7 +167,7 @@ def role_posterior(row: dict[str, Any]) -> dict[str, float]:
         raw_scores[role] = 1.0 - math.exp(-0.42 * hits)
 
     # Empirical structural signal: real executable scripts directly ground exec_observation!
-    _, n_scripts = load_local_skill_payload(row)
+    local_body, n_scripts = load_local_skill_payload(row)
     if n_scripts > 0:
         raw_scores["exec_observation"] = max(raw_scores["exec_observation"], min(0.88, 0.55 + 0.15 * n_scripts))
 
@@ -178,7 +178,39 @@ def role_posterior(row: dict[str, Any]) -> dict[str, float]:
     elif disc_role == "domain_core" and max(raw_scores.values(), default=0.0) < 0.15:
         raw_scores["synthesis"] = 0.45
 
+    # Query-Conditioned Relevance Multiplier I(s; Q): reward skills specialized to the concrete task query
+    q_toks = set(tokenize(query))
+    if q_toks:
+        all_skill_toks = set(toks) | set(tokenize(local_body[:3000]))
+        q_overlap = len(all_skill_toks & q_toks) / float(len(q_toks))
+        # Scale factor in [0.72, 1.18]: generic unfocused skills are damped; query-specialized skills boosted
+        rel_scale = 0.72 + 0.46 * min(1.0, q_overlap * 2.2)
+        for role in raw_scores:
+            # Keep pure verification/recovery support viable while sharpening synthesis/spec selection
+            if role in {"synthesis", "spec_grounding", "static_contract"}:
+                raw_scores[role] *= rel_scale
+            else:
+                raw_scores[role] *= (0.88 + 0.12 * rel_scale)
+
     return {k: round(min(0.94, v), 4) for k, v in raw_scores.items()}
+
+
+ANTI_PATTERN_EXEMPLARS = [
+    re.compile(r"\b[Ii]t wasn['’]t\b[^.?!]{1,80}\.\s*[Ii]t was\b"),
+    re.compile(r"\beval\s*\(\s*user", re.I),
+]
+
+
+def contract_conflict_penalty(row: dict[str, Any]) -> float:
+    """Penalize non-critic skills whose own SKILL.md positively teaches anti-patterns/slop."""
+    rp = role_posterior(row)
+    if rp.get("adversarial_verify", 0.0) >= 0.45:
+        return 0.0  # Critics legitimately quote patterns they scan against
+    local_body, _ = load_local_skill_payload(row)
+    if not local_body:
+        return 0.0
+    hits = sum(1 for pat in ANTI_PATTERN_EXEMPLARS if pat.search(local_body))
+    return round(0.85 * hits, 4)
 
 
 def token_dist(row: dict[str, Any]) -> dict[str, float]:
@@ -232,9 +264,9 @@ def normalized_compression_distance(row_a: dict[str, Any], row_b: dict[str, Any]
     return max(0.0, min(1.0, (cab - min(ca, cb)) / float(denom)))
 
 
-def monotone_coverage(chosen: list[dict[str, Any]]) -> tuple[float, dict[str, float]]:
-    """Pure monotone submodular noisy-OR coverage M(S) (satisfies exact diminishing returns)."""
-    posteriors = [role_posterior(r) for r in chosen]
+def monotone_coverage(chosen: list[dict[str, Any]], query: str = "") -> tuple[float, dict[str, float]]:
+    """Pure monotone submodular noisy-OR coverage M(S | Q) (satisfies exact diminishing returns)."""
+    posteriors = [role_posterior(r, query=query) for r in chosen]
     role_cov: dict[str, float] = {}
     cov_sum = 0.0
     for role, w in ROLE_WEIGHTS.items():
@@ -314,9 +346,9 @@ def evaluate_set(
             "has_orthogonal_verify": False,
         }
 
-    posteriors = [role_posterior(r) for r in chosen]
+    posteriors = [role_posterior(r, query=query) for r in chosen]
     dists = [token_dist(r) for r in chosen]
-    cov_sum, role_cov = monotone_coverage(chosen)
+    cov_sum, role_cov = monotone_coverage(chosen, query=query)
     max_cov_sum = sum(ROLE_WEIGHTS.values())
 
     syn_sum = 0.0
@@ -350,7 +382,7 @@ def evaluate_set(
     owner_pen = 0.12 * owner_collisions / max(1, len(chosen) - 1)
     redundancy = blended_sim + owner_pen
 
-    oot_sum = sum(off_domain_divergence(r, domain, query) for r in chosen)
+    oot_sum = sum(off_domain_divergence(r, domain, query) + contract_conflict_penalty(r) for r in chosen)
 
     tot_r = sum(role_cov.values())
     entropy = 0.0
@@ -381,24 +413,25 @@ def compute_nemhauser_wolsey_bound(
     pool: list[dict[str, Any]],
     prefixes: list[list[dict[str, Any]]],
     k: int,
+    query: str = "",
 ) -> dict[str, float]:
-    """Compute tight online submodular upper bound on monotone coverage M(OPT_k)."""
+    """Compute tight online submodular upper bound on monotone coverage M(OPT_k | Q)."""
     if not pool or k <= 0:
         return {"achieved_coverage": 0.0, "opt_upper_bound": 0.0, "optimality_ratio_lower_bound": 1.0}
     tightest_ub = float("inf")
     for s_t in prefixes:
-        m_st, _ = monotone_coverage(s_t)
+        m_st, _ = monotone_coverage(s_t, query=query)
         s_ids = {r.get("id") for r in s_t}
         marginals = []
         for cand in pool:
             if cand.get("id") in s_ids:
                 continue
-            m_next, _ = monotone_coverage(s_t + [cand])
+            m_next, _ = monotone_coverage(s_t + [cand], query=query)
             marginals.append(max(0.0, m_next - m_st))
         marginals.sort(reverse=True)
         ub_t = m_st + sum(marginals[:k])
         tightest_ub = min(tightest_ub, ub_t)
-    achieved, _ = monotone_coverage(prefixes[-1])
+    achieved, _ = monotone_coverage(prefixes[-1], query=query)
     ratio = achieved / tightest_ub if tightest_ub > 1e-9 else 1.0
     return {
         "achieved_coverage": round(achieved, 4),
@@ -446,9 +479,10 @@ def select_submodular(
             break
 
         enriched = dict(best_row)
-        enriched["role_posterior"] = role_posterior(best_row)
+        enriched["role_posterior"] = role_posterior(best_row, query=query)
         enriched["marginal_information_gain"] = round(best_gain, 4)
         enriched["off_domain_divergence"] = off_domain_divergence(best_row, domain, query)
+        enriched["contract_conflict_penalty"] = contract_conflict_penalty(best_row)
         chosen.append(enriched)
         prefixes.append(list(chosen))
         current_eval = best_eval
@@ -463,7 +497,7 @@ def select_submodular(
             }
         )
 
-    nw_cert = compute_nemhauser_wolsey_bound(pool, prefixes, k_target)
+    nw_cert = compute_nemhauser_wolsey_bound(pool, prefixes, k_target, query=query)
     return chosen, trace, nw_cert
 
 

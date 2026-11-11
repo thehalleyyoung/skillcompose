@@ -1,8 +1,8 @@
 {
   "metric_id": "principled-lift",
   "title": "Principled submodular + Kleisli wiring + MDL gates",
-  "at": "2026-11-11T22:22:46.087545+00:00",
-  "ts": 1794435766.088435,
+  "at": "2026-11-11T22:37:17.044904+00:00",
+  "ts": 1794436637.045303,
   "values": {
     "skill_root": "/Users/halley/skillcompose",
     "cases": [
@@ -13,7 +13,7 @@
           "ops/state@checkpoint-rollback-ledger",
           "arch/specs@rfc-spec-contracts",
           "sec/review@adversarial-false-done-gate",
-          "quality/evals@property-test-harness"
+          "mega3/prompts@ce-brainstorm"
         ],
         "github_top_ids": [
           "mega1/prompts@idea-brainstormer",
@@ -22,11 +22,11 @@
           "fintech/payments@plaid"
         ],
         "lift": {
-          "objective_delta": 5.8925,
-          "coverage_delta": 0.4707,
-          "synergy_delta": 0.5261,
-          "redundancy_reduction": 0.124,
-          "entropy_bits_delta": 1.1064
+          "objective_delta": 5.9827,
+          "coverage_delta": 0.4807,
+          "synergy_delta": 0.5739,
+          "redundancy_reduction": 0.1312,
+          "entropy_bits_delta": 1.4724
         }
       },
       {
@@ -57,8 +57,8 @@
       {
         "name": "compose_and_dominator_gate_enforces_separation_logic",
         "ok": true,
-        "nemhauser_wolsey_ratio": 0.8322,
-        "parnas_ratio": 0.8016
+        "nemhauser_wolsey_ratio": 0.8269,
+        "parnas_ratio": 0.765
       }
     ],
     "passed": 6,
