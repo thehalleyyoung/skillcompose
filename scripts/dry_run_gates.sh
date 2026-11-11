@@ -55,6 +55,7 @@ if [[ "${SKILLREMIX_IN_DRY_RUN_PROTECT:-0}" -eq 0 ]]; then
   run_metric propose-audits-gate
   run_metric local-only-cache
   run_metric principled-lift
+  run_metric manifold-lift
   run_metric dry-run-protect
   if [[ "$FAST" -eq 0 ]]; then
     run_metric smoke-refusal-suite

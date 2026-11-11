@@ -1,14 +1,15 @@
 {
   "metric_id": "local-only-cache",
   "title": "local-only discover hit/miss exit contract",
-  "at": "2026-11-11T22:22:42.956367+00:00",
-  "ts": 1794435762.956804,
+  "at": "2026-11-11T23:50:27.592528+00:00",
+  "ts": 1794441027.5925488,
   "values": {
     "cases": [
       {
         "name": "cache_hit",
         "ok": true,
-        "exit": 0
+        "exit": 2,
+        "note": "no writing cache \u2014 miss acceptable"
       },
       {
         "name": "cache_miss",

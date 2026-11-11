@@ -1,8 +1,8 @@
 {
   "metric_id": "remix-coherence",
   "title": "Remix coherence gate catch rate on fixtures",
-  "at": "2026-11-11T22:22:40.990584+00:00",
-  "ts": 1794435760.9911392,
+  "at": "2026-11-11T23:50:27.124467+00:00",
+  "ts": 1794441027.1244886,
   "values": {
     "cases": [
       {
@@ -12,13 +12,15 @@
           {
             "id": "affaan-m/everything-claude-code@springboot-verification",
             "score": 0.0,
-            "overlap": 0.0909,
+            "overlap": 0.1818,
             "off_domain_hits": [
               "springboot"
             ],
-            "penalty": 0.5,
+            "penalty": 0.55,
             "supportish": true,
-            "alien_desc_hits": []
+            "alien_desc_hits": [
+              "springboot"
+            ]
           }
         ]
       },

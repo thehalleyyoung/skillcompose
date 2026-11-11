@@ -225,7 +225,7 @@ python3 "$SCRIPTS/audit_incumbent.py" \
   --out "$WIP_DIR/discovery/audits/<safe_id>.json" --json
 ```
 
-### R4 — Compile algebraic wiring graph + propose subskills/superskill/buff map
+### R4 — Compile Lawvere–Amari manifold + algebraic wiring graph + propose subskills/superskill/buff map
 
 ```bash
 python3 "$SCRIPTS/propose_remix.py" \
@@ -235,8 +235,9 @@ python3 "$SCRIPTS/propose_remix.py" \
   --domain "$DOMAIN" \
   --name "${NAME:-}" \
   --forge-rounds "$ROUNDS" --json
-# Also emits $WIP_DIR/forge/wiring_graph.json + WIRING_CONTRACT.md and runs static verification
-# (type_safety, separation_logic, dpi_exogenous_grounding, dominator_orthogonality).
+# Also emits $WIP_DIR/forge/{wiring_graph.json,WIRING_CONTRACT.md,manifold_atlas.json,MANIFOLD_ATLAS.md}
+# and runs static verification (type_safety, separation_logic, dpi_exogenous_grounding,
+# dominator_orthogonality, manifold_sheaf_exactness).
 python3 "$SCRIPTS/wiring_compiler.py" verify --graph "$WIP_DIR/forge/wiring_graph.json" --json
 ```
 
@@ -459,10 +460,12 @@ bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/randomupgrade" --name randomu
 | `enrich_github.py` | stars / license / pushedAt |
 | `pick_eligible.py` | Adoption-floor filter + seeded pick (single; no default max; popular OK). Alias: `pick_middling.py` |
 | `pick_n_eligible.py` | Diverse / submodular pick of N eligible skills (remix; popular OK). Alias: `pick_n_middling.py` |
-| `submodular_select.py` | Information-theoretic submodular coverage − JSD redundancy − off-domain divergence selector |
-| `wiring_compiler.py` | Kleisli port typechecker, separation-logic parallel checker, pullback & dominator verifier |
+| `manifold_engine.py` | Lawvere–Amari generative skill manifold compiler (conditional Markov kernels, Fisher–Rao metric, Jacobi eigensolver, Galois conormal core, Plotkin–Reynolds anti-unification, Čech sheaf cocycle verifier, inverse chart projector) |
+| `submodular_select.py` | Information-theoretic submodular coverage + D-optimal Fisher Log-Det spanning volume − JSD/NCD redundancy − off-domain divergence selector |
+| `wiring_compiler.py` | Kleisli port typechecker, separation-logic parallel checker, pullback, post-dominator & Čech sheaf exactness verifier |
+| `compose_skills.py` | One-command compiler producing Parnas-encapsulated package + `manifold_atlas.json` + standalone `project_manifold.py` + `verify_dominator_gate.py` |
 | `information_gain.py` | Conditional Lempel-Ziv MDL novelty, Context-SNR, and Lyapunov debt $\Phi$ telemetry |
-| `propose_remix.py` | Buff map + algebraic wiring graph + subskills + superskill scaffold |
+| `propose_remix.py` | Buff map + Lawvere–Amari manifold atlas + algebraic wiring graph + subskills + superskill scaffold |
 | `license_gate.py` | Forkable license check |
 | `locate_skill.py` | Monorepo SKILL.md locator |
 | `init_fork.py` | Scaffold fork (UPSTREAM/COMPARISON/install/README) |
@@ -495,6 +498,7 @@ bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/randomupgrade" --name randomu
 
 ## References
 
+- `references/theory.md` — **Lawvere–Amari Generative Skill Manifold**, Information Theory, Kleisli & Čech Sheaf Gluing, Agentic Control
 - `references/middling_band.md`
 - `references/forge_phases.md` — **canonical phase plan (replaces T1–T5)**
 - `references/upgrade_themes.md` — legacy redirect note
@@ -524,4 +528,14 @@ python3 metrics/status-pack-bytes/measure.py && python3 metrics/status-pack-byte
 
 ```bash
 python3 metrics/propose-audits-gate/measure.py && python3 metrics/propose-audits-gate/plot.py
+```
+
+```bash
+# Principled submodular + Kleisli + anti-DPI + Parnas/MDL lift suite
+python3 metrics/principled-lift/measure.py
+```
+
+```bash
+# Lawvere-Amari generative skill manifold vs union/mixture & concatenation suite
+python3 metrics/manifold-lift/measure.py
 ```

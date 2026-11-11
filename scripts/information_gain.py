@@ -166,7 +166,12 @@ def package_telemetry(pkg: Path) -> dict[str, Any]:
         snr_score = max(0.15, (0.55 + 0.45 * encapsulation_ratio) - over)
 
     # DAG-ordered Lyapunov Debt Phi(x) >= 0 (0.0 = verified fixpoint)
-    has_wiring = (pkg / "forge" / "wiring_graph.json").is_file() or (pkg / "WIRING_CONTRACT.md").is_file()
+    has_wiring = (
+        (pkg / "forge" / "wiring_graph.json").is_file()
+        or (pkg / "references" / "wiring_graph.json").is_file()
+        or (pkg / "references" / "manifold_atlas.json").is_file()
+        or (pkg / "WIRING_CONTRACT.md").is_file()
+    )
     has_exec_verify = any(
         "verify" in f.name.lower() and f.suffix in {".py", ".sh"} for f in files
     )

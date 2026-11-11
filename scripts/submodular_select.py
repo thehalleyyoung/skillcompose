@@ -232,8 +232,13 @@ def normalized_compression_distance(row_a: dict[str, Any], row_b: dict[str, Any]
     return max(0.0, min(1.0, (cab - min(ca, cb)) / float(denom)))
 
 
+from manifold_engine import fisher_logdet_volume  # noqa: E402
+
+GAMMA_FISHER = 0.22
+
+
 def monotone_coverage(chosen: list[dict[str, Any]]) -> tuple[float, dict[str, float]]:
-    """Pure monotone submodular noisy-OR coverage M(S) (satisfies exact diminishing returns)."""
+    """Pure monotone submodular noisy-OR coverage M_role(S) (satisfies exact diminishing returns)."""
     posteriors = [role_posterior(r) for r in chosen]
     role_cov: dict[str, float] = {}
     cov_sum = 0.0
@@ -245,6 +250,17 @@ def monotone_coverage(chosen: list[dict[str, Any]]) -> tuple[float, dict[str, fl
         role_cov[role] = round(cu, 4)
         cov_sum += w * cu
     return cov_sum, role_cov
+
+
+def monotone_manifold_potential(chosen: list[dict[str, Any]]) -> tuple[float, float, dict[str, float], float]:
+    """Joint monotone submodular potential M_total(S) = M_role(S) + gamma * V_Fisher(S).
+
+    Both Noisy-OR role coverage and 0.5 * log det(I + alpha * Psi_S^T Psi_S) are exact monotone
+    submodular set functions, preserving the Nemhauser-Wolsey (1 - 1/e) & online upper bounds.
+    """
+    role_cov_sum, role_cov = monotone_coverage(chosen)
+    f_vol = fisher_logdet_volume(chosen)
+    return role_cov_sum + GAMMA_FISHER * f_vol, role_cov_sum, role_cov, f_vol
 
 
 def off_domain_divergence(row: dict[str, Any], domain: str | None, query: str) -> float:
@@ -302,6 +318,8 @@ def evaluate_set(
         return {
             "objective": 0.0,
             "submodular_coverage": 0.0,
+            "fisher_logdet_volume": 0.0,
+            "manifold_submodular_potential": 0.0,
             "normalized_coverage": 0.0,
             "chain_synergy": 0.0,
             "mean_redundancy": 0.0,
@@ -316,7 +334,7 @@ def evaluate_set(
 
     posteriors = [role_posterior(r) for r in chosen]
     dists = [token_dist(r) for r in chosen]
-    cov_sum, role_cov = monotone_coverage(chosen)
+    man_pot, cov_sum, role_cov, f_vol = monotone_manifold_potential(chosen)
     max_cov_sum = sum(ROLE_WEIGHTS.values())
 
     syn_sum = 0.0
@@ -360,10 +378,12 @@ def evaluate_set(
                 pv = v / tot_r
                 entropy -= pv * math.log2(pv)
 
-    objective = cov_sum + lambda_syn * syn_sum - lambda_red * redundancy - lambda_oot * oot_sum
+    objective = man_pot + lambda_syn * syn_sum - lambda_red * redundancy - lambda_oot * oot_sum
     return {
         "objective": round(objective, 4),
         "submodular_coverage": round(cov_sum, 4),
+        "fisher_logdet_volume": round(f_vol, 4),
+        "manifold_submodular_potential": round(man_pot, 4),
         "normalized_coverage": round(cov_sum / max_cov_sum, 4),
         "chain_synergy": round(syn_sum, 4),
         "mean_redundancy": round(redundancy, 4),
@@ -382,23 +402,23 @@ def compute_nemhauser_wolsey_bound(
     prefixes: list[list[dict[str, Any]]],
     k: int,
 ) -> dict[str, float]:
-    """Compute tight online submodular upper bound on monotone coverage M(OPT_k)."""
+    """Compute tight online submodular upper bound on joint monotone potential M_total(OPT_k)."""
     if not pool or k <= 0:
         return {"achieved_coverage": 0.0, "opt_upper_bound": 0.0, "optimality_ratio_lower_bound": 1.0}
     tightest_ub = float("inf")
     for s_t in prefixes:
-        m_st, _ = monotone_coverage(s_t)
+        m_st, _, _, _ = monotone_manifold_potential(s_t)
         s_ids = {r.get("id") for r in s_t}
         marginals = []
         for cand in pool:
             if cand.get("id") in s_ids:
                 continue
-            m_next, _ = monotone_coverage(s_t + [cand])
+            m_next, _, _, _ = monotone_manifold_potential(s_t + [cand])
             marginals.append(max(0.0, m_next - m_st))
         marginals.sort(reverse=True)
         ub_t = m_st + sum(marginals[:k])
         tightest_ub = min(tightest_ub, ub_t)
-    achieved, _ = monotone_coverage(prefixes[-1])
+    achieved, _, _, _ = monotone_manifold_potential(prefixes[-1])
     ratio = achieved / tightest_ub if tightest_ub > 1e-9 else 1.0
     return {
         "achieved_coverage": round(achieved, 4),
@@ -511,6 +531,9 @@ def build_selection_report(
             "objective_delta": round(principled_eval["objective"] - pop_eval["objective"], 4),
             "coverage_delta": round(
                 principled_eval["normalized_coverage"] - pop_eval["normalized_coverage"], 4
+            ),
+            "fisher_volume_delta": round(
+                principled_eval["fisher_logdet_volume"] - pop_eval["fisher_logdet_volume"], 4
             ),
             "synergy_delta": round(principled_eval["chain_synergy"] - pop_eval["chain_synergy"], 4),
             "redundancy_reduction": round(

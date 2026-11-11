@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,13 +19,36 @@ ROOT = Path(__file__).resolve().parent
 SKILL_ROOT = ROOT.parent.parent
 SCRIPTS = SKILL_ROOT / "scripts"
 
-# Prefer a known good WIP if present; else skip the accept case.
+# Prefer a known good WIP if present; else materialize a temporary fixture WIP.
 GOOD_WIPS = [
     Path("/Users/halley/linkedin/skillremix-wip-20260721T000558Z"),
     Path("/Users/halley/linkedin/skillremix-wip-20260721T000113Z"),
     Path("/Users/halley/Documents/linkedin-1/skillremix-wip-20260720T232557Z"),
     Path("/Users/halley/Documents/linkedin-1/skillremix-wip-20260721T000933Z"),
 ]
+
+
+def _make_fixture_wip(base: Path) -> Path:
+    wip = base / "skillremix-wip-20260721T000000Z"
+    (wip / "discovery").mkdir(parents=True, exist_ok=True)
+    (wip / "forge").mkdir(parents=True, exist_ok=True)
+    (wip / "discovery" / "chosen_n.json").write_text(
+        json.dumps(
+            {
+                "n": 2,
+                "decision": "PASS",
+                "ids": ["org-1/pack@skill-a", "org-2/pack@skill-b"],
+                "chosen": [
+                    {"id": "org-1/pack@skill-a", "installs": 1000, "stars": 100, "license": "mit"},
+                    {"id": "org-2/pack@skill-b", "installs": 1200, "stars": 140, "license": "mit"},
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return wip
 
 
 def run(cmd: list[str]) -> tuple[int, str]:
@@ -131,9 +155,23 @@ def score() -> dict:
             "contradictory_flags",
         )
     else:
-        cases.append({"name": "status_valid_wip", "ok": False, "exit": -1, "skip_reason": "no fixture WIP"})
-        cases.append({"name": "contradictory_status_resume", "ok": False, "exit": -1, "skip_reason": "no fixture WIP"})
-        cases.append({"name": "contradictory_discover_resume", "ok": False, "exit": -1, "skip_reason": "no fixture WIP"})
+        with tempfile.TemporaryDirectory() as td:
+            good_tmp = _make_fixture_wip(Path(td))
+            expect_ok(
+                "status_valid_wip",
+                [*status, "--wip", str(good_tmp), "--json"],
+                require_keys=["mode", "resume_hint", "wip"],
+            )
+            expect_fail(
+                "contradictory_status_resume",
+                [*parse, "--status", "--resume", "--wip", str(good_tmp)],
+                "contradictory_flags",
+            )
+            expect_fail(
+                "contradictory_discover_resume",
+                [*parse, "--discover-only", "--resume", "--wip", str(good_tmp)],
+                "contradictory_flags",
+            )
 
     passed = sum(1 for c in cases if c["ok"])
     total = len(cases)

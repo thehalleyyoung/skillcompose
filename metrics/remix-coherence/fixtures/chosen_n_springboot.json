@@ -1,0 +1,10 @@
+{
+  "chosen": [
+    {
+      "id": "affaan-m/everything-claude-code@springboot-verification",
+      "query": "literature review",
+      "github_description": "springboot verification helpers",
+      "discovery_role": "practice_support"
+    }
+  ]
+}

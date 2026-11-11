@@ -1,0 +1,650 @@
+{
+  "schema": "skillcompose.7family_results.v1",
+  "generated_at": "2026-11-11T23:53:07.831092+00:00",
+  "execution_backend": "Antigravity Isolated Subagents (1 call per task x regime, VM live run)",
+  "judge_model": "Double-Blind Isolated Judge (shuffled Candidate_Alpha/Beta/Gamma)",
+  "n_families": 7,
+  "solver_calls_per_task_per_regime": 1,
+  "total_solver_calls": 21,
+  "aggregate_by_regime": {
+    "concat": {
+      "mean_blind_judge_score": 87.27,
+      "mean_exogenous_oracle_pct": 90.48,
+      "exogenous_full_pass_families": "6/7",
+      "blind_judge_first_place_wins": 0
+    },
+    "union": {
+      "mean_blind_judge_score": 53.66,
+      "mean_exogenous_oracle_pct": 39.35,
+      "exogenous_full_pass_families": "0/7",
+      "blind_judge_first_place_wins": 0
+    },
+    "manifold": {
+      "mean_blind_judge_score": 98.71,
+      "mean_exogenous_oracle_pct": 100.0,
+      "exogenous_full_pass_families": "7/7",
+      "blind_judge_first_place_wins": 7
+    }
+  },
+  "families": [
+    {
+      "family_id": "f1_streaming_sql_sheaf",
+      "title": "Streaming JSONL Ingestion \u00d7 Transactional SQLite Migration \u00d7 API/Manifest Sheaf",
+      "domain": "data",
+      "blind_assignment": {
+        "Candidate_Alpha": "concat",
+        "Candidate_Beta": "manifold",
+        "Candidate_Gamma": "union"
+      },
+      "winner_regime": "manifold",
+      "ranking_regimes": [
+        "manifold",
+        "concat",
+        "union"
+      ],
+      "judge_scores_by_regime": {
+        "concat": {
+          "functional_correctness": 100,
+          "conflict_and_invariant_resolution": 96,
+          "recombinant_completeness": 100,
+          "sheaf_cross_file_consistency": 100,
+          "code_and_artifact_craft": 97,
+          "overall_score": 98.7
+        },
+        "manifold": {
+          "functional_correctness": 100,
+          "conflict_and_invariant_resolution": 99,
+          "recombinant_completeness": 100,
+          "sheaf_cross_file_consistency": 100,
+          "code_and_artifact_craft": 98,
+          "overall_score": 99.55
+        },
+        "union": {
+          "functional_correctness": 55,
+          "conflict_and_invariant_resolution": 52,
+          "recombinant_completeness": 45,
+          "sheaf_cross_file_consistency": 20,
+          "code_and_artifact_craft": 50,
+          "overall_score": 47.0
+        }
+      },
+      "oracle_by_regime": {
+        "concat": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "has_script_and_streaming_yield": true,
+            "legacy_v1_preserved": true,
+            "orders_v2_exact_rows": true,
+            "quarantine_exact_4": true,
+            "sheaf_overlap_exact": true,
+            "manifest_digest_and_counts_exact": true,
+            "idempotent_rerun": true
+          }
+        },
+        "manifold": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "has_script_and_streaming_yield": true,
+            "legacy_v1_preserved": true,
+            "orders_v2_exact_rows": true,
+            "quarantine_exact_4": true,
+            "sheaf_overlap_exact": true,
+            "manifest_digest_and_counts_exact": true,
+            "idempotent_rerun": true
+          }
+        },
+        "union": {
+          "passed": false,
+          "score": 0.5714,
+          "checks": {
+            "has_script_and_streaming_yield": true,
+            "legacy_v1_preserved": true,
+            "orders_v2_exact_rows": true,
+            "quarantine_exact_4": true,
+            "sheaf_overlap_exact": false,
+            "manifest_digest_and_counts_exact": false,
+            "idempotent_rerun": false
+          }
+        }
+      },
+      "manifold_telemetry": {
+        "tangent_rank": 3,
+        "intrinsic_dimension": 1.7684,
+        "fisher_logdet_volume": 3.4382,
+        "amari_e_vs_m_bregman_gap_bits": 0.17669,
+        "union_fiber_size": 12,
+        "manifold_total_fiber_size": 72,
+        "recombinant_novel_states": 60,
+        "specialization_exact": true
+      },
+      "judge_rationale": "Candidate_Beta and Candidate_Alpha both passed all 7 exogenous functional, streaming, idempotency, and sheaf-consistency checks (score 1.0), preserving orders_v1 untouched with identical legacy.db state (sha256=b6df1ca910dadc30) and emitting byte-for-byte consistent api_contract.json and migration_manifest.json artifacts (7 migrated rows, 4 quarantined rows, total_amount_cents=29631, table_sha256=14845d8db7b3b22b51fe86ef5e580e6cc8c2c348fe5ba792688d3b6c14ddcd40). Candidate_Beta edges out Candidate_Alpha via superior invariant separation and streaming pipeline craft: Beta explicitly separates legacy DB amount_cents normalization from delta JSONL gross_usd validation via a keyword-only has_amount_cents flag, returns pure value tuples for expected stream quarantine records instead of using exception control flow per bad row, guards container types (bool, list, dict) prior to string conversion, uses modern collections.abc.Iterator, and explicitly documents BEGIN IMMEDIATE ... COMMIT / ROLLBACK transaction semantics. Candidate_Alpha is a close second with clean strict object/Mapping typing (zero Any), ROUND_HALF_UP decimal quantization, and direct TextIO quarantine streaming, losing minor points only for conflating legacy fallback column names (cust_email, amount_cents, status) with delta stream validation and using deprecated typing.Iterator/Mapping imports. Candidate_Gamma routed narrowly to a single sub-skill (sqlite-atomic-migrator) rather than synthesizing the full multi-stage skill pack, failing sheaf_overlap_exact, manifest_digest_and_counts_exact, and idempotent_rerun by emitting non-conforming filenames/schemas (openapi_contract.json and audit_manifest.json), buffering quarantine entries into an in-memory list instead of streaming I/O, and omitting ROUND_HALF_UP quantization."
+    },
+    {
+      "family_id": "f2_kleene_policy_compiler",
+      "title": "Recursive-Descent Policy Grammar \u00d7 Kleene 3-Valued Logic \u00d7 AST/Truth Sheaf",
+      "domain": "automation",
+      "blind_assignment": {
+        "Candidate_Alpha": "manifold",
+        "Candidate_Beta": "union",
+        "Candidate_Gamma": "concat"
+      },
+      "winner_regime": "manifold",
+      "ranking_regimes": [
+        "manifold",
+        "concat",
+        "union"
+      ],
+      "judge_scores_by_regime": {
+        "manifold": {
+          "functional_correctness": 100,
+          "conflict_and_invariant_resolution": 100,
+          "recombinant_completeness": 100,
+          "sheaf_cross_file_consistency": 100,
+          "code_and_artifact_craft": 98,
+          "overall_score": 99.8
+        },
+        "union": {
+          "functional_correctness": 55,
+          "conflict_and_invariant_resolution": 82,
+          "recombinant_completeness": 60,
+          "sheaf_cross_file_consistency": 20,
+          "code_and_artifact_craft": 75,
+          "overall_score": 59.25
+        },
+        "concat": {
+          "functional_correctness": 98,
+          "conflict_and_invariant_resolution": 98,
+          "recombinant_completeness": 100,
+          "sheaf_cross_file_consistency": 100,
+          "code_and_artifact_craft": 92,
+          "overall_score": 98.0
+        }
+      },
+      "oracle_by_regime": {
+        "manifold": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "no_eval_recursive_parser": true,
+            "sheaf_ast_and_truth_exact": true,
+            "kleene_laws_27_verified": true,
+            "evaluations_exact_30_cells": true
+          }
+        },
+        "union": {
+          "passed": false,
+          "score": 0.25,
+          "checks": {
+            "no_eval_recursive_parser": true,
+            "sheaf_ast_and_truth_exact": false,
+            "kleene_laws_27_verified": false,
+            "evaluations_exact_30_cells": false
+          }
+        },
+        "concat": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "no_eval_recursive_parser": true,
+            "sheaf_ast_and_truth_exact": true,
+            "kleene_laws_27_verified": true,
+            "evaluations_exact_30_cells": true
+          }
+        }
+      },
+      "manifold_telemetry": {
+        "tangent_rank": 3,
+        "intrinsic_dimension": 1.7976,
+        "fisher_logdet_volume": 2.7501,
+        "amari_e_vs_m_bregman_gap_bits": 0.07559,
+        "union_fiber_size": 15,
+        "manifold_total_fiber_size": 72,
+        "recombinant_novel_states": 57,
+        "specialization_exact": true
+      },
+      "judge_rationale": "Candidate_Alpha and Candidate_Gamma both achieved 1.0 on all exogenous checks, implementing zero-eval recursive-descent EBNF parsers with strict Parens > Not > And > Or precedence, Strong Kleene K3 domination semantics over null/missing context attributes across all 30 evaluation cells, 27-state Kleene algebraic law verification, and exact sheaf consistency between ast_spec.json and eval_report.json. Candidate_Alpha wins over Candidate_Gamma on engineering craft and verification rigor: Alpha defines domain-specific exceptions (PolicySyntaxError, PolicyContractError), enforces explicit bool/int equality separation, and includes a comprehensive AST-inspected unittest suite (test_policy_engine.py) covering left-associativity, chained unary NOT, negative floats, and syntax error rejection, whereas Gamma omits automated tests and raises Python's built-in SyntaxError with permissive escape handling. Candidate_Beta places third: although its underlying zero-eval parser and Strong Kleene K3 evaluator compute the right 30 truth values and 27-state unit tests, it ignored the required artifact contracts\u2014writing evaluation_report.json and an unrequested evaluation_report.md instead of eval_report.json, omitting kleene_laws_verified from the report, and inventing incompatible AST node schemas (BinaryOp/UnaryOp/Comparison/Literal) that broke sheaf consistency and failed 3 of 4 exogenous checks."
+    },
+    {
+      "family_id": "f3_vuln_patch_regression",
+      "title": "SQLi & Path-Traversal Remediation \u00d7 Zero-Regression API \u00d7 Exploit PoC Suite",
+      "domain": "devops",
+      "blind_assignment": {
+        "Candidate_Alpha": "manifold",
+        "Candidate_Beta": "concat",
+        "Candidate_Gamma": "union"
+      },
+      "winner_regime": "manifold",
+      "ranking_regimes": [
+        "manifold",
+        "concat",
+        "union"
+      ],
+      "judge_scores_by_regime": {
+        "manifold": {
+          "functional_correctness": 98,
+          "conflict_and_invariant_resolution": 98,
+          "recombinant_completeness": 98,
+          "sheaf_cross_file_consistency": 97,
+          "code_and_artifact_craft": 97,
+          "overall_score": 97.75
+        },
+        "concat": {
+          "functional_correctness": 95,
+          "conflict_and_invariant_resolution": 95,
+          "recombinant_completeness": 94,
+          "sheaf_cross_file_consistency": 94,
+          "code_and_artifact_craft": 93,
+          "overall_score": 94.5
+        },
+        "union": {
+          "functional_correctness": 72,
+          "conflict_and_invariant_resolution": 86,
+          "recombinant_completeness": 55,
+          "sheaf_cross_file_consistency": 25,
+          "code_and_artifact_craft": 68,
+          "overall_score": 65.5
+        }
+      },
+      "oracle_by_regime": {
+        "manifold": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "backward_compat_preserved": true,
+            "sqli_blocked_and_table_intact": true,
+            "path_traversal_and_sibling_blocked": true,
+            "regression_suite_passes": true,
+            "sheaf_advisory_manifest_exact": true
+          }
+        },
+        "concat": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "backward_compat_preserved": true,
+            "sqli_blocked_and_table_intact": true,
+            "path_traversal_and_sibling_blocked": true,
+            "regression_suite_passes": true,
+            "sheaf_advisory_manifest_exact": true
+          }
+        },
+        "union": {
+          "passed": false,
+          "score": 0.6,
+          "checks": {
+            "backward_compat_preserved": true,
+            "sqli_blocked_and_table_intact": true,
+            "path_traversal_and_sibling_blocked": true,
+            "regression_suite_passes": false,
+            "sheaf_advisory_manifest_exact": false
+          }
+        }
+      },
+      "manifold_telemetry": {
+        "tangent_rank": 3,
+        "intrinsic_dimension": 2.486,
+        "fisher_logdet_volume": 2.7074,
+        "amari_e_vs_m_bregman_gap_bits": 0.0752,
+        "union_fiber_size": 45,
+        "manifold_total_fiber_size": 108,
+        "recombinant_novel_states": 63,
+        "specialization_exact": true
+      },
+      "judge_rationale": "Candidate_Alpha and Candidate_Beta both achieved 1.0 on exogenous functional and sheaf checks, cleanly remediating CWE-89 SQL injection (via '?' bound parameters for category/min_cents, bool-rejection, and a strict static sort_by allowlist raising ValueError) and CWE-22 path traversal/sibling-prefix/symlink escapes (via Path.resolve() and is_relative_to()) while preserving 100% API signature and nested-doc backward compatibility. Candidate_Alpha edges out Candidate_Beta with stronger path-resolution hardening in read_doc (checking step.resolve().is_relative_to(root) at every path component rather than only on symlinks, and converting OSError/RuntimeError symlink-loop exceptions into PermissionError), richer cross-file sheaf linkage (matching cve_id, cwe_ids, patched_symbols, patched_sha256, plus regression_hash and explicit backward_compatibility metadata), and a sandboxed regression suite seeded from actual workspace fixtures. Candidate_Gamma patched catalog_service.py effectively (passing backward-compat, SQLi, and traversal checks, though dropping PathLike support in read_doc), but violated the skill's artifact contract by emitting SECURITY_ADVISORY.md, PATCH_MANIFEST.json, and test_catalog_service.py/tests/ instead of security_advisory.json, patch_manifest.json, and test_security_and_compat.py, causing regression_suite_passes and sheaf_advisory_manifest_exact to fail."
+    },
+    {
+      "family_id": "f4_simpsons_paradox_audit",
+      "title": "Stratified Simpson's Paradox Statistical Audit \u00d7 SHA-256 Quote Provenance",
+      "domain": "research",
+      "blind_assignment": {
+        "Candidate_Alpha": "union",
+        "Candidate_Beta": "manifold",
+        "Candidate_Gamma": "concat"
+      },
+      "winner_regime": "manifold",
+      "ranking_regimes": [
+        "manifold",
+        "concat",
+        "union"
+      ],
+      "judge_scores_by_regime": {
+        "union": {
+          "functional_correctness": 42,
+          "conflict_and_invariant_resolution": 72,
+          "recombinant_completeness": 62,
+          "sheaf_cross_file_consistency": 35,
+          "code_and_artifact_craft": 78,
+          "overall_score": 55.05
+        },
+        "manifold": {
+          "functional_correctness": 98,
+          "conflict_and_invariant_resolution": 98,
+          "recombinant_completeness": 98,
+          "sheaf_cross_file_consistency": 99,
+          "code_and_artifact_craft": 95,
+          "overall_score": 97.85
+        },
+        "concat": {
+          "functional_correctness": 95,
+          "conflict_and_invariant_resolution": 94,
+          "recombinant_completeness": 91,
+          "sheaf_cross_file_consistency": 93,
+          "code_and_artifact_craft": 95,
+          "overall_score": 93.85
+        }
+      },
+      "oracle_by_regime": {
+        "union": {
+          "passed": false,
+          "score": 0.2,
+          "checks": {
+            "causal_winner_and_paradox": false,
+            "exact_statistical_rates": false,
+            "sheaf_ledger_stat_exact": false,
+            "cryptographic_quote_provenance": false,
+            "brief_recommends_protocol_b": true
+          }
+        },
+        "manifold": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "causal_winner_and_paradox": true,
+            "exact_statistical_rates": true,
+            "sheaf_ledger_stat_exact": true,
+            "cryptographic_quote_provenance": true,
+            "brief_recommends_protocol_b": true
+          }
+        },
+        "concat": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "causal_winner_and_paradox": true,
+            "exact_statistical_rates": true,
+            "sheaf_ledger_stat_exact": true,
+            "cryptographic_quote_provenance": true,
+            "brief_recommends_protocol_b": true
+          }
+        }
+      },
+      "manifold_telemetry": {
+        "tangent_rank": 3,
+        "intrinsic_dimension": 2.0948,
+        "fisher_logdet_volume": 2.5073,
+        "amari_e_vs_m_bregman_gap_bits": 0.08126,
+        "union_fiber_size": 54,
+        "manifold_total_fiber_size": 108,
+        "recombinant_novel_states": 54,
+        "specialization_exact": true
+      },
+      "judge_rationale": "Candidate_Beta wins decisively (97.85 vs 93.85 for Candidate_Gamma and 55.05 for Candidate_Alpha). Both Candidate_Beta and Candidate_Gamma pass 100% of exogenous functional, statistical, sheaf-consistency, and cryptographic SHA-256 quote-provenance checks, accurately excluding the 4 retracted duplicate calibration records (n_raw=204, n_retracted=4, n_clean=200), computing exact pooled (0.86 vs 0.67), stratified (low: 0.90 vs 0.95; high: 0.50 vs 0.60), and stratum-size-weighted standardized recovery rates (0.7200 vs 0.7925), detecting Simpson's paradox reversal across every subgroup, and recommending Protocol_B. Candidate_Beta edges out Candidate_Gamma through superior sheaf and provenance rigor: Beta additionally computes Cochran-Mantel-Haenszel common odds ratio (1.679) and chi-square (0.823), records SHA-256 digests of the raw source files across coupled JSON artifacts, provides a structured claim_provenance_table verifying exact numerator/denominator ratios per claim ID, reconciles a pullback claim ledger, and ships a deterministic read-only verification script (verify_deliverables.py). Candidate_Gamma delivers clean, idiomatic code and exact required schemas with valid substring SHA-256 provenance, but omits CMH statistics, file-level source hashes, and per-claim metric/citation linkage inside evidence_ledger.json. Candidate_Alpha correctly executes the underlying statistical math, retraction filtering, CMH analysis, and UTF-8 quote hashing, but violates the required output filename and schema contract\u2014emitting statistical_summary.json instead of stat_summary.json and nesting citations under custom C1..C5 claim objects rather than top-level reconciled claim_ids, denominators, and citations\u2014causing 4 of 5 exogenous checks to fail."
+    },
+    {
+      "family_id": "f5_double_entry_watermark",
+      "title": "Event-Time Watermark Reordering \u00d7 Idempotent Double-Entry Integer Ledger",
+      "domain": "data",
+      "blind_assignment": {
+        "Candidate_Alpha": "manifold",
+        "Candidate_Beta": "concat",
+        "Candidate_Gamma": "union"
+      },
+      "winner_regime": "manifold",
+      "ranking_regimes": [
+        "manifold",
+        "concat",
+        "union"
+      ],
+      "judge_scores_by_regime": {
+        "manifold": {
+          "functional_correctness": 99,
+          "conflict_and_invariant_resolution": 99,
+          "recombinant_completeness": 99,
+          "sheaf_cross_file_consistency": 100,
+          "code_and_artifact_craft": 96,
+          "overall_score": 98.85
+        },
+        "concat": {
+          "functional_correctness": 96,
+          "conflict_and_invariant_resolution": 97,
+          "recombinant_completeness": 97,
+          "sheaf_cross_file_consistency": 100,
+          "code_and_artifact_craft": 97,
+          "overall_score": 97.1
+        },
+        "union": {
+          "functional_correctness": 42,
+          "conflict_and_invariant_resolution": 55,
+          "recombinant_completeness": 50,
+          "sheaf_cross_file_consistency": 20,
+          "code_and_artifact_craft": 60,
+          "overall_score": 44.95
+        }
+      },
+      "oracle_by_regime": {
+        "manifold": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "exact_reordered_balances": true,
+            "zero_sum_and_non_negative_users": true,
+            "watermark_dedup_overdraft_counts": true,
+            "sheaf_balances_audit_exact": true,
+            "dead_letter_file_exact_1": true
+          }
+        },
+        "concat": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "exact_reordered_balances": true,
+            "zero_sum_and_non_negative_users": true,
+            "watermark_dedup_overdraft_counts": true,
+            "sheaf_balances_audit_exact": true,
+            "dead_letter_file_exact_1": true
+          }
+        },
+        "union": {
+          "passed": false,
+          "score": 0.0,
+          "checks": {
+            "exact_reordered_balances": false,
+            "zero_sum_and_non_negative_users": false,
+            "watermark_dedup_overdraft_counts": false,
+            "sheaf_balances_audit_exact": false,
+            "dead_letter_file_exact_1": false
+          }
+        }
+      },
+      "manifold_telemetry": {
+        "tangent_rank": 3,
+        "intrinsic_dimension": 1.9594,
+        "fisher_logdet_volume": 3.1408,
+        "amari_e_vs_m_bregman_gap_bits": 0.1947,
+        "union_fiber_size": 23,
+        "manifold_total_fiber_size": 72,
+        "recombinant_novel_states": 49,
+        "specialization_exact": true
+      },
+      "judge_rationale": "Candidate_Alpha and Candidate_Beta both pass 100% of exogenous functional and invariant checks (1.0), producing identical, exact sheaf-consistent outputs across balances.json, audit_summary.json (matching on account_ids, applied_tx_count=5, and global_sum_minor=0), and late_dead_letter.jsonl (TX-04 with reason late_beyond_watermark under MAX_LATENESS=300), while cleanly supporting both watermark-reordered execution and --no-watermark arrival-order fallback. Candidate_Alpha edges out Candidate_Beta (98.85 vs 97.1) via stricter input schema validation in validate_event (explicitly rejecting booleans masquerading as ints on event_ts/ingest_ts as well as amount_minor, and rejecting empty account/tx_id strings rather than coercing via int()/str()) and explicit sheaf-overlap verification backed by boundary unit tests, whereas Candidate_Beta maintains a slightly cleaner minimal workspace without an extra test file. Candidate_Gamma (44.95) fails all 5 exogenous checks (0.0): despite computing the right numeric balances on the 8-row sample, it disregards the skill specification by using DEFAULT_WATERMARK_LAG=60 instead of 300, emitting non-conformant filenames (dead_letter.jsonl, reconciliation_audit.json instead of late_dead_letter.jsonl, audit_summary.json), omitting --no-watermark fallback, and breaking Cech 0-coboundary cross-file key agreement (missing account_ids, global_sum_minor, and applied_tx_ids)."
+    },
+    {
+      "family_id": "f6_epistemic_narrative_canon",
+      "title": "Close-POV Epistemic Isolation (t <= 20) \u00d7 Anti-Slop Craft \u00d7 Continuity Sheaf",
+      "domain": "writing",
+      "blind_assignment": {
+        "Candidate_Alpha": "concat",
+        "Candidate_Beta": "union",
+        "Candidate_Gamma": "manifold"
+      },
+      "winner_regime": "manifold",
+      "ranking_regimes": [
+        "manifold",
+        "concat",
+        "union"
+      ],
+      "judge_scores_by_regime": {
+        "concat": {
+          "functional_correctness": 96,
+          "conflict_and_invariant_resolution": 95,
+          "recombinant_completeness": 93,
+          "sheaf_cross_file_consistency": 93,
+          "code_and_artifact_craft": 86,
+          "overall_score": 93.85
+        },
+        "union": {
+          "functional_correctness": 62,
+          "conflict_and_invariant_resolution": 74,
+          "recombinant_completeness": 68,
+          "sheaf_cross_file_consistency": 88,
+          "code_and_artifact_craft": 72,
+          "overall_score": 70.8
+        },
+        "manifold": {
+          "functional_correctness": 98,
+          "conflict_and_invariant_resolution": 97,
+          "recombinant_completeness": 97,
+          "sheaf_cross_file_consistency": 98,
+          "code_and_artifact_craft": 94,
+          "overall_score": 97.2
+        }
+      },
+      "oracle_by_regime": {
+        "concat": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "word_count_320_to_520_and_dialogue": true,
+            "required_t20_anchors_present": true,
+            "zero_epistemic_temporal_or_pov_bleed": true,
+            "zero_banned_cliches": true,
+            "sheaf_continuity_canon_exact": true
+          },
+          "leaks": [],
+          "word_count": 448
+        },
+        "union": {
+          "passed": false,
+          "score": 0.8,
+          "checks": {
+            "word_count_320_to_520_and_dialogue": false,
+            "required_t20_anchors_present": true,
+            "zero_epistemic_temporal_or_pov_bleed": true,
+            "zero_banned_cliches": true,
+            "sheaf_continuity_canon_exact": true
+          },
+          "leaks": [],
+          "word_count": 180
+        },
+        "manifold": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "word_count_320_to_520_and_dialogue": true,
+            "required_t20_anchors_present": true,
+            "zero_epistemic_temporal_or_pov_bleed": true,
+            "zero_banned_cliches": true,
+            "sheaf_continuity_canon_exact": true
+          },
+          "leaks": [],
+          "word_count": 453
+        }
+      },
+      "manifold_telemetry": {
+        "tangent_rank": 3,
+        "intrinsic_dimension": 2.0154,
+        "fisher_logdet_volume": 2.4113,
+        "amari_e_vs_m_bregman_gap_bits": 0.06723,
+        "union_fiber_size": 82,
+        "manifold_total_fiber_size": 108,
+        "recombinant_novel_states": 26,
+        "specialization_exact": true
+      },
+      "judge_rationale": "Candidate_Gamma wins (97.2) with full exogenous verification (score 1.0, 453 words within [320, 520]), rigorous K(Mira, t <= 20) close-third-person epistemic isolation (zero temporal bleed from F3_FUTURE_BETRAYAL_T50 and zero cross-agent bleed from F4_DAX_PRIVATE_POCKET), zero banned cliches, superior prose framing and physical coherence (narrative opening and closing beats, split-dialogue rhythm, consistent thermodynamics), and the tightest sheaf alignment between canon_state.json and continuity_ledger.json (including verified exact counts of 453 words, 5 dialogue turns, and 8 quoted spans). Candidate_Alpha places a strong second (93.85), also passing all exogenous invariants (448 words, zero leaks, zero banned phrases, exact word-count ledger match) with convincing interpersonal conflict, but exhibits repetitive paragraph-opening syntax across all six paragraphs ('\"Quote,\" Speaker verb, participle...') and a minor physical implausibility (sweat hissing against a 'warm' transformer casing) alongside slightly looser schema symmetry between canon_state.json and continuity_ledger.json. Candidate_Beta places third (70.8): while it preserves epistemic isolation, avoids banned phrases, and maintains truthful cross-file sheaf metadata, its 180-word scene fails the mandatory 320-520 word length and development check (exogenous passed=false) without iterating to remediate the deficit."
+    },
+    {
+      "family_id": "f7_conormal_polysemy_guard",
+      "title": "Conormal Domain Guard (`ABSTAIN_OFF_MANIFOLD`) vs Polysemic Fiction Trap",
+      "domain": "devops",
+      "blind_assignment": {
+        "Candidate_Alpha": "union",
+        "Candidate_Beta": "manifold",
+        "Candidate_Gamma": "concat"
+      },
+      "winner_regime": "manifold",
+      "ranking_regimes": [
+        "manifold",
+        "concat",
+        "union"
+      ],
+      "judge_scores_by_regime": {
+        "union": {
+          "functional_correctness": 33,
+          "conflict_and_invariant_resolution": 22,
+          "recombinant_completeness": 25,
+          "sheaf_cross_file_consistency": 55,
+          "code_and_artifact_craft": 40,
+          "overall_score": 33.05
+        },
+        "manifold": {
+          "functional_correctness": 100,
+          "conflict_and_invariant_resolution": 100,
+          "recombinant_completeness": 100,
+          "sheaf_cross_file_consistency": 100,
+          "code_and_artifact_craft": 100,
+          "overall_score": 100.0
+        },
+        "concat": {
+          "functional_correctness": 33,
+          "conflict_and_invariant_resolution": 25,
+          "recombinant_completeness": 28,
+          "sheaf_cross_file_consistency": 58,
+          "code_and_artifact_craft": 42,
+          "overall_score": 34.9
+        }
+      },
+      "oracle_by_regime": {
+        "union": {
+          "passed": false,
+          "score": 0.3333,
+          "checks": {
+            "protected_inventory_unmutated": true,
+            "no_bogus_fanfic_file_created": false,
+            "explicit_abstain_status_recorded": false
+          }
+        },
+        "manifold": {
+          "passed": true,
+          "score": 1.0,
+          "checks": {
+            "protected_inventory_unmutated": true,
+            "no_bogus_fanfic_file_created": true,
+            "explicit_abstain_status_recorded": true
+          }
+        },
+        "concat": {
+          "passed": false,
+          "score": 0.3333,
+          "checks": {
+            "protected_inventory_unmutated": true,
+            "no_bogus_fanfic_file_created": false,
+            "explicit_abstain_status_recorded": false
+          }
+        }
+      },
+      "manifold_telemetry": {
+        "tangent_rank": 3,
+        "intrinsic_dimension": 2.0905,
+        "fisher_logdet_volume": 2.8459,
+        "amari_e_vs_m_bregman_gap_bits": 0.07428,
+        "union_fiber_size": 37,
+        "manifold_total_fiber_size": 108,
+        "recombinant_novel_states": 71,
+        "specialization_exact": true
+      },
+      "judge_rationale": "Candidate_Beta is the decisive winner (100.0), passing all three exogenous checks (1.0): its preflight conormal domain guard detected the polysemic/off-manifold creative writing trap tokens (['chapter', 'fanfiction', 'plaid', 'romance'], exit 2), recorded explicit 'ABSTAIN_OFF_MANIFOLD' in run_status.json, refused to create the spurious fanfic_chapter.md artifact, and left cluster_inventory.json completely unmutated. Both Candidate_Gamma (34.9) and Candidate_Alpha (33.05) failed the core polysemic domain-guard test (0.3333): although both preserved cluster_inventory.json, both lacked an off-manifold guard, fell back to a permissive General Assistant Fallback rule, recorded 'decision': 'allow' in run_status.json, and polluted the Kubernetes rollout workspace with fanfic_chapter.md. Candidate_Gamma edges out Candidate_Alpha for second place because Candidate_Alpha additionally misrouted the romance fanfiction request into the operational canary-weight-stepper sub-skill before invoking fallback."
+    }
+  ]
+}

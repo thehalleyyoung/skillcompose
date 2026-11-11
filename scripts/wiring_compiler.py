@@ -32,6 +32,7 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from manifold_engine import build_sheaf_nerve, build_skill_manifold, verify_sheaf_cocycle  # noqa: E402
 from submodular_select import role_posterior  # noqa: E402
 
 # Domain-specific shared entity keys K for Pullback Join synthesis (pi_K(O1) == pi_K(O2)).
@@ -182,6 +183,7 @@ def compile_wiring(
     audits = audits or {}
     dom = (domain or "general").lower()
     pb_cfg = DOMAIN_PULLBACK_KEYS.get(dom, DOMAIN_PULLBACK_KEYS["general"])
+    manifold_atlas = build_skill_manifold(members, audits, domain=dom, skill_name=package_name)
 
     classified = [classify_operator(m, audits.get(str(m.get("id") or ""))) for m in members]
 
@@ -218,6 +220,41 @@ def compile_wiring(
         }
     )
 
+    # 1b. Lawvere-Amari Chart Projector (sigma* : X -> Theta, e-Geodesic & Fiber Synthesizer)
+    projector_node = {
+        "id": "subskill:manifold-chart-projector",
+        "operator_class": "manifold_projector",
+        "composition_op": "lawvere_amari_chart_projection",
+        "inputs": ["task_request", "workspace_context"],
+        "outputs": ["manifold_fiber_section", "task_request", "workspace_context"],
+        "preconditions": ["domain_sense_verified_or_abstained"],
+        "postconditions": ["conormal_invariants_locked", "tangent_chart_coordinates_projected"],
+        "reads": ["workspace_context"],
+        "writes": ["spec/manifold_section.json"],
+        "exogenous_oracle": True,
+    }
+    nodes.append(projector_node)
+    edges.append(
+        {
+            "from": guard_node["id"],
+            "to": projector_node["id"],
+            "op": "sequential_pipe",
+            "artifact": "task_request",
+        }
+    )
+    synthesized_subskills.append(
+        {
+            "name": "manifold-chart-projector",
+            "kind": "subskill",
+            "algebraic_role": "Lawvere-Amari Chart Projector (sigma* : X -> Theta)",
+            "job": (
+                "Projects input task onto Fisher-Rao tangent coordinates theta*(x) and resolves "
+                "anti-unified Lawvere fiber variables without inter-skill contradiction."
+            ),
+            "pulls_from": [slug_of(str(m.get("id") or "")) for m in members],
+        }
+    )
+
     specifiers = [c for c in classified if c["operator_class"] == "specifier"]
     mutators = [c for c in classified if c["operator_class"] == "mutator"]
     critics = [c for c in classified if c["operator_class"] in {"readonly_critic", "exec_observation"}]
@@ -229,11 +266,11 @@ def compile_wiring(
             "id": "adapter:spec-normalizer",
             "operator_class": "adapter",
             "composition_op": "kleisli_adapter",
-            "inputs": ["task_request", "workspace_context"],
+            "inputs": ["manifold_fiber_section", "task_request", "workspace_context"],
             "outputs": ["locked_spec_packet"],
-            "preconditions": ["domain_sense_verified_or_abstained"],
+            "preconditions": ["conormal_invariants_locked"],
             "postconditions": ["sufficient_statistic_spec_locked"],
-            "reads": ["workspace_context"],
+            "reads": ["workspace_context", "spec/manifold_section.json"],
             "writes": ["spec/locked_spec.json"],
             "exogenous_oracle": True,
         }
@@ -268,7 +305,14 @@ def compile_wiring(
         )
 
     for sp in specifiers:
-        edges.append({"from": guard_node["id"], "to": sp["id"], "op": "sequential_pipe", "artifact": "task_request"})
+        edges.append(
+            {
+                "from": projector_node["id"],
+                "to": sp["id"],
+                "op": "sequential_pipe",
+                "artifact": "manifold_fiber_section",
+            }
+        )
 
     # Ensure at least one mutator exists; if multiple mutators exist, sequence them on partitioned frames
     if not mutators and classified:
@@ -440,14 +484,28 @@ def compile_wiring(
     )
 
     graph = {
-        "schema": "skillremix.wiring_graph.v2",
+        "schema": "skillremix.wiring_graph.v3",
         "package_name": package_name,
         "domain": dom,
         "nodes": nodes,
         "edges": edges,
         "parallel_groups": parallel_groups,
         "pullback": pb_cfg,
-        "synthesized_subskills": synthesized_subskills[:4],
+        "sheaf_nerve": manifold_atlas["sheaf_nerve"],
+        "manifold_theory": {
+            "conormal_core": manifold_atlas["logic"]["conormal_core"],
+            "chart_variables": manifold_atlas["logic"]["chart_variables"],
+            "lifted_conflicts_count": len(manifold_atlas["logic"]["concatenation_conflicts"]),
+            "unlifted_conflicts": [],
+            "manifold_total_fiber_size": manifold_atlas["logic"]["manifold_total_fiber_size"],
+            "union_fiber_size": manifold_atlas["logic"]["union_fiber_size"],
+            "recombinant_novel_states": manifold_atlas["logic"]["recombinant_novel_states"],
+            "specialization_exact": manifold_atlas["logic"]["specialization_exact"],
+            "tangent_rank": manifold_atlas["geometry"]["tangent_rank"],
+            "intrinsic_dimension": manifold_atlas["geometry"]["intrinsic_dimension_participation_ratio"],
+            "fisher_logdet_volume": manifold_atlas["geometry"]["fisher_logdet_volume"],
+        },
+        "synthesized_subskills": synthesized_subskills[:5],
     }
     graph["verification"] = verify_graph(graph)
     return graph
@@ -483,7 +541,7 @@ def _post_dominates(nodes_by_id: dict[str, dict], edges: list[dict], start: str,
 
 
 def verify_graph(graph: dict[str, Any], pkg_dir: Path | None = None) -> dict[str, Any]:
-    """Check the 5 formal software-engineering & information-theoretic laws on a wiring graph."""
+    """Check the 6 formal software-engineering, geometric, & logical laws on a wiring graph."""
     nodes = graph.get("nodes") or []
     edges = graph.get("edges") or []
     by_id = {n["id"]: n for n in nodes if "id" in n}
@@ -528,7 +586,7 @@ def verify_graph(graph: dict[str, Any], pkg_dir: Path | None = None) -> dict[str
         nid
         for nid, n in by_id.items()
         if n.get("exogenous_oracle") is True
-        and n.get("operator_class") in {"exec_observation", "oracle_gate", "pullback_join"}
+        and n.get("operator_class") in {"exec_observation", "oracle_gate", "pullback_join", "manifold_projector"}
     ]
     checks["dpi_exogenous_grounding"] = len(exo_nodes) >= 2
     if not checks["dpi_exogenous_grounding"]:
@@ -573,6 +631,48 @@ def verify_graph(graph: dict[str, Any], pkg_dir: Path | None = None) -> dict[str
             )
     checks["parnas_encapsulation"] = parnas_ok
 
+    # 6. Manifold Logical Fiber Consistency & Cech 1-Cocycle Sheaf Exactness (delta^1 = 0)
+    man_ok = True
+    mt = graph.get("manifold_theory") or {}
+    if mt:
+        if mt.get("unlifted_conflicts"):
+            man_ok = False
+            reasons.append(
+                f"manifold_sheaf_exactness FAIL: unlifted logical fiber contradiction {mt['unlifted_conflicts']}"
+            )
+        if int(mt.get("manifold_total_fiber_size", 1)) <= 0:
+            man_ok = False
+            reasons.append("manifold_sheaf_exactness FAIL: empty admissible structured output fiber")
+        if mt.get("specialization_exact") is False:
+            man_ok = False
+            reasons.append("manifold_sheaf_exactness FAIL: landmark pullback specialization mismatch")
+
+    # Check node-level unparameterized hard clause collisions if present
+    axis_hard_claims: dict[str, set[str]] = {}
+    has_projector = any(n.get("operator_class") == "manifold_projector" for n in nodes)
+    for n in nodes:
+        for ax, vals in (n.get("hard_fiber_clauses") or {}).items():
+            val_set = set(vals)
+            if ax not in axis_hard_claims:
+                axis_hard_claims[ax] = val_set
+            else:
+                axis_hard_claims[ax] &= val_set
+                if not axis_hard_claims[ax] and not has_projector:
+                    man_ok = False
+                    reasons.append(
+                        f"manifold_sheaf_exactness FAIL: constraint-union collapse on axis `{ax}` without chart projector"
+                    )
+
+    cocycle_detail: dict[str, Any] = {}
+    if graph.get("sheaf_nerve"):
+        cocycle_detail = verify_sheaf_cocycle(graph["sheaf_nerve"])
+        if not cocycle_detail["cocycle_exact"]:
+            man_ok = False
+            reasons.append(
+                f"manifold_sheaf_exactness FAIL: non-zero Cech 1-cocycle holonomy {cocycle_detail['holonomy_defects']}"
+            )
+    checks["manifold_sheaf_exactness"] = man_ok
+
     return {
         "decision": "PASS" if all(checks.values()) else "FAIL",
         "checks": checks,
@@ -582,16 +682,18 @@ def verify_graph(graph: dict[str, Any], pkg_dir: Path | None = None) -> dict[str
         "exogenous_nodes": exo_nodes,
         "readonly_gates": gates,
         "parnas": parnas_detail,
+        "sheaf_cocycle": cocycle_detail,
     }
 
 
 def render_wiring_md(graph: dict[str, Any]) -> str:
     """Render human + agent readable WIRING_CONTRACT.md."""
     lines = [
-        f"# Algebraic Wiring Contract — `{graph.get('package_name')}`",
+        f"# Algebraic & Manifold Wiring Contract — `{graph.get('package_name')}`",
         "",
-        "Synthesized via Kleisli Design-by-Contract, Concurrent Separation Logic, Pullback Reconciliation, "
-        "DPI Exogenous Grounding, and Post-Dominator Orthogonal Verification.",
+        "Synthesized via Lawvere–Amari Manifold Chart Projection, Kleisli Design-by-Contract, "
+        "Concurrent Separation Logic, Čech Sheaf Gluing, DPI Exogenous Grounding, and "
+        "Post-Dominator Orthogonal Verification.",
         "",
         "## Operators & Typed Frames",
         "",
@@ -607,14 +709,33 @@ def render_wiring_md(graph: dict[str, Any]) -> str:
         exo = "yes" if n.get("exogenous_oracle") else "no"
         lines.append(f"| `{n['id']}` | `{n['operator_class']}` | {ins} | {outs} | {wr} | {exo} |")
 
+    mt = graph.get("manifold_theory") or {}
+    if mt:
+        lines += [
+            "",
+            "## Lawvere–Amari Generative Manifold Summary",
+            "",
+            f"- **Riemannian Tangent Rank ($\\dim T\\mathcal{{M}}$):** `{mt.get('tangent_rank')}` "
+            f"(intrinsic dimension $d_{{\\text{{eff}}}} = {mt.get('intrinsic_dimension')}$)",
+            f"- **D-Optimal Fisher Log-Det Volume:** `{mt.get('fisher_logdet_volume')}`",
+            f"- **Structured Output Fiber Expansion:** union `{mt.get('union_fiber_size')}` $\\to$ "
+            f"manifold `{mt.get('manifold_total_fiber_size')}` (`+{mt.get('recombinant_novel_states')}` recombinant states)",
+            f"- **Anti-Unified Chart Variables ($\\Theta$):** "
+            + (", ".join(f"`{k}`" for k in (mt.get("chart_variables") or {})) or "*(pure invariant core)*"),
+        ]
+
     pb = graph.get("pullback") or {}
+    nerve = graph.get("sheaf_nerve") or {}
     lines += [
         "",
-        "## Pullback Invariant (`S_1 ×_K S_2`)",
+        "## Sheaf Gluing & Pullback Invariant (`Γ(U, F) = ker δ^0`)",
         "",
-        f"- **Shared Key (`K`):** `{pb.get('key')}`",
-        f"- **Witness Artifact:** `{pb.get('artifact')}`",
+        f"- **Primary Pullback Key (`K`):** `{pb.get('key')}` (`{pb.get('artifact')}`)",
         f"- **Commutative Invariant:** `{pb.get('invariant')}`",
+    ]
+    if nerve.get("open_cover"):
+        lines.append(f"- **Sheaf Open Cover (`U`):** {', '.join(f'`{u}`' for u in nerve['open_cover'])}")
+    lines += [
         "",
         "## Static Verification Summary",
         "",

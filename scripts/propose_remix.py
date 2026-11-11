@@ -216,15 +216,22 @@ def main() -> int:
     names = [skill_slug(i) for i in ids]
     superskill = propose_superskill(names, args.domain, args.name)
 
+    from manifold_engine import build_skill_manifold, render_manifold_md
     from wiring_compiler import compile_wiring, render_wiring_md
 
+    manifold_atlas = build_skill_manifold(
+        members,
+        audits,
+        domain=args.domain,
+        skill_name=superskill["name"],
+    )
     wiring_graph = compile_wiring(
         members,
         audits,
         domain=args.domain,
         package_name=superskill["name"],
     )
-    # Merge algebraic synthesized subskills (typed guard, handoff, pullback, dominator gate)
+    # Merge algebraic synthesized subskills (typed guard, manifold projector, handoff, pullback, dominator gate)
     subskills = wiring_graph.get("synthesized_subskills") or propose_subskills(names, args.domain)
 
     # Fixed phase round map (replaces T1–T5 and per-member round slicing)
@@ -266,7 +273,8 @@ def main() -> int:
         "phases": phase_doc["phases"],
         "round_map": round_map,
         "thesis": (
-            "Pick complementary skills, decide buff priorities from gaps, invent subskills + superskill, "
+            "Span the underlying Lawvere-Amari generative skill manifold across complementary landmark "
+            "skills, anti-unify conflicting clauses into chart coordinates, enforce Cech sheaf gluing, "
             "then forge on the fixed 50-round phase plan: P1 unify (more than sum of parts) → "
             "P2 enhance → P3 undeniable reproducible metrics (fix when not best) → "
             "P4 awesome proof (real novel / ≥99%-confident third-party bug find)."
@@ -283,6 +291,7 @@ def main() -> int:
         ],
         "audits_missing": missing_ids,
         "audits_complete": len(missing_ids) == 0,
+        "manifold_summary": wiring_graph.get("manifold_theory"),
         "wiring_graph": wiring_graph,
     }
 
@@ -292,6 +301,12 @@ def main() -> int:
     wiring_out.write_text(json.dumps(wiring_graph, indent=2) + "\n", encoding="utf-8")
     (args.out.parent / "WIRING_CONTRACT.md").write_text(
         render_wiring_md(wiring_graph), encoding="utf-8"
+    )
+    (args.out.parent / "manifold_atlas.json").write_text(
+        json.dumps(manifold_atlas, indent=2) + "\n", encoding="utf-8"
+    )
+    (args.out.parent / "MANIFOLD_ATLAS.md").write_text(
+        render_manifold_md(manifold_atlas), encoding="utf-8"
     )
     # Also write a markdown digest beside it
     md = args.out.with_suffix(".md")
