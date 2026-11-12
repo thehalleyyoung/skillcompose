@@ -171,8 +171,8 @@ def build_sheaf_payloads() -> tuple[dict[str, Any], dict[str, Any]]:
             },
             {
                 "claim_id": "C4_SUBMODULAR_FISHER_SELECTION_BOUND",
-                "manuscript_anchor": "Theorem 4 & Proposition 2 (sec:selection)",
-                "statement": "Noisy-OR role coverage plus log-det Fisher spanning volume is monotone submodular via Gaussian mutual information, yielding online Nemhauser-Wolsey bounds >= 0.8124; SHA-256 read-only gates strictly increase ground-truth mutual information.",
+                "manuscript_anchor": "Theorem 4 & Propositions 2-3 (sec:selection)",
+                "statement": "Noisy-OR role coverage plus log-det Fisher spanning volume is monotone submodular via Gaussian mutual information, yielding online Nemhauser-Wolsey bounds >= 0.8124; SHA-256 read-only gates strictly increase ground-truth mutual information, and dropping a landmark executable channel during composition or installation loses exactly I(Y*; E_f | M, E_rest); packages must carry reference closures and installs must join carriers.",
                 "verification_type": "formal_proof_and_empirical_table",
             },
             {
@@ -210,7 +210,7 @@ def build_sheaf_payloads() -> tuple[dict[str, Any], dict[str, Any]]:
         ],
         "five_dimension_adversarial_review": {
             "novelty_and_positioning": "PASS (Formalizes dual Fisher-Rao e-geodesic + Galois/Plotkin-Reynolds fibered Lawvere manifold; distinct from embedding retrieval and mixture routing)",
-            "mathematical_rigor": "PASS (2 Definitions, 2 Propositions, 4 Theorems, and Corollary 1 on the optional desired argument interface, with complete proofs in main text and Appendix A)",
+            "mathematical_rigor": "PASS (2 Definitions, 3 Propositions, 4 Theorems, and Corollary 1 on the optional desired argument interface; Proposition 3 extends landmark exactness from specifications to executed kernels via carrier closure and installation as join; complete proofs in main text and Appendix A)",
             "experimental_isolation": "PASS (Identical 4 member skills per family, 1 isolated solver call per cell, exogenous oracle + shuffled double-blind judge)",
             "clarity_and_visuals": "PASS (Vector TikZ geometry figure, vector PGFPlots 7-family chart, 3 booktabs tables, zero Overfull hboxes)",
             "reproducibility_and_citations": "PASS (22/22 verified BibTeX keys cited, deterministic Python 3 stdlib compiler and benchmark runner)",

@@ -158,6 +158,38 @@ The final skill is the Kleisli morphism whose precondition requires the first co
 
 Example. For an end-to-end fantasy-novel skill the caller may pass $D_{\text{able}} = \{\texttt{author-persona}, \texttt{premise}\}$ and $D_{\text{take}} = \emptyset$. The finished skill is able to take both, and it still runs when they are omitted. Marking premise as taken ($D_{\text{take}} = \{\texttt{premise}\}$) puts premise in the precondition: a later invocation without a premise is outside $P_{\mathcal{M}}$.
 
+### 3.6 What a skill carries: specification, channels, and modules
+
+Definition 1.1 describes a skill by its kernel. A packaged skill realizes that kernel from more than its `SKILL.md`. It also realizes it from the files that text sends the agent to. Theorem 3.1 is exact about the theory $Q_i$. Without the files below it says nothing about the kernel $K_i$ an agent actually runs, and that gap shows up in practice: a recomposition that keeps every member's specification but drops the scripts they invoke passes every static check and still runs a different skill.
+
+**Definition 3.4 (Carrier and reference closure).** A package is a pair $p = (\varsigma_p, C_p)$. Here $\varsigma_p$ is the specification text and $C_p$ is a finite set of files $(\text{path}, \text{bytes})$, split into
+- **executable channels** $E_p \subseteq C_p$ (scripts the text tells the agent to run; each one is an exogenous observation $\mathcal{O}_f$ in the sense of Failure 7), and
+- **reference modules** $R_p = C_p \setminus E_p$ (documents the text defers to by progressive disclosure).
+
+Write $\varsigma \to f$ when the text names file $f$ and $f$ exists in the member's repository, and extend $\to$ to files that name other files. The **reference closure** $\operatorname{cl}(s)$ is the smallest set that contains the member's `scripts/` and `references/` trees and is closed under $\to$. It may include files outside the member's folder, for example a script under the repository root.
+
+*Reference locality hypothesis.* An agent running $p$ reads and executes only files reachable from $\varsigma_p$ by $\to$, so $K_p = K[\varsigma_p, \operatorname{cl}(p)]$.
+
+Packages are ordered by carrier inclusion: $p \sqsubseteq p'$ iff $C_p \subseteq C_{p'}$ as sets of $(\text{path}, \text{bytes})$ pairs, ignoring paths the installer regenerates from the specification (host manifests).
+
+**Proposition 3.2 (Carrier closure, channel loss, and installation as join).** *Assume reference locality. Let $\mathfrak{G}_{\mathcal{M}}$ be composed from $S = \{s_1, \dots, s_N\}$, and let $\iota_i$ relocate member $i$'s files injectively into the package, rewriting the references among them.*
+1. **Kernel-exact pullback.** *$\sigma_i^* \mathfrak{G}_{\mathcal{M}}$ realizes $K_i$, and not only $Q_i \land \Phi_{\text{core}}$, if $\iota_i(\operatorname{cl}(s_i)) \subseteq C_{\mathcal{M}}$ byte for byte.*
+2. **Dropping a channel loses information.** *If an executable channel $f \in \operatorname{cl}(s_i)$ is missing from $C_{\mathcal{M}}$, its observation becomes constant, and the information a run can reach falls by*
+   $$I(Y^*;\, M, E_{C}) - I(Y^*;\, M, E_{C \setminus \{f\}}) \;=\; I(Y^*;\, E_f \mid M, E_{C \setminus \{f\}}) \;\ge\; 0,$$
+   *with strict inequality whenever $f$ is informative given the rest. That is the DPI decay of Failure 7, reintroduced by packaging.*
+3. **Files outside the closure are free to omit.** *A file not in $\operatorname{cl}(s_i)$ never enters $K_i$. Omitting it is lossless, and carrying it only inflates context (Failure 8).*
+4. **Installation is a join, not an overwrite.** *Let $p_{\text{old}}$ be an installed package, for example one that has accumulated forged scripts, and let $p_{\text{new}}$ be a recomposition. Overwriting is an upgrade in $\sqsubseteq$ iff $C_{p_{\text{old}}} \setminus C_{p_{\text{new}}} = \emptyset$. Otherwise the least package that dominates both is the join $p_{\text{old}} \sqcup p_{\text{new}}$, whose carrier is $C_{p_{\text{old}}} \cup C_{p_{\text{new}}}$ when they agree on shared paths. It satisfies $I(Y^*; M, E_{\sqcup}) \ge \max\big(I(Y^*; M, E_{\text{old}}),\, I(Y^*; M, E_{\text{new}})\big)$.*
+
+*Proof.* (1) Under reference locality, $K_i$ depends on its carrier only through $\operatorname{cl}(s_i)$. A byte-identical relocation with rewritten references gives the agent the same reachable files and the same execution results, so the kernels agree. Theorem 3.1 supplies the theory half.
+
+(2) This is the chain rule for mutual information applied to the observation tuple $(M, E_C)$: removing $E_f$ subtracts exactly the conditional term, and conditional mutual information is non-negative.
+
+(3) Immediate from reference locality.
+
+(4) $\sqsubseteq$ is inclusion of finite sets, so $p_{\text{new}}$ dominates $p_{\text{old}}$ iff nothing in $C_{p_{\text{old}}}$ is absent from $C_{p_{\text{new}}}$. The least upper bound of two sets that agree on shared paths is their union. The information bound follows from $I(Y^*; A, B) \ge I(Y^*; A)$. $\square$
+
+**Implementation.** `compose_skills.py` computes $\operatorname{cl}(s_i)$ by scanning each member `SKILL.md` and the files it reaches, within the member's repository and to bounded depth. It copies the closure to `scripts/members/<slug>/` and `references/members/<slug>/`, with out-of-folder files placed under `_repo/`, and records source path, destination, and SHA-256 under `carrier` in `manifold_atlas.json`. `install_skill_dual.sh` checks part 4 before it touches any destination. When $C_{\text{old}} \setminus C_{\text{new}} \neq \emptyset$, it exits 2 with `install_would_lose_files` and the lost paths, so the caller forms the join. `--allow-loss` is an explicit opt-out.
+
 ---
 
 ## 4. Software Engineering Kleisli Composition & Agentic Control Laws
@@ -181,5 +213,6 @@ Each module inside the manifold-parameterized workflow remains an **Open Effectf
 | Query-conditioned submodular Noisy-OR $p(u \mid s, Q)$ + Log-Det Fisher volume $V_{\text{Fisher}}(S)$ + JSD/NCD anti-redundancy + exemplar conflict penalty + Nemhauser–Wolsey certificate | `scripts/submodular_select.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
 | 6-operator Kleisli + Sheaf wiring compiler & 6-theorem static verifier (`type_safety`, `separation_logic`, `dpi_exogenous_grounding`, `dominator_orthogonality`, `parnas_encapsulation`, `manifold_sheaf_exactness`) | `scripts/wiring_compiler.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
 | Composed argument interface $\mathcal{A}_{\mathcal{M}}(D)$: arguments the final skill takes ($T_\cap \cup D_{\text{take}}$) and is able to take ($B_\cup \cup D_{\text{able}}$); empty $D$ is anti-unification of member signatures | `scripts/parse_args.py` (`--args` → `desired_interface`) | Corollary 3.1; `/skillcompose … --args "--author-persona, take:--premise"` |
+| Carrier closure $\operatorname{cl}(s_i)$ of member channels and modules (kernel-exact pullback) and installation as join in $\sqsubseteq$ (Proposition 3.2) | `scripts/compose_skills.py` (`carrier` in `manifold_atlas.json`), `scripts/install_skill_dual.sh` (`install_would_lose_files`) | `metrics/carrier-closure/measure.py` |
 | End-to-end composite manifold compiler emitting `MANIFOLD_ATLAS.md`, standalone `project_manifold.py`, & sheaf/SHA-256 `verify_dominator_gate.py` (+ 4-platform manifests) | `scripts/compose_skills.py`, `scripts/export_platform_targets.py` | `metrics/manifold-lift/measure.py`, `metrics/principled-lift/measure.py` |
 | Conditional DEFLATE/LZ novelty, Attention Channel SNR, & Lyapunov debt $\Phi$ | `scripts/information_gain.py` | `metrics/principled-lift/measure.py` |

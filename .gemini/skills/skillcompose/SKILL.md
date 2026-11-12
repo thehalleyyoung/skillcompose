@@ -440,6 +440,8 @@ Optional: `mv "$FORK_DIR" "$CALLER_CWD/$FORK_NAME"`.
 bash "$SCRIPTS/install_skill_dual.sh" "$FORK_DIR" --name "$FORK_NAME"
 ```
 
+Installation is a join in the carrier order, never an overwrite (`references/theory.md` §3.6). If it exits 2 with `install_would_lose_files`, an installed copy holds files `$FORK_DIR` lacks (usually forged scripts from an earlier run): copy them into `$FORK_DIR`, re-run its evals, and install again. Pass `--allow-loss` only when the user asks to discard them.
+
 Verify `~/.gemini/config/skills/$FORK_NAME/SKILL.md`, `~/.claude/skills/$FORK_NAME/SKILL.md`, `~/.cursor/skills/$FORK_NAME/SKILL.md`, and `~/.codex/skills/$FORK_NAME/SKILL.md`.
 
 *Installed globally: `/$FORK_NAME` → ~/.gemini/config/skills + ~/.claude/skills + ~/.cursor/skills + ~/.codex/skills. Repo: \<url\>.*
