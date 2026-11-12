@@ -75,7 +75,7 @@ def pick(rows: list[dict], seed: str) -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--candidates", type=Path, required=True)
-    ap.add_argument("--seed", default="skillremix")
+    ap.add_argument("--seed", default="skillcompose")
     ap.add_argument("--pin", default=None, help="Exact id to select if present")
     ap.add_argument("--exclude", action="append", default=[], help="Ids to skip (repeatable)")
     ap.add_argument("--write-chosen", type=Path, default=None, help="Write chosen.json for downstream")

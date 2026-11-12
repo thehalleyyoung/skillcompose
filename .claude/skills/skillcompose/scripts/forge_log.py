@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Append / validate /skillremix forge round log (strict 50×≥1000-char phase rounds)."""
+"""Append / validate /skillcompose forge round log (strict 50×≥1000-char phase rounds)."""
 from __future__ import annotations
 
 import argparse

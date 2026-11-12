@@ -142,6 +142,16 @@ Each module inside the manifold-parameterized workflow remains an **Open Effectf
 
 ---
 
+### 4.1 Exogenous caller fiber $\Theta_{\text{args}}$ (`--args`)
+
+Meta-control flags (`--n`, `--domain`, `--pin`, `--wip`, `--resume`, …) are the control surface of **thehalleyyoung/skillcompose**. They are not coordinates of the composed transducer.
+
+`--args` carries a separate Lawvere fiber $\Theta_{\text{args}}$: caller parameters of the *composed* skill (for example `--author-persona`, `--premise`). `parse_args.py` emits them as `composed_args` and does **not** fold them into the discovery query $Q$. Folding would erase the distinction between control surface and chart variables and would leak $\Theta_{\text{args}}$ into a bag-of-words channel, violating the sufficient-statistic adapter $\alpha$ (DPI: $I(Y;\Theta_{\text{args}})$ must survive as an explicit handoff field, not as diluted query tokens).
+
+Separation: $\mathrm{names}(\Theta_{\text{args}}) \cap \mathrm{names}(\text{meta-flags}) = \emptyset$. The only meta carrier is the flag `--args` itself. Empty $\Theta_{\text{args}}$ is allowed. Downstream Kleisli stages lock non-empty tokens into the composed skill's handoff (`locked_spec` / phase contract) before synthesis. This fiber is part of `/skillcompose`, not a leftover `/skillremix` query default.
+
+---
+
 ## 5. Mapping Theory to Executable `/skillcompose` Scripts & Proof Suites
 
 | Theoretical Mechanism | Executable Implementation | Reproducible Verification Suite |
@@ -149,5 +159,6 @@ Each module inside the manifold-parameterized workflow remains an **Open Effectf
 | Guarded Markov kernels over 648 structured outputs, Conditional Fisher–Rao metric $G_F$, Galois conormal core, Plotkin–Reynolds anti-unification $\sqcup_{\text{lgg}}$, Čech cocycle checker | `scripts/manifold_engine.py` | `metrics/manifold-lift/measure.py` |
 | Query-conditioned submodular Noisy-OR $p(u \mid s, Q)$ + Log-Det Fisher volume $V_{\text{Fisher}}(S)$ + JSD/NCD anti-redundancy + exemplar conflict penalty + Nemhauser–Wolsey certificate | `scripts/submodular_select.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
 | 6-operator Kleisli + Sheaf wiring compiler & 6-theorem static verifier (`type_safety`, `separation_logic`, `dpi_exogenous_grounding`, `dominator_orthogonality`, `parnas_encapsulation`, `manifold_sheaf_exactness`) | `scripts/wiring_compiler.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
+| Exogenous caller fiber $\Theta_{\text{args}}$ (`--args` → `composed_args`), separated from meta-control flags and from discovery query $Q$ | `scripts/parse_args.py` | invocation: `/skillcompose … --args "--author-persona, --premise"` |
 | End-to-end composite manifold compiler emitting `MANIFOLD_ATLAS.md`, standalone `project_manifold.py`, & sheaf/SHA-256 `verify_dominator_gate.py` (+ 4-platform manifests) | `scripts/compose_skills.py`, `scripts/export_platform_targets.py` | `metrics/manifold-lift/measure.py`, `metrics/principled-lift/measure.py` |
 | Conditional DEFLATE/LZ novelty, Attention Channel SNR, & Lyapunov debt $\Phi$ | `scripts/information_gain.py` | `metrics/principled-lift/measure.py` |

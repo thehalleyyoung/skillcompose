@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Algebraic Skill Wiring Compiler & Static Contract Verifier for /skillremix.
+"""Algebraic Skill Wiring Compiler & Static Contract Verifier for /skillcompose.
 
 Models each skill as an Open Effectful Kleisli Module:
     S = <inputs, outputs, preconditions, postconditions, frame(reads, writes), operator_class>
@@ -484,7 +484,7 @@ def compile_wiring(
     )
 
     graph = {
-        "schema": "skillremix.wiring_graph.v3",
+        "schema": "skillcompose.wiring_graph.v3",
         "package_name": package_name,
         "domain": dom,
         "nodes": nodes,

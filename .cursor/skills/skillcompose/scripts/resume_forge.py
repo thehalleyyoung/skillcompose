@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resume / status helpers for skillremix WIP forge runs (50-round phase model)."""
+"""Resume / status helpers for skillcompose WIP forge runs (50-round phase model)."""
 from __future__ import annotations
 
 import argparse

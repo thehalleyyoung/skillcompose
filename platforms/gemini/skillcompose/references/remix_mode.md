@@ -1,6 +1,6 @@
 # Remix mode (`--n N`)
 
-When the user passes **`--n N`** (N ≥ 2), `/skillremix` does **not** upgrade a single skill in isolation. It builds an **end-to-end skill system**, then forges on the **fixed 50-round phase plan** (T1–T5 retired):
+When the user passes **`--n N`** (N ≥ 2), `/skillcompose` does **not** upgrade a single skill in isolation. It builds an **end-to-end skill system**, then forges on the **fixed 50-round phase plan** (T1–T5 retired):
 
 1. Discover an eligible pool (adoption floor; highly popular allowed).
    - Domain-exact queries for `--domain`.
@@ -23,9 +23,9 @@ Marketplace skills are often **phase-local**. Users want a **pipeline** that is 
 ## CLI
 
 ```text
-/skillremix --n 3 --domain writing
-/skillremix --n 4 --remix-plan-only
-/skillremix --n 2 research verification
+/skillcompose --n 3 --domain writing
+/skillcompose --n 4 --remix-plan-only
+/skillcompose --n 2 research verification
 ```
 
 Incompatible with `--pin` (pin is single-skill upgrade mode).

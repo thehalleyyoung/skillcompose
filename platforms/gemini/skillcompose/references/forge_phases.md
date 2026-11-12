@@ -1,6 +1,6 @@
 # Forge phases (50 rounds) — replaces T1–T5
 
-Every `/skillremix` run uses this fixed phase plan. **Each round is its own agent prompt**, scheduled **90 seconds** after the previous round completes (never batch 50 rounds in one turn).
+Every `/skillcompose` run uses this fixed phase plan. **Each round is its own agent prompt**, scheduled **90 seconds** after the previous round completes (never batch 50 rounds in one turn).
 
 | Rounds | Kind | Job |
 |---|---|---|
@@ -45,7 +45,7 @@ In Antigravity, arm ONE next-round wake using the native **`schedule` tool** (`D
 
 ```json
 {
-  "schema": "skillremix.forge_phases.v2",
+  "schema": "skillcompose.forge_phases.v2",
   "forge_rounds": 50,
   "round_interval_sec": 90,
   "phases": [

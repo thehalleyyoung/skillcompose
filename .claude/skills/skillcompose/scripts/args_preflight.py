@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate skillremix CLI args / WIP paths before Phase 0 work.
+"""Validate skillcompose CLI args / WIP paths before Phase 0 work.
 
 Used by parse_args.py and resume_forge.py so --status/--resume never
 silently operate on CALLER_CWD (empty --wip → ".") and invent a fork_dir.
@@ -13,7 +13,10 @@ from pathlib import Path
 
 PIN_RE = re.compile(r"^[^/\s]+/[^@\s]+@[^\s]+$")
 
-WIP_NAME_RE = re.compile(r"(^|/)(skillremix-wip-|randomupgrade-wip-)[^/]*$", re.I)
+WIP_NAME_RE = re.compile(
+    r"(^|/)(skillcompose-wip-|skillremix-wip-|randomupgrade-wip-)[^/]*$",
+    re.I,
+)
 
 
 def wip_error(code: str, message: str, **extra) -> dict:
@@ -24,7 +27,8 @@ def validate_wip_path(wip: str | Path | None, *, must_exist: bool = True) -> dic
     if wip is None or (isinstance(wip, str) and not str(wip).strip()):
         return wip_error(
             "wip_required",
-            "--wip is required and must be a skillremix-wip-* or randomupgrade-wip-* directory",
+            "--wip is required and must be a skillcompose-wip-* directory "
+            "(skillremix-wip-* and randomupgrade-wip-* still accepted)",
         )
     raw = str(wip).strip()
     if raw in {".", "./", ""}:
@@ -46,7 +50,8 @@ def validate_wip_path(wip: str | Path | None, *, must_exist: bool = True) -> dic
     if not name_ok:
         return wip_error(
             "wip_name",
-            "--wip must look like skillremix-wip-<id> or randomupgrade-wip-<id>",
+            "--wip must look like skillcompose-wip-<id> "
+            "(or legacy skillremix-wip-<id> / randomupgrade-wip-<id>)",
             wip=str(resolved),
         )
     if must_exist and not resolved.is_dir():
@@ -87,7 +92,7 @@ def validate_parsed(args: dict) -> dict:
     if status or resume:
         vw = validate_wip_path(wip, must_exist=True)
         if not vw.get("ok"):
-            vw["hint"] = "pass --wip /path/to/skillremix-wip-<RUN_ID>"
+            vw["hint"] = "pass --wip /path/to/skillcompose-wip-<RUN_ID>"
             return vw
         args = {**args, "wip": vw["wip"]}
     pin = args.get("pin")

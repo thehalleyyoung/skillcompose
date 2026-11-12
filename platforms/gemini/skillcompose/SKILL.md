@@ -1,14 +1,25 @@
 ---
 name: skillcompose
 description: >-
-  Principled Kleisli, information-theoretic, and control-theoretic skill composition & upgrade meta-skill via /skillcompose [query|--pin owner/repo@skill] [--domain writing|devops|data|research|automation] [--n N] [--discover-only|--resume|--status|--local-only|--remix-plan-only]. Replaces naive "best-of-GitHub" concatenation with monotone submodular + JSD/NCD Kolmogorov skill selection (with Nemhauser-Wolsey optimality certificate), typed Kleisli transducer wiring (sequential sufficient-statistic adapters, separation-logic parallel tensors, pullback invariant joins, guarded ABSTAIN coproducts), Parnas progressive-disclosure compilation (compose_skills.py), read-only post-dominator verification gates (verify_dominator_gate.py), and 50 MDL/Lyapunov-ratcheted forge rounds. Use when the user invokes /skillcompose or $skillcompose, or asks for principled/algebraic/information-theoretic skill composition or remixing.
+  Principled Kleisli, information-theoretic, and control-theoretic skill composition & upgrade
+  meta-skill (repo thehalleyyoung/skillcompose) via /skillcompose [query|--pin owner/repo@skill]
+  [--domain writing|devops|data|research|automation] [--n N]
+  [--args "<exogenous fiber tokens>"]
+  [--discover-only|--resume|--status|--local-only|--remix-plan-only]. Replaces naive "best-of-GitHub"
+  concatenation with monotone submodular + JSD/NCD Kolmogorov skill selection (with Nemhauser-Wolsey
+  optimality certificate), typed Kleisli transducer wiring (sequential sufficient-statistic adapters,
+  separation-logic parallel tensors, pullback invariant joins, guarded ABSTAIN coproducts), Parnas
+  progressive-disclosure compilation (compose_skills.py), read-only post-dominator verification gates
+  (verify_dominator_gate.py), and 50 MDL/Lyapunov-ratcheted forge rounds. Use when the user invokes
+  /skillcompose or $skillcompose, or asks for principled/algebraic/information-theoretic skill
+  composition or remixing.
 ---
 
 # `/skillcompose`
 
 **Principled Marketplace Skill Composition: Submodular JSD+NCD Selection (Nemhauser–Wolsey Certified) → Kleisli Transducer & Separation-Logic Wiring (`compose_skills.py` / `wiring_compiler.py`) → Parnas Module Encapsulation + Auto-Generated Read-Only Post-Dominator Gate (`verify_dominator_gate.py`) → 50 MDL & Lyapunov-Ratcheted Forge Rounds → Multi-Host Install.**
 
-Baseline predecessor: `/skillremix` (heuristic diversity + prose plan). Prefer **`/skillcompose`** whenever combining $N \ge 2$ skills or requiring mathematical coverage, type-safe Kleisli handoffs, and exogenous anti-DPI verification.
+Identity: **thehalleyyoung/skillcompose** (`/skillcompose`). The CLI is not `/skillremix`. Prefer **`/skillcompose`** whenever combining $N \ge 2$ skills or requiring mathematical coverage, type-safe Kleisli handoffs, and exogenous anti-DPI verification.
 
 Proof / offline gates: [PROOF.md](PROOF.md).  
 Formal foundations (Information Theory, Software Engineering Kleisli Composition, Agentic Control): [references/theory.md](references/theory.md).
@@ -61,7 +72,9 @@ python3 "$SCRIPTS/parse_args.py" $ARGS > /tmp/sr_args.json
 # mode: upgrade (default) | remix (--n N, N>=2)
 ```
 
-Modes: default single-upgrade · **`--n N` remix** · `--discover-only` · `--audit-only` · `--remix-plan-only` · `--resume --wip PATH` · `--status --wip PATH` · `--local-only` · `--ask-phases` / `--ask-themes` · `--private` · `--domain <pack>`.
+Modes: default single-upgrade · **`--n N` remix** · **`--args "<Θ_args>"`** (exogenous fiber for the composed skill; not folded into the discovery query) · `--discover-only` · `--audit-only` · `--remix-plan-only` · `--resume --wip PATH` · `--status --wip PATH` · `--local-only` · `--ask-phases` / `--ask-themes` · `--private` · `--domain <pack>`.
+
+`composed_args` in `/tmp/sr_args.json` is the Lawvere fiber $\Theta_{\text{args}}$ (see `references/theory.md`). Pass those tokens into the composed skill's locked handoff. Do not treat them as `/skillcompose` control flags.
 
 Refusal / FAIL exits are **2** across parse_args, license_gate, propose_remix, forge_log, check_phases, unify_wholeness, and ship_check (PASS = 0).
 
@@ -107,7 +120,7 @@ Optional per-run caps: `--max-installs` / `--max-stars`. Details: `references/mi
 ```bash
 python3 "$SCRIPTS/parse_args.py" $ARGS > /tmp/sr_args.json || exit 2
 # parse_args runs args_preflight: --status/--resume REQUIRE a real
-# skillremix-wip-* (or randomupgrade-wip-*) --wip; empty/cwd rejected (exit 2).
+# skillcompose-wip-* --wip (skillremix-wip-* / randomupgrade-wip-* still resume); empty/cwd rejected (exit 2).
 
 # False-done guard (transfer): refuse forge/clone when early-stop flags set
 python3 "$SCRIPTS/mode_guards.py" --args-json /tmp/sr_args.json --action forge --json || true
@@ -129,7 +142,7 @@ if [[ "$RESUME" == "True" ]]; then
   WIP_DIR="$WIP_ARG"
 else
   RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
-  WIP_DIR="$CALLER_CWD/skillremix-wip-$RUN_ID"
+  WIP_DIR="$CALLER_CWD/skillcompose-wip-$RUN_ID"
   mkdir -p "$WIP_DIR"/{discovery,forge,upstream}
 fi
 ```
@@ -261,7 +274,7 @@ python3 "$SCRIPTS/discover_skills.py" \
   --out "$WIP_DIR/discovery/candidates.jsonl" \
   --domain "${DOMAIN:-general}" \
   --extra "$QUERY" --json
-# Auto-stores into ~/.cache/skillremix/discover (opt out: --no-cache-store).
+# Auto-stores into ~/.cache/skillcompose/discover (opt out: --no-cache-store).
 # Offline: add --local-only to reuse cache only (exit 2 on miss; no skills find).
 # Optional pre-check: python3 "$SCRIPTS/discover_cache.py" --domain … --extra … --lookup
 # After discover: python3 "$SCRIPTS/discover_cache.py" --domain … --extra … --store …  # redundant if auto-store on
@@ -434,7 +447,7 @@ Verify `~/.gemini/config/skills/$FORK_NAME/SKILL.md`, `~/.claude/skills/$FORK_NA
 Refresh this meta-skill after editing it:
 
 ```bash
-bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/skillremix" --name skillremix
+bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/skillcompose" --name skillcompose
 # keep legacy alias installed:
 bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/randomupgrade" --name randomupgrade
 ```

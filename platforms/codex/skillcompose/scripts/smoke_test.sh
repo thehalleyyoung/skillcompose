@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Offline smoke for skillremix scripts (no skills.sh network required).
+# Offline smoke for skillcompose scripts (no skills.sh network required).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 S="$ROOT/scripts"

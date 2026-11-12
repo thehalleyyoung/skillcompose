@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Legacy Cursor/CLI 90s-spaced forge-round wake helper for /skillremix.
+# Legacy Cursor/CLI 90s-spaced forge-round wake helper for /skillcompose.
 #
 # NOTE FOR ANTIGRAVITY (AGY): Do NOT run shell sleep timers in Antigravity!
 # In Antigravity, generate the next round prompt via:
@@ -8,10 +8,10 @@
 #
 # Legacy Cursor Shell tool usage:
 #   block_until_ms: 0
-#   notify_on_output: { pattern: "^AGENT_LOOP_TICK_skillremix_forge", reason: "forge wake" }
+#   notify_on_output: { pattern: "^AGENT_LOOP_TICK_skillcompose_forge", reason: "forge wake" }
 # Do NOT use bare `bash … &` inside another command — that drops wake notifications.
 #
-# Emits AGENT_LOOP_TICK_skillremix_forge (+ JSON prompt) so the agent wakes and runs
+# Emits AGENT_LOOP_TICK_skillcompose_forge (+ JSON prompt) so the agent wakes and runs
 # ONE round. If the agent is still mid-round (busy lock), waits instead of waking.
 #
 # Usage:
@@ -39,7 +39,7 @@ done
 WIP_DIR="${WIP_DIR:?set WIP_DIR}"
 FORK_DIR="${FORK_DIR:?set FORK_DIR}"
 
-echo "skillremix forge scheduler: rounds ${FROM}–${TO}, interval ${INTERVAL}s, skip_if_busy=$SKIP_IF_BUSY, wip=$WIP_DIR"
+echo "skillcompose forge scheduler: rounds ${FROM}–${TO}, interval ${INTERVAL}s, skip_if_busy=$SKIP_IF_BUSY, wip=$WIP_DIR"
 
 r="$FROM"
 while [[ "$r" -le "$TO" ]]; do
@@ -48,8 +48,8 @@ while [[ "$r" -le "$TO" ]]; do
   if [[ "$SKIP_IF_BUSY" -eq 1 ]]; then
     # Agent still awake/mid-round → do NOT wake; poll until free (or lock stale).
     while python3 "$ROOT/scripts/agent_busy.py" check --wip "$WIP_DIR" >/dev/null 2>&1; do
-      # Different sentinel — must NOT match notify_on_output ^AGENT_LOOP_TICK_skillremix_forge
-      echo "AGENT_LOOP_DEFER_skillremix_forge {\"round\":$r,\"reason\":\"agent_busy\",\"wip\":\"$WIP_DIR\"}"
+      # Different sentinel — must NOT match notify_on_output ^AGENT_LOOP_TICK_skillcompose_forge
+      echo "AGENT_LOOP_DEFER_skillcompose_forge {\"round\":$r,\"reason\":\"agent_busy\",\"wip\":\"$WIP_DIR\"}"
       sleep "$BUSY_POLL"
     done
   fi
@@ -75,7 +75,7 @@ except FileNotFoundError:
 sys.exit(0 if want in done else 1)
 PY
     then
-      echo "AGENT_LOOP_DEFER_skillremix_forge {\"round\":$r,\"reason\":\"already_logged\",\"wip\":\"$WIP_DIR\"}"
+      echo "AGENT_LOOP_DEFER_skillcompose_forge {\"round\":$r,\"reason\":\"already_logged\",\"wip\":\"$WIP_DIR\"}"
       r=$((r + 1))
       continue
     fi
@@ -83,7 +83,7 @@ PY
 
   PAYLOAD="$(python3 "$ROOT/scripts/forge_phases.py" --prompt-round "$r" --wip "$WIP_DIR" --fork "$FORK_DIR" --json)"
   # Wake sentinel — notify_on_output must match this prefix
-  echo "AGENT_LOOP_TICK_skillremix_forge ${PAYLOAD}"
+  echo "AGENT_LOOP_TICK_skillcompose_forge ${PAYLOAD}"
   r=$((r + 1))
 done
-echo "AGENT_LOOP_DONE_skillremix_forge {\"rounds\":[${FROM},${TO}],\"wip\":\"${WIP_DIR}\"}"
+echo "AGENT_LOOP_DONE_skillcompose_forge {\"rounds\":[${FROM},${TO}],\"wip\":\"${WIP_DIR}\"}"

@@ -17,7 +17,7 @@ import time
 from pathlib import Path
 
 DEFAULT_TTL = 3600  # 1h
-CACHE_ROOT = Path.home() / ".cache" / "skillremix" / "discover"
+CACHE_ROOT = Path.home() / ".cache" / "skillcompose" / "discover"
 
 
 def key(domain: str, extra: str) -> str:

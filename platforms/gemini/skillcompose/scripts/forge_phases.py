@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Canonical 50-round forge phases for /skillremix (replaces T1–T5 theme ladder).
+"""Canonical 50-round forge phases for /skillcompose (replaces T1–T5 theme ladder).
 
 Phases (inclusive):
   1–10   unify    — unified whole strictly more than the sum of its parts
@@ -108,7 +108,7 @@ def phases_doc(gaps: list[dict] | None = None) -> dict[str, Any]:
         item["success_signal"] = item["done_when"]
         phases.append(item)
     return {
-        "schema": "skillremix.forge_phases.v2",
+        "schema": "skillcompose.forge_phases.v2",
         "forge_rounds": FORGE_ROUNDS,
         "min_chars_per_round": MIN_CHARS_PER_ROUND,
         "round_interval_sec": ROUND_INTERVAL_SEC,
@@ -136,7 +136,7 @@ def round_prompt(wip: str, fork: str, round_n: int, total: int = FORGE_ROUNDS) -
     kind = phase["kind"]
     theme = phase["id"]
     text = (
-        f"/skillremix forge-round {round_n}/{total}\n"
+        f"/skillcompose forge-round {round_n}/{total}\n"
         f"WIP_DIR={wip}\n"
         f"FORK_DIR={fork}\n"
         f"PHASE={theme} kind={kind} rounds={phase['rounds'][0]}–{phase['rounds'][1]}\n"
@@ -164,7 +164,7 @@ def round_prompt(wip: str, fork: str, round_n: int, total: int = FORGE_ROUNDS) -
         "wip": wip,
         "fork": fork,
         "prompt": text,
-        "sentinel": f"AGENT_LOOP_TICK_skillremix_forge_r{round_n}",
+        "sentinel": f"AGENT_LOOP_TICK_skillcompose_forge_r{round_n}",
     }
 
 

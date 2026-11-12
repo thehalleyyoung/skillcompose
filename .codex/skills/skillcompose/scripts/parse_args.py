@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Parse CLI args for /skillremix (legacy: /randomupgrade) into JSON."""
+"""Parse CLI args for thehalleyyoung/skillcompose (/skillcompose) into JSON.
+
+`--args` is an exogenous Lawvere fiber Θ_args for the *composed* skill.
+It is not a meta-skill control flag and is not folded into the discovery query.
+"""
 from __future__ import annotations
 
 import argparse
@@ -8,11 +12,29 @@ import shlex
 import sys
 
 
+def split_composed_args(raw: str | None) -> list[str]:
+    """Split `--args` into fiber tokens. Commas win; otherwise shlex."""
+    if raw is None:
+        return []
+    text = str(raw).strip()
+    if not text:
+        return []
+    if "," in text:
+        return [part.strip() for part in text.split(",") if part.strip()]
+    try:
+        return shlex.split(text)
+    except ValueError:
+        return [text]
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="skillremix",
+        prog="skillcompose",
         add_help=True,
-        description="Upgrade an eligible marketplace skill (adoption floor; popular OK), or remix N skills into sub+super skills.",
+        description=(
+            "thehalleyyoung/skillcompose: upgrade an eligible marketplace skill, "
+            "or remix N skills into a Lawvere–Amari manifold package."
+        ),
     )
     p.add_argument("query", nargs="*", help="Search words (optional)")
     p.add_argument("--pin", default=None, help="owner/repo@skill (single-upgrade mode)")
@@ -46,7 +68,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--discover-only", action="store_true", help="Stop after candidates + pick")
     p.add_argument("--audit-only", action="store_true", help="Clone+audit only")
     p.add_argument("--resume", action="store_true", help="Resume forge from WIP")
-    p.add_argument("--wip", default=None, help="Existing skillremix-wip-* or randomupgrade-wip-* path")
+    p.add_argument(
+        "--wip",
+        default=None,
+        help="Existing skillcompose-wip-* directory (skillremix-wip-* / randomupgrade-wip-* still resume)",
+    )
     p.add_argument("--status", action="store_true", help="Print forge status JSON for --wip")
     p.add_argument("--domain", default=None, help="Domain pack: writing|devops|data|research|automation")
     # Remix mode
@@ -66,6 +92,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--allow-unknown",
         action="store_true",
         help="Allow unknown licenses through license_gate (not recommended)",
+    )
+    p.add_argument(
+        "--args",
+        default=None,
+        dest="composed_args",
+        help=(
+            "Exogenous fiber parameters for the composed skill (Θ_args), "
+            "e.g. '--author-persona, --premise'. Not folded into the discovery query "
+            "and not skillcompose control flags."
+        ),
     )
     return p
 
@@ -112,6 +148,8 @@ def main() -> int:
         "n": args.n,
         "remix_plan_only": args.remix_plan_only,
         "allow_unknown": args.allow_unknown,
+        "composed_args": split_composed_args(args.composed_args),
+        "composed_args_raw": args.composed_args,
         "mode": mode,
         "raw": raw,
     }
