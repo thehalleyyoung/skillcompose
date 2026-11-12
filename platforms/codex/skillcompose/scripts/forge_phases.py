@@ -17,6 +17,11 @@ domain task before and after its change and keeps both outputs. The forge exists
 skill produces for its user. Work on the package's own checkers, evals and metrics is instrumentation;
 at most 20% of rounds may be mostly instrumentation.
 
+Contract ratchet (every round, concrete_term.py): the theory's obligations are checked on the term the
+package actually runs (the scripts SKILL.md invokes, the scripts they call, the writes they make), not
+only on the abstract wiring graph. No round may raise the contract potential Φ_c or any component of the
+vector Lyapunov debt; P1-unify must bring Φ_c to 0 and every later round must keep it there.
+
 Scheduling: each round is its own agent prompt, spaced ROUND_INTERVAL_SEC (90) apart.
 Do not batch multiple forge rounds in one turn.
 """
@@ -43,9 +48,15 @@ PHASES: list[dict[str, Any]] = [
         "n_rounds": 10,
         "job": (
             "Wire members/surfaces into one coherent whole: shared handoff, verify-before-done, "
-            "cross-refs, emergent pipeline capability. Strictly more than juxtaposed parts."
+            "cross-refs, emergent pipeline capability. Strictly more than juxtaposed parts. "
+            "Make the concrete term satisfy the hybrid contract: every script SKILL.md runs exists and is "
+            "called with flags it declares, nothing writes before the projector, a read-only gate runs after "
+            "the last mutator, and every carrier script is reachable."
         ),
-        "done_when": "unify_wholeness predicates pass (or are within one round of PASS)",
+        "done_when": (
+            "unify_wholeness predicates pass (or are within one round of PASS) and concrete_term.py check "
+            "reports Φ_c = 0 by round 10"
+        ),
         "surfaces_planned": ["procedure", "code", "proof", "docs"],
         "unify": True,
     },
@@ -182,6 +193,17 @@ def round_prompt(wip: str, fork: str, round_n: int, total: int = FORGE_ROUNDS) -
             f"5. Rerun the same task; save after.<ext>; fill verdict.json honestly (same or worse are logged as misses).\n"
             f"At most 1 round in 5 may spend most of its change on evals/metrics/tests.\n"
         )
+    zero = round_n > 10
+    contract = (
+        f"CONTRACT (forge_round.sh runs the ratchet and refuses a regression):\n"
+        f"- Before committing: python3 $SCRIPTS/concrete_term.py check --package \"$FORK_DIR\" "
+        f"and fix every obligation this round introduced"
+        f"{' (Φ_c must be 0 after the commit)' if zero else ' (Φ_c may not rise; drive it to 0 by round 10)'}.\n"
+        f"- If you add, remove or rewire a script, or change how SKILL.md invokes one, refresh the term with "
+        f"python3 $SCRIPTS/concrete_term.py write --package \"$FORK_DIR\" and commit references/concrete_term.json.\n"
+        f"- A new script SKILL.md runs needs argparse flags that match its invocation; a script that writes "
+        f"files is a mutator and must run after the projector and before the final read-only gate.\n"
+    )
     text = (
         f"/skillcompose forge-round {round_n}/{total}\n"
         f"WIP_DIR={wip}\n"
@@ -190,6 +212,7 @@ def round_prompt(wip: str, fork: str, round_n: int, total: int = FORGE_ROUNDS) -
         f"DOMAIN: {domain}\n"
         f"JOB: {phase['job']}\n"
         f"DONE_WHEN: {phase['done_when']}\n"
+        f"{contract}"
         f"{outcome}"
         f"REQUIREMENTS:\n"
         f"- This turn does EXACTLY round {round_n} — do not start round {round_n + 1}.\n"

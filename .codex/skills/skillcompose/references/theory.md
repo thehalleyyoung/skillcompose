@@ -226,6 +226,45 @@ Sequential verdicts short-circuit ($v_1 \triangleright v_2 = v_1$ unless $v_1 = 
 
 whatever the model does. Each is an Alpern–Schneider safety property, so a monitor can enforce it (Schneider's security automata); the projector, gate, and installer are those monitors. The static dominance checks (gate post-dominates every mutator, and projector pre-dominates every mutator, both in `dominator_orthogonality`) give conformance: an agent that follows the compiled graph cannot reach a state whose only continuation violates a property. `DONE` certifies only the gate's checks.
 
+### 4.2 The concrete term, and why the guarantees must hold every round
+
+§4.1 proves its properties for the wiring graph that `compose_skills.py` emits, and that graph's nodes are abstract members and subskills. A forge then rewrites `SKILL.md` and adds scripts for fifty rounds. None of those edits touches the graph, so `dominator_orthogonality` keeps passing on a description of a package that no longer exists. The guarantee holds at round 0 and is unchecked afterwards.
+
+**The concrete term.** Let $\tau(P)$ be the term the package $P$ actually runs, read from its files by `scripts/concrete_term.py`:
+
+- components are the scripts `SKILL.md` invokes, in document order; a script that calls other package scripts (a runner) is expanded into them and its own writes, interleaved by source line;
+- each component's interface is $\iota(f) = (\mathcal{A}_f, W_f, E_f)$: $\mathcal{A}_f$ and $E_f$ from `script_signature`, and $W_f$ the write sites in the AST (a write to the script's declared report, such as `--out`, is its declared write and leaves it an observer);
+- roles are projector, gate, mutator ($W_f$ beyond the report) and observer, overridable in `references/term_roles.json`;
+- the trace graph is linear in the document order, and `DONE` is reached only from a gate (T2).
+
+**Contract potential.** $\Phi_c(P) \in \mathbb{N}$ counts the failed obligations on $\tau(P)$:
+
+1. closure: every invoked script exists (Prop. 3.2(2));
+2. signature: each invocation passes only flags in $\mathcal{A}_f$ and every required one (T-Script);
+3. verdicts: some gate exists and can fail, and the projector can abstain (§4.1 verdict maps);
+4. $\varphi_{\text{ro}}$: no gate writes;
+5. $\varphi_{\text{gate}}$: no mutator runs after the last gate;
+6. $\varphi_{\text{abs}}$: no mutator runs before the first projector;
+7. `verify_graph` type safety and DPI grounding on the trace graph;
+8. carrier: every member script the atlas carried is still present (Prop. 3.2(2));
+9. interface: every argument of $\mathcal{A}_{\mathcal{M}}(D)$ is still named in `SKILL.md` (Cor. 3.1).
+
+`references/concrete_term.json` records $\tau(P)$. Composition writes it and refuses to finish unless $\Phi_c = 0$.
+
+**Vector Lyapunov descent.** `information_gain.py` gives a debt vector $d(P) = (d_0, \dots, d_5)$ with $d_0 = \min(1, \Phi_c/4)$, the most upstream component. Its weighted sum $\Phi = \sum_k w_k d_k$ is not a sound ratchet. Paying a downstream debt (evals, an awesome proof) can lower $\Phi$ while an upstream one rises, so a scalar decrease hides a contract regression. The forge therefore requires componentwise descent, $d(P_{r}) \le d(P_{r-1})$.
+
+**Ratchet.** Round $r$ with commits $P_{r-1} \to P_r$ is admitted only if
+
+$$\Phi_c(P_r) \le \Phi_c(P_{r-1}), \qquad d(P_r) \le d(P_{r-1}) \text{ componentwise}, \qquad r > 10 \Rightarrow \Phi_c(P_r) = 0 \land \texttt{concrete\_term.json} = \tau(P_r).$$
+
+`forge_round.sh` runs `concrete_term.py ratchet` before logging and refuses a violating round. `forge_log.py validate --fork` recomputes the ratchet from the commits for any round logged without it. `ship_check.py` requires $\Phi_c = 0$ and a current artifact at the end.
+
+**Proposition 4.2 (invariance).** Under T1 to T3, for every logged round $r \ge 11$ of a forge that passes validation, the protocol that $P_r$'s `SKILL.md` documents satisfies $\varphi_{\text{abs}}$, $\varphi_{\text{gate}}$ and $\varphi_{\text{ro}}$ along its trace graph. Every script it invokes exists and accepts the flags it is given, and every carried member channel and composed argument survives.
+
+*Proof sketch.* Validation requires $\Phi_c(P_r) = 0$ for $r \ge 11$, so every obligation holds at each such $P_r$. Obligations 5 and 6 are the dominance conditions of §4.1 on the linear trace graph, where pre-dominance is "occurs earlier" and post-dominance on paths to `DONE` is "a gate occurs later". Obligation 4 gives $\varphi_{\text{ro}}$ for the gates that admit `DONE`. The soundness argument of §4.1 then applies to $\tau(P_r)$ in place of the composed graph. $\square$
+
+The proposition is only as strong as the extraction. Prose steps that write files without a script, writes through subprocesses, and dynamically built paths are not seen. The term covers what `SKILL.md` invokes, not what an agent improvises. The replay of the fantasy forge (`PROOF.md`) shows what this catches in practice. Round 10 added a chapter writer that runs before the projector. $\Phi_c$ went from 0 to 1 and stayed there for forty rounds, while the scalar $\Phi$ fell from 2.4 to 1.0 because downstream debts were paid.
+
 ---
 
 ## 5. Mapping Theory to Executable `/skillcompose` Scripts & Proof Suites
@@ -237,6 +276,7 @@ whatever the model does. Each is an Alpern–Schneider safety property, so a mon
 | 6-operator Kleisli + Sheaf wiring compiler & 6-theorem static verifier (`type_safety`, `separation_logic`, `dpi_exogenous_grounding`, `dominator_orthogonality`, `parnas_encapsulation`, `manifold_sheaf_exactness`) | `scripts/wiring_compiler.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
 | Composed argument interface $\mathcal{A}_{\mathcal{M}}(D)$: arguments the final skill takes ($T_\cap \cup D_{\text{take}}$) and is able to take ($B_\cup \cup D_{\text{able}}$); empty $D$ is anti-unification of member signatures | `scripts/parse_args.py` (`--args` → `desired_interface`) | Corollary 3.1; `/skillcompose … --args "--author-persona, take:--premise"` |
 | Hybrid contract calculus: script signatures $\operatorname{sig}(f)$, per-component verdict maps, projector pre-dominance, LTL safety under T1–T3 (§4.1) | `scripts/compose_skills.py` (`script_interfaces`), `scripts/wiring_compiler.py` (`dominator_orthogonality`) | `metrics/carrier-closure/measure.py` (`check_signatures`), `paper/main.tex` Theorem 5 |
+| Contract ratchet on the concrete term $\tau(P)$: $\Phi_c$, componentwise Lyapunov descent, invariance at every round $r \ge 11$ (§4.2, Prop. 4.2) | `scripts/concrete_term.py`, `scripts/forge_round.sh`, `scripts/forge_log.py`, `scripts/ship_check.py` | `metrics/contract-ratchet/measure.py` |
 | Carrier closure $\operatorname{cl}(s_i)$ of member channels and modules (kernel-exact pullback) and installation as join in $\sqsubseteq$ (Proposition 3.2) | `scripts/compose_skills.py` (`carrier` in `manifold_atlas.json`), `scripts/install_skill_dual.sh` (`install_would_lose_files`) | `metrics/carrier-closure/measure.py` |
 | End-to-end composite manifold compiler emitting `MANIFOLD_ATLAS.md`, standalone `project_manifold.py`, & sheaf/SHA-256 `verify_dominator_gate.py` (+ 4-platform manifests) | `scripts/compose_skills.py`, `scripts/export_platform_targets.py` | `metrics/manifold-lift/measure.py`, `metrics/principled-lift/measure.py` |
 | Conditional DEFLATE/LZ novelty, Attention Channel SNR, & Lyapunov debt $\Phi$ | `scripts/information_gain.py` | `metrics/principled-lift/measure.py` |

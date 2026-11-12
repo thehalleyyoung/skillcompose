@@ -5,6 +5,10 @@ From round 11 each round also carries outcome evidence (outcome_round.py): the s
 real domain task before and after the change. Validation fails when rounds lack it, when more than
 20% of them are mostly self-measurement (evals/metrics/tests), or when the output improved in fewer
 than half of them.
+
+Every round also carries the contract ratchet (concrete_term.py): the theory's obligations on the term
+the package actually runs. No round may raise the contract potential Φ_c or any component of the vector
+Lyapunov debt, and from round 11 Φ_c must be 0.
 """
 from __future__ import annotations
 
@@ -22,6 +26,9 @@ from outcome_round import (  # noqa: E402
     OUTCOME_FROM_ROUND,
     focus,
 )
+from concrete_term import ratchet  # noqa: E402
+
+CONTRACT_ZERO_AFTER = 10
 
 QUESTION = (
     "What is the worst thing about what this skill produces for its user right now, next to what they "
@@ -86,6 +93,10 @@ def append_row(args: argparse.Namespace) -> dict:
         "commit": args.commit,
         "paths": paths,
     }
+    if args.contract:
+        ct = json.loads(args.contract)
+        row["contract"] = {k: ct.get(k) for k in ("decision", "phi_before", "phi", "lyapunov_before", "lyapunov",
+                                                  "debts", "reasons")}
     if args.outcome:
         oc = json.loads(args.outcome)
         row["outcome"] = oc.get("outcome", oc)
@@ -130,11 +141,30 @@ def validate(args: argparse.Namespace) -> dict:
     total_chars = 0
     unify_missing = []
     phase_mismatches = []
+    no_contract: list[int] = []
+    contract_rose: list[int] = []
+    contract_nonzero: list[int] = []
+    fork = getattr(args, "fork", None)
     no_outcome: list[int] = []
     self_measure: list[int] = []
     better: list[int] = []
     scoped: list[int] = []
-    for i, r in by_round.items():
+    for i, r in sorted(by_round.items()):
+        ct = r.get("contract") if isinstance(r.get("contract"), dict) else None
+        if ct is None and fork and r.get("commit"):
+            try:
+                ct = ratchet(Path(fork), f"{r['commit']}~1", str(r["commit"]), False)
+            except Exception:
+                ct = None
+        if ct is None:
+            no_contract.append(i)
+        else:
+            rose = (ct.get("phi") or 0) > (ct.get("phi_before") or 0) or any(
+                str(x).startswith("ΔΦ") for x in ct.get("reasons") or [])
+            if rose or (ct.get("decision") == "FAIL" and "reasons" not in ct):
+                contract_rose.append(i)
+            if i > CONTRACT_ZERO_AFTER and ct.get("phi"):
+                contract_nonzero.append(i)
         if i >= OUTCOME_FROM_ROUND:
             scoped.append(i)
             oc = r.get("outcome") if isinstance(r.get("outcome"), dict) else {}
@@ -143,7 +173,6 @@ def validate(args: argparse.Namespace) -> dict:
             elif oc.get("verdict") == "better":
                 better.append(i)
             fo = r.get("focus") if isinstance(r.get("focus"), dict) else {}
-            fork = getattr(args, "fork", None)
             if not fo and fork and r.get("commit"):
                 try:
                     fo = focus(Path(fork), str(r["commit"]))
@@ -217,6 +246,21 @@ def validate(args: argparse.Namespace) -> dict:
         )
     if phase_mismatches and getattr(args, "strict_phases", True):
         reasons.append(f"phase kind mismatches: {phase_mismatches[:8]}")
+    if no_contract:
+        reasons.append(
+            f"rounds without a contract ratchet: {no_contract[:10]}{'…' if len(no_contract) > 10 else ''} "
+            "(concrete_term.py ratchet; pass --fork to recompute from the commits)"
+        )
+    if contract_rose:
+        reasons.append(
+            f"rounds that raised the contract potential or a Lyapunov debt: {contract_rose[:10]} "
+            "(the theory's obligations on the package's concrete term must not get worse)"
+        )
+    if contract_nonzero:
+        reasons.append(
+            f"rounds after P1-unify with contract obligations still failing: {contract_nonzero[:10]}"
+            f"{'…' if len(contract_nonzero) > 10 else ''} (Φ_c must be 0 from round {CONTRACT_ZERO_AFTER + 1})"
+        )
     if no_outcome:
         reasons.append(
             f"rounds without before/after output evidence: {sorted(no_outcome)[:10]}"
@@ -249,6 +293,7 @@ def validate(args: argparse.Namespace) -> dict:
         "missing": missing,
         "thin": thin,
         "thin_chars": thin_chars,
+        "contract": {"without": no_contract, "rose": contract_rose, "nonzero_after_unify": contract_nonzero},
         "outcome": {
             "from_round": OUTCOME_FROM_ROUND,
             "without_evidence": sorted(no_outcome),
@@ -281,6 +326,7 @@ def main() -> int:
         help="unify|enhance|metrics|awesome (or legacy buff|subskill|superskill)",
     )
     a.add_argument("--unify", action="store_true", help="Mark round as unification work")
+    a.add_argument("--contract", default="", help="JSON from concrete_term.py ratchet")
     a.add_argument("--outcome", default="", help="JSON from outcome_round.py check (required from round 11)")
     a.add_argument("--radical", action="store_true", default=True)
     a.add_argument("--json", action="store_true")

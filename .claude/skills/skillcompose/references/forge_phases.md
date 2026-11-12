@@ -13,6 +13,8 @@ Every `/skillcompose` run uses this fixed phase plan. **Each round is its own ag
 
 The forge is for the skill's user. From round 11, each round keeps the skill's output for one real domain task before and after its change (`forge/outcomes/rNN/`), names the worst flaw in the before output with a verbatim quote, and says honestly whether the after output is better. `scripts/outcome_round.py` scaffolds and checks this, `forge_round.sh` refuses a round without it, and `forge_log.py validate` fails a forge where more than 20% of rounds are mostly evals/metrics/tests or fewer than half improved the output. Work on the package's own checkers is instrumentation: it counts only when it changes what the skill writes. Full rules: [`round_protocol.md`](round_protocol.md).
 
+Every round, including rounds 1–10, also passes the contract ratchet (`scripts/concrete_term.py`, `theory.md` §4.2). The theory's obligations are checked on the scripts the package actually runs. No round may raise the contract potential $\Phi_c$ or any component of the Lyapunov debt vector. Unification must end with $\Phi_c = 0$, and every later round keeps it there, so the composition guarantees hold for the package at every round, not only for the graph emitted at round 0.
+
 ## Scheduling (mandatory)
 
 ```text

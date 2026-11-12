@@ -89,6 +89,8 @@ On refusal JSON, trust `error` + exit **2**, not a piped `tee|head` status.
 
 **Outcome contract (rounds 11–50).** The forge improves what the composed skill produces, not the package's measurement of itself. Every round runs the skill on a real domain task, keeps its output before and after the change in `forge/outcomes/rNN/`, and names the output's worst flaw with a verbatim quote (`scripts/outcome_round.py`). `forge_round.sh` refuses a round without it; `forge_log.py validate` and `ship_check.py` fail a forge where more than 20% of rounds are mostly evals/metrics/tests or the output improved in fewer than half. See `references/round_protocol.md`.
 
+**Contract ratchet (every round).** The theory's guarantees are checked on the scripts the package actually runs (`scripts/concrete_term.py`, `references/theory.md` §4.2), not only on the wiring graph composition emitted. `forge_round.sh` refuses a round that raises the contract potential $\Phi_c$ or any Lyapunov debt component, and from round 11 one that leaves $\Phi_c > 0$; `ship_check.py` requires $\Phi_c = 0$.
+
 Details: `references/forge_phases.md`.
 
 ## Adoption floor (no popularity ceiling)

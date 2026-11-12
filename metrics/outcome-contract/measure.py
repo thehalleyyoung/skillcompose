@@ -63,7 +63,8 @@ GOOD = {"flaw": "tells the fear instead of showing it, and repeats 'scary' and '
 def row(i: int, sha: str, self_measure: bool, better: bool = True) -> dict:
     r = {"round": i, "total": 20, "theme": f"P{'1-unify' if i <= 10 else '2-enhance'}",
          "kind": "unify" if i <= 10 else "enhance", "unify": i <= 10, "gap": "g", "addition": "a",
-         "surfaces": ["code", "docs", "procedure"], "radical": True, "chars_changed": 1500, "commit": f"{sha}{i}"}
+         "surfaces": ["code", "docs", "procedure"], "radical": True, "chars_changed": 1500, "commit": f"{sha}{i}",
+         "contract": {"decision": "PASS", "phi_before": 0, "phi": 0, "reasons": []}}
     if i >= 11:
         r["outcome"] = {"before": "b.md", "after": "a.md", "verdict": "better" if better else "same"}
         r["focus"] = {"self_measurement": self_measure}

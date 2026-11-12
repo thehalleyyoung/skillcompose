@@ -50,6 +50,24 @@ if [[ "$ANTI_PAD" != "True" ]]; then
   exit 2
 fi
 
+# Contract ratchet (theory.md §4.2): the term the package runs must keep the theory's obligations.
+# Every round: neither the contract potential Φ_c nor any component of the vector Lyapunov debt may rise.
+# From round 11 (after P1-unify): Φ_c = 0 and references/concrete_term.json describes the package.
+RATCHET_ARGS=(--repo "$FORK_DIR" --base HEAD~1 --head HEAD --json)
+if (( ROUND > 10 )); then
+  RATCHET_ARGS+=(--zero --require-artifact)
+fi
+set +e
+CONTRACT_JSON="$(python3 "$ROOT/scripts/concrete_term.py" ratchet "${RATCHET_ARGS[@]}")"
+CONTRACT_RC=$?
+set -e
+if [[ "$CONTRACT_RC" -ne 0 ]]; then
+  echo "REFUSE round $ROUND (contract ratchet): the change breaks the theory on the package's concrete term." >&2
+  echo "$CONTRACT_JSON" >&2
+  echo "Fix the obligations, refresh with: python3 $ROOT/scripts/concrete_term.py write --package \"$FORK_DIR\", re-commit." >&2
+  exit 2
+fi
+
 # Outcome contract: from round 11 the round must show the skill's output before and after the change.
 OUTCOME_ARGS=()
 if (( ROUND >= 11 )); then
@@ -83,6 +101,7 @@ APPEND_ARGS=(
   --chars-changed "$CHARS"
   --min-chars "$MIN_CHARS"
   --radical --json
+  --contract "$CONTRACT_JSON"
 )
 # Under `set -u`, empty arrays must not be expanded via "${arr[@]}"
 if ((${#UNIFY_FLAG[@]})); then

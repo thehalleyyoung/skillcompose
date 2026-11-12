@@ -29,7 +29,7 @@ Formal foundations (Information Theory, Software Engineering Kleisli Composition
 1. **Submodular + Kolmogorov/NCD Selection (`submodular_select.py`) vs Popularity Top-N:** Ranking by stars/installs collapses onto redundant entry-stage generators ($I(s_i; s_j) \gg 0$) while leaving specification, static contracts, execution observation, and adversarial verification uncovered—and naive name-Jaccard admits polysemic traps (`plaid`, `storybook`). `submodular_select.py` maximizes monotone noisy-OR stage coverage minus blended Jensen-Shannon + Normalized Compression Distance ($d_{\text{NCD}}$) redundancy and off-domain divergence, emitting an instance-specific **Nemhauser–Wolsey optimality ratio certificate**.
 2. **Mechanical Kleisli & Separation-Logic Compilation (`compose_skills.py`, `wiring_compiler.py`):** Models each skill as an open effectful Kleisli transducer $\mathcal{S} = \langle I, O, P, Q, \mathcal{F}, \mathcal{E}, \mathcal{B}\rangle$ and compiles them via five operators: **Sequential Pipe with Sufficient-Statistic Adapter** ($S_2 \circ_\alpha S_1$, $Q_1 \implies P_2$), **Parallel Tensor** under Concurrent Separation Logic ($\mathcal{W}_1 \cap (\mathcal{W}_2 \cup \mathcal{R}_2) = \emptyset$), **Pullback Join** ($\pi_K(O_1) = \pi_K(O_2)$), **Guarded Coproduct** (`ABSTAIN`), and **Orthogonal Feedback Loop** ($\mathcal{W}(S_{\text{gate}}) = \emptyset$).
 3. **Breaking the Data Processing Inequality (DPI):** Pure-prompt chains ($X \to M_1 \to \dots \to M_k$) monotonically lose ground-truth mutual information ($I(Y^*; M_k) \le I(Y^*; M_1)$). `compose_skills.py` injects exogenous script channels and auto-generates `scripts/verify_dominator_gate.py`, which SHA-256-snapshots deliverables before running exogenous checks and fails with exit `2` if any critic mutates a protected target.
-4. **Parnas Information Hiding & MDL Anti-Padding (`information_gain.py`):** Encapsulates member bodies in `references/members/<slug>.md` so root `SKILL.md` stays $O(N)$ lines (high Attention Channel SNR), and gates every forge round on conditional Lempel–Ziv novelty (`info_density >= 0.10`) and Lyapunov debt descent ($\Delta \Phi \le 0$).
+4. **Parnas Information Hiding & MDL Anti-Padding (`information_gain.py`):** Encapsulates member bodies in `references/members/<slug>.md` so root `SKILL.md` stays $O(N)$ lines (high Attention Channel SNR), and gates every forge round on conditional Lempel–Ziv novelty (`info_density >= 0.10`) and componentwise Lyapunov debt descent ($d(P_r) \le d(P_{r-1})$; the scalar sum can fall while an upstream debt rises).
 
 ## Fast One-Command Mechanical Composition (`compose_skills.py`)
 
@@ -95,12 +95,14 @@ On refusal JSON, trust `error` + exit **2**, not a piped `tee|head` status.
 
 | Rounds | Kind | Job |
 |---|---|---|
-| **1–10** | `unify` | Unified whole **strictly more than the sum of its parts** |
+| **1–10** | `unify` | Unified whole **strictly more than the sum of its parts**, ending with contract potential $\Phi_c = 0$ |
 | **11–20** | `enhance` | Make the skill's **output** better: fix the worst flaw in what it produces |
 | **21–44** | `metrics` | Undeniable, reproducible, non-falsified best-in-some-way metrics **of the output** against a baseline; reflect + **fix** when not best |
 | **45–50** | `awesome` | Actually build something awesome (e.g. a novel) **or** find a ≥99%-confident real bug in someone else's public repo that needed this tool |
 
 **Outcome contract (rounds 11–50).** The forge improves what the composed skill produces, not the package's measurement of itself. Every round runs the skill on a real domain task, keeps its output before and after the round's change in `forge/outcomes/rNN/`, and names the output's worst flaw with a verbatim quote (`scripts/outcome_round.py`). `forge_round.sh` refuses a round without this evidence. `forge_log.py validate` and `ship_check.py` fail a forge where more than 20% of rounds spend most of their change on evals, metrics or tests, or where the output improved in fewer than half the rounds. A new checker counts only when it changes what gets written.
+
+**Contract ratchet (every round).** The theory's guarantees (§4.1: nothing writes before the projector, a read-only gate after the last mutator, scripts called with the flags they declare, carried member scripts and composed arguments kept) are checked on the term the package actually runs, not only on the wiring graph composition emitted. `scripts/concrete_term.py` reads the scripts `SKILL.md` invokes, the scripts they call, and their writes and exit codes, and counts failed obligations as $\Phi_c$ (`references/theory.md` §4.2). `forge_round.sh` refuses a round that raises $\Phi_c$ or any component of the Lyapunov debt vector, and from round 11 one that leaves $\Phi_c > 0$ or `references/concrete_term.json` stale. `forge_log.py validate --fork` recomputes this for every logged round; `ship_check.py` requires $\Phi_c = 0$ at the end.
 
 Details: `references/forge_phases.md`, `references/round_protocol.md`.
 
@@ -391,12 +393,16 @@ python3 "$SCRIPTS/outcome_round.py" init --fork "$FORK_DIR" --round "$R" --task 
 #    save forge/outcomes/rNN/before.<ext>; name the worst flaw in that output, quoted, in verdict.json
 # 2) Change the skill so the flaw stops happening (≥1000 chars, multi-surface), THIS round only;
 #    rerun the same task, save after.<ext>, fill verdict.json honestly (same/worse = logged miss)
-# 3) Commit + log (forge_round.sh checks the outcome evidence and releases agent_busy.lock):
+# 3) Keep the concrete term sound: fix any obligation this round introduced, refresh the artifact
+python3 "$SCRIPTS/concrete_term.py" write --package "$FORK_DIR"
+python3 "$SCRIPTS/concrete_term.py" check --package "$FORK_DIR" --require-artifact --json
+# 4) Commit + log (forge_round.sh runs the contract ratchet, checks the outcome evidence, and
+#    releases agent_busy.lock):
 git -C "$FORK_DIR" add -A
 git -C "$FORK_DIR" commit -m "forge(${R}/${ROUNDS}): ${THEME} — ${GAP}"
 bash "$SCRIPTS/forge_round.sh" "$R" "$ROUNDS" "$THEME" "$GAP" "$ADDITION" \
   '["procedure","code","docs"]' '["SKILL.md"]' "[\"$INCUMBENT_ID\"]" "$KIND"
-# 4) Build the standalone prompt for round R+1:
+# 5) Build the standalone prompt for round R+1:
 if [[ "$R" -lt "$ROUNDS" ]]; then
   python3 "$SCRIPTS/forge_phases.py" --prompt-round $((R+1)) --wip "$WIP_DIR" --fork "$FORK_DIR" --json
 fi
@@ -492,7 +498,8 @@ bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/randomupgrade" --name randomu
 | `forge_phases.py` | Canonical 1–10/11–20/21–44/45–50 phase model + per-round prompts |
 | `schedule_forge_loop.sh` | Legacy Cursor/CLI 90s wake helper (in Antigravity, use native `schedule` tool instead) |
 | `agent_busy.py` | acquire/release/check mid-round lock so timer wakes do not double-start a round |
-| `forge_log.py` / `forge_round.sh` | Round log append; refuses <1000 chars; enforces phase kinds and, from round 11, the outcome contract |
+| `forge_log.py` / `forge_round.sh` | Round log append; refuses <1000 chars; enforces phase kinds, the contract ratchet every round, and from round 11 the outcome contract |
+| `concrete_term.py` | The term the package actually runs (scripts `SKILL.md` invokes, their callees, writes, exits); `check` the §4.1 obligations as $\Phi_c$, `write` `references/concrete_term.json`, `ratchet` two commits (refuses a rise in $\Phi_c$ or any Lyapunov debt) |
 | `outcome_round.py` | Outcome contract: `init`/`check` the before/after output of one round; `audit` a forge for self-measurement drift |
 | `measure_chars.py` | Product-char churn for HEAD commit |
 | `unify_wholeness.py` | Strict sum-of-parts / unification gate |

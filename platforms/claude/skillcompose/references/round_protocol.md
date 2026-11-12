@@ -23,6 +23,22 @@ A forge drifts when each round improves the package's view of itself: a checker,
 
 `forge_round.sh` runs `outcome_round.py check` and refuses the round if the files are missing, the output did not change, or an excerpt is not in its file. Each round's changed characters are split into skill, instrumentation (evals/, tests/, metrics/, METRICS.md, WHOLENESS.md, gold labels, forge logs) and output. Validation fails when more than 20% of rounds are mostly instrumentation, or when fewer than half the rounds made the output better. The outputs themselves do not count toward the 1000 product characters.
 
+## Contract ratchet (every round)
+
+The guarantees of `theory.md` §4.1 are checked on the term the package actually runs, read by `scripts/concrete_term.py` from the scripts `SKILL.md` invokes, their callees, and their writes and exit codes. Each failed obligation adds 1 to the contract potential $\Phi_c$:
+
+- an invoked script is missing;
+- a flag is undeclared, or a required flag is omitted;
+- there is no gate that can fail, or the projector cannot abstain;
+- a gate writes;
+- a mutator runs after the last gate, or before the projector;
+- a carried member script was removed;
+- a composed argument is no longer named in `SKILL.md`.
+
+Before committing, run `concrete_term.py check --package "$FORK_DIR"`. When scripts or their invocations change, refresh `references/concrete_term.json` with `concrete_term.py write`.
+
+`forge_round.sh` runs `concrete_term.py ratchet --base HEAD~1 --head HEAD` and refuses the round if $\Phi_c$ rose or any component of the Lyapunov debt vector rose. The scalar sum is not enough, because paying a downstream debt can hide an upstream regression. From round 11, it also refuses unless $\Phi_c = 0$ and the artifact is current. `forge_log.py validate --fork` recomputes the ratchet from the commits for rounds logged without it.
+
 ## One prompt per round (mandatory)
 
 **Forbidden:** running rounds 1–N in a single agent turn.
@@ -44,7 +60,8 @@ agent_busy.acquire(r)
 # THIS TURN: only r
 if r >= 11: outcome_round.py init; run skill → before; name worst flaw in the output
 implement (change the skill) → if r >= 11: rerun → after, verdict
-commit forge(r/50) → forge_round.sh  # checks outcome, releases busy
+concrete_term.py write; concrete_term.py check   # Φ_c must not rise; 0 from round 11
+commit forge(r/50) → forge_round.sh  # contract ratchet, checks outcome, releases busy
 if r < 50:
   prompt = forge_phases.py --prompt-round (r+1)
   schedule(DurationSeconds=90, Prompt=prompt)
@@ -59,5 +76,6 @@ python3 scripts/forge_log.py validate --log …/usefulness_forge.jsonl --rounds 
 python3 scripts/outcome_round.py audit --fork "$PKG_DIR" --log …/usefulness_forge.jsonl --json
 python3 scripts/check_phases.py --log …/usefulness_forge.jsonl --rounds 50 --json
 python3 scripts/unify_wholeness.py --package "$PKG_DIR" --rounds 50 --min-chars 1000 --json
+python3 scripts/concrete_term.py check --package "$PKG_DIR" --require-artifact --json
 python3 scripts/ship_check.py --fork "$PKG_DIR" --rounds 50 --min-chars 1000 --json
 ```

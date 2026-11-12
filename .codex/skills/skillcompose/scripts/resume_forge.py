@@ -243,6 +243,11 @@ def main() -> int:
             "progress": st.get("progress"),
             "outcome_required": bool(st["next_round"]) and st["next_round"] >= OUTCOME_FROM_ROUND,
         }
+        if st["fork_dir"]:
+            out["contract_check"] = (
+                f"python3 scripts/concrete_term.py check --package {st['fork_dir']}"
+                + (" --require-artifact" if (st["next_round"] or 0) > 10 else "")
+            )
         if out["outcome_required"] and st["fork_dir"]:
             out["outcome_init"] = (
                 f"python3 scripts/outcome_round.py init --fork {st['fork_dir']} --round {st['next_round']} "

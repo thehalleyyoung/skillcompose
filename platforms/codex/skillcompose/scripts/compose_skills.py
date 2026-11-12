@@ -577,11 +577,12 @@ def script_signature(path: Path) -> dict[str, Any]:
                         else:
                             sig["positionals"].append(s)
                 elif name in {"exit", "SystemExit"} and node.args:
-                    a = node.args[0]
-                    if isinstance(a, ast.Constant) and isinstance(a.value, int) and not isinstance(a.value, bool):
-                        codes.add(a.value)
-                    elif isinstance(a, ast.Call) and isinstance(a.func, ast.Name):
-                        exit_fns.add(a.func.id)
+                    for a in ([node.args[0].body, node.args[0].orelse]
+                              if isinstance(node.args[0], ast.IfExp) else [node.args[0]]):
+                        if isinstance(a, ast.Constant) and isinstance(a.value, int) and not isinstance(a.value, bool):
+                            codes.add(a.value)
+                        elif isinstance(a, ast.Call) and isinstance(a.func, ast.Name):
+                            exit_fns.add(a.func.id)
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef) and node.name in exit_fns:
                 for r in ast.walk(node):
@@ -865,8 +866,16 @@ Manifold atlas & chart equations: [MANIFOLD_ATLAS.md](./references/MANIFOLD_ATLA
 
     stamp_in_place(out_dir, skill_name)
 
+    # Round 0 of the forge ratchet: the term the composed package runs, and its obligations (theory.md §4.2).
+    from concrete_term import ARTIFACT, check as contract_check, extract as extract_term
+
+    (out_dir / ARTIFACT).write_text(json.dumps(extract_term(out_dir), indent=2) + "\n", encoding="utf-8")
+    contract = contract_check(out_dir, require_artifact=True)
+
     return {
-        "ok": graph["verification"]["decision"] == "PASS",
+        "ok": graph["verification"]["decision"] == "PASS" and contract["decision"] == "PASS",
+        "concrete_contract": {"decision": contract["decision"], "phi": contract["phi"],
+                              "obligations": contract["obligations"], "roles": contract["roles"]},
         "skill_dir": str(out_dir),
         "skill_md_bytes": (out_dir / "SKILL.md").stat().st_size,
         "chosen_ids": [m.get("id") for m in ordered_members],

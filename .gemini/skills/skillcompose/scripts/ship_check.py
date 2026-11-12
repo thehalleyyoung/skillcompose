@@ -129,6 +129,12 @@ def check(fork: Path, rounds: int = FORGE_ROUNDS, min_chars: int = MIN_CHARS_PER
     need(bool(re.search(r"(?m)^## Use \(after install\)", readme)), "README missing ## Use (after install)")
     need(bool(re.search(r"```(?:text|bash|shell)?\n\s*/[\w-]+", readme)), "README missing fenced /skill args example")
 
+    from concrete_term import check as contract_check
+
+    contract = contract_check(fork, require_artifact=True)
+    for o in contract["obligations"]:
+        reasons.append(f"contract: {o}")
+
     log = fork / "forge" / "usefulness_forge.jsonl"
     forge_out = None
     if not log.exists():
@@ -208,11 +214,14 @@ def check(fork: Path, rounds: int = FORGE_ROUNDS, min_chars: int = MIN_CHARS_PER
         "fork": str(fork),
         "remix": is_remix(fork),
         "forge_validate": forge_out,
+        "concrete_contract": {"phi": contract["phi"], "roles": contract["roles"],
+                              "dead_carrier": contract["dead_carrier"]},
         "unify_wholeness": unify_out,
         "thresholds": {
             "rounds": rounds,
             "min_chars_per_round": min_chars,
             "phases": "P1-unify 1-10 | P2-enhance 11-20 | P3-metrics 21-44 | P4-awesome 45-50",
+            "contract": "every round: Φ_c and each Lyapunov debt non-increasing; Φ_c = 0 from round 11",
             "outcome": "from round 11: before/after output per round; <=20% self-measurement rounds; >=50% better",
         },
     }
