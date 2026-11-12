@@ -1,11 +1,11 @@
 {
   "metric_id": "status-pack-bytes",
   "title": "Compact status JSON byte budget vs --full",
-  "at": "2026-11-12T00:56:31.005669+00:00",
-  "ts": 1794444991.0056973,
+  "at": "2026-11-12T01:04:44.697361+00:00",
+  "ts": 1794445484.69738,
   "values": {
     "ok": true,
-    "wip": "/tmp/tmpvt6qdee1/skillremix-wip-20260721T000000Z",
+    "wip": "/tmp/tmpgv5xd6h0/skillremix-wip-20260721T000000Z",
     "compact_bytes": 1305,
     "full_bytes": 18039,
     "ratio": 0.0723,

@@ -20,6 +20,17 @@ Research paper (LaTeX + PDF): [`paper/main.pdf`](paper/main.pdf) ([`paper/main.t
 
 ---
 
+## Empirical Evaluations (7-Family Lawvere–Amari Manifold Study + 5-Family Marketplace Study)
+
+1. **7-Family Lawvere–Amari Manifold Benchmark ([`evals/manifold_7family/RESULTS.md`](evals/manifold_7family/RESULTS.md), [`paper/main.pdf`](paper/main.pdf))**: Single isolated solver call per `(task, regime)` across 7 task families (`f1` streaming+transactional ETL, `f2` zero-downtime SQLite evolution, `f3` Kleene $K_3$ policy DSL, `f4` Simpson's paradox + IPW causal study, `f5` multi-vuln webhook patch + quarantine, `f6` epistemically partitioned dual-POV fiction, `f7` off-domain `plaid` polysemy refusal trap) + blind judge (`agy --model claude-sonnet-5-5` runner):
+   - **`manifold` ($\mathfrak{G}_{\mathcal{M}}$)**: **`95.3 / 100`** blind judge · **`100.0%` (`7/7`)** exogenous Python oracle · **`7 / 7`** `#1` wins
+   - **`union` ($\bigcup_i s_i$)**: `55.6 / 100` blind judge · `21.4%` exogenous oracle · `0 / 7` `#1` wins
+   - **`concat` ($\bigwedge_i s_i$)**: `36.3 / 100` blind judge · `14.3%` exogenous oracle · `0 / 7` `#1` wins
+2. **5-Family Marketplace Baseline Benchmark (Blinded Single-Call Claude Sonnet 5.5 Judge + 50 Held-Out Checks)**:
+   - **`skillcompose` ($N=4$)**: **`87.2 / 100`** (mean rank `1.60`, `3/5` `#1` wins, minimax floor `79.0`, `50/50` oracle) vs `top4_github_compilation` (`82.0 / 100`, minimax `69.0`) and `top1_github` (`79.6 / 100`, `48/50` oracle), with `90.2%–99.7%` online Nemhauser–Wolsey optimality certificates.
+
+---
+
 ## Install & Platform Versions (Gemini + Codex + Claude + Cursor)
 
 Standalone platform builds for both **`skillcompose`** and **`ml-paper-manifold`** live in [`platforms/`](platforms/README.md) ([`gemini`](platforms/gemini/), [`codex`](platforms/codex/), [`claude`](platforms/claude/), [`cursor`](platforms/cursor/)) as well as workspace auto-discovery directories (`.gemini/skills/`, `.codex/skills/`, `.claude/skills/`, `.cursor/skills/`, `.cursor/rules/`).

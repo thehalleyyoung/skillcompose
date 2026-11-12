@@ -601,9 +601,10 @@ Manifold atlas & chart equations: [MANIFOLD_ATLAS.md](./references/MANIFOLD_ATLA
    - Read the landmark module references in `./references/members/` needed to cover all required output facets. Whenever two landmarks specialize conflicting narrow shortcuts (which would collapse under naive conjunction $\\bigwedge_i Q_i$), resolve them via `resolved_lawvere_fiber` and the **Conormal Universal Invariants** ($\\Phi_{{\\text{{core}}}}$: exogenous verification, non-silent quarantine/rollback, causal/epistemic soundness, and sheaf global section $\\delta^0(y)=0$), locking your chosen invariants in `"/tmp/locked_contract_{skill_name}_$$.json"`.
 2. **Stage 2 — Geodesic Synthesis & Global Sheaf Gluing ($\\Gamma(\\mathcal{{U}}, \\mathcal{{F}}) = \\ker \\delta^0$)**:
    - Synthesize the complete structured output bundle $y = (y_u)_{{u \\in \\mathcal{{U}}}}$ governed by `map_structured_output` (recombining capabilities across landmarks rather than dropping facets).
+   - Enforce Kleisli synthesis invariants: **Idempotence ($f \\circ f = f$)** across state/schema transitions, **Zero TOCTOU & Strict Sort Separation** at validation/grammar boundaries, and **Exact Structural Envelope & Anti-Slop** (zero unrequested wrapper headings, unsupported causal claims, or contrastive-negation clichés).
    - Enforce Sheaf Restriction & Pullback Invariant (`{pb.get('key')}`): `{pb.get('invariant')}`. Coupled JSON/artifact views must satisfy exact restriction equality ($\\delta^0(y) = 0$) on all shared overlap keys.
 3. **Stage 3 — Exogenous Observation & Read-Only Post-Dominator Gate ($\\mathcal{{W}}(S_{{\\text{{gate}}}}) = \\emptyset$)**:{helper_block}
-   - Run deterministic tests and certify via the read-only post-dominator & sheaf coboundary gate (passing `--glue left.json:right.json:key1,key2` for coupled JSON views):
+   - Run deterministic tests in `/tmp/` (never citing ephemeral `/tmp/` or `.agents/` paths inside shipped reports) and certify via the read-only post-dominator & sheaf coboundary gate (passing `--glue left.json:right.json:key1,key2` for coupled JSON views):
      ```bash
      python3 {skill_rel_base}/scripts/verify_dominator_gate.py \\
        --manifold-section "/tmp/manifold_section_{skill_name}_$$.json" \\

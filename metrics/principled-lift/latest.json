@@ -1,8 +1,8 @@
 {
   "metric_id": "principled-lift",
   "title": "Principled submodular + Kleisli wiring + MDL gates",
-  "at": "2026-11-12T00:56:32.040335+00:00",
-  "ts": 1794444992.040359,
+  "at": "2026-11-12T01:04:45.774015+00:00",
+  "ts": 1794445485.774037,
   "values": {
     "skill_root": "/home/antigravity/thehalleyyoung/skillcompose",
     "cases": [
@@ -22,12 +22,12 @@
           "fintech/payments@plaid"
         ],
         "lift": {
-          "objective_delta": 6.4188,
-          "coverage_delta": 0.4707,
+          "objective_delta": 6.502,
+          "coverage_delta": 0.4822,
           "fisher_volume_delta": 2.3968,
-          "synergy_delta": 0.5261,
+          "synergy_delta": 0.5427,
           "redundancy_reduction": 0.1229,
-          "entropy_bits_delta": 1.1064
+          "entropy_bits_delta": 1.2068
         }
       },
       {
@@ -59,8 +59,8 @@
       {
         "name": "compose_and_dominator_gate_enforces_separation_logic",
         "ok": true,
-        "nemhauser_wolsey_ratio": 0.828,
-        "parnas_ratio": 0.9318
+        "nemhauser_wolsey_ratio": 0.8235,
+        "parnas_ratio": 0.9261
       }
     ],
     "passed": 6,

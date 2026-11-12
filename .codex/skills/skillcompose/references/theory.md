@@ -29,7 +29,7 @@ This unifies the **set-valued logical view** and the **probabilistic generative 
 
 ## 2. Why Concatenation ($\bigwedge_i s_i$), Popularity Top-$N$, and Union ($\bigcup_i s_i$) Fail
 
-Suppose we observe $N$ marketplace skills $S = \{s_1, \dots, s_N\}$. Naive compilation strategies fail for eight formal reasons:
+Suppose we observe $N$ marketplace skills $S = \{s_1, \dots, s_N\}$ under task query $Q$. Naive compilation strategies fail for eight formal reasons:
 
 ### Failure 1: Constraint-Union Collapse ($Q_i \land Q_j \vdash \bot$) Under Prompt Concatenation
 Concatenating $N$ `SKILL.md` files into one mega-prompt asks the agent to satisfy the conjunction $Q_{\text{concat}} = \bigwedge_{i=1}^N Q_i$. Whenever two valid skills $s_i, s_j \in S$ represent distinct specializations of a legitimate design degree of freedom $\xi_a : \mathcal{Y} \to \Theta_a$ (e.g., $\xi_{\text{exec}}(y) = \texttt{streaming\_incremental}$ vs $\xi_{\text{exec}}(y) = \texttt{transactional\_staged}$, or $\xi_{\text{spec}}(y) = \texttt{json\_contract}$ vs $\texttt{formal\_grammar\_adr}$), their conjunction has **empty admissible fiber**:
@@ -55,13 +55,13 @@ When structured output $y$ decomposes over an open cover $\mathcal{U} = \{U_1, \
 $$(\delta^0 y)_{uv} \;=\; \rho_{u \to uv}(y_u) \ominus \rho_{v \to uv}(y_v) \;=\; 0.$$
 Worse, if three member skills specify pairwise transition maps $(g_{ab}, g_{bc}, g_{ca})$ around a 2-simplex $(U_a, U_b, U_c)$ in the nerve $\mathcal{N}(\mathcal{U})$ with non-trivial **1-cocycle holonomy** $(\delta^1 g)_{abc} = g_{ca} \circ g_{bc} \circ g_{ab} \neq \mathrm{id}$, **no** global structured output exists at all.
 
-### Failure 5: Popularity-Induced Redundancy Collapse & Polysemy Traps
-Marketplace install/star rankings optimize the modular sum $\sum_{s \in S} \text{pop}(s)$, collapsing onto $N$ redundant entry-stage synthesis skills ($I(s_i; s_j) \gg 0$) while leaving specification, static contracts, execution observation, adversarial verification, and rollback uncovered—while naive token dissimilarity selects off-domain polysemic traps (`plaid`, `storybook`).
+### Failure 5: Popularity-Induced Redundancy Collapse, Polysemy Traps & Exemplar Conflicts
+Marketplace install/star rankings optimize the modular sum $\sum_{s \in S} \text{pop}(s)$, collapsing onto $N$ redundant entry-stage synthesis skills ($I(s_i; s_j) \gg 0$) across the 6 latent roles (`spec_grounding`, `synthesis`, `static_contract`, `exec_observation`, `adversarial_verify`, `state_recovery`), while naive token dissimilarity prefers off-domain polysemic traps (`plaid` for "plan", `storybook` for "story") or skills whose positive exemplars teach anti-patterns ($D_{\text{conflict}}(s) > 0$) that contradict downstream critics ($Q_{\text{gen}} \wedge P_{\text{gate}} = \bot$).
 
 ### Failure 6: Zero Emergent PID Synergy Without Bound Structural Witnesses
 By Williams & Beer's **Partial Information Decomposition (PID)**,
-$$I(S_1, S_2; Y) = \text{Red}(S_1, S_2; Y) + \text{Unq}(S_1; Y \mid S_2) + \text{Unq}(S_2; Y \mid S_1) + \text{Syn}(S_1, S_2; Y).$$
-Synergy $\text{Syn}(S_1, S_2; Y) > 0$ requires conditioning downstream operators on typed structural witnesses $W = f(X, S_1)$ and cross-view sheaf restrictions.
+$$I(S_1, S_2; Y^*) = \text{Red}(S_1, S_2; Y^*) + \text{Unq}(S_1; Y^* \mid S_2) + \text{Unq}(S_2; Y^* \mid S_1) + \text{Syn}(S_1, S_2; Y^*).$$
+Synergy $\text{Syn}(S_1, S_2; Y^*) > 0$ requires conditioning downstream operators on typed structural witnesses $\alpha(O_1)$ and cross-view sheaf restrictions.
 
 ### Failure 7: Data Processing Inequality (DPI) Decay in Pure-Prompt Chains
 For any Markov chain $Y^* \to X \to M_1 \to \dots \to M_k$ without deterministic environment interaction,
@@ -89,7 +89,7 @@ In categorical logic (**Lawvere Hyperdoctrines** $\mathcal{T} : \Theta^{\text{op
 1. **Conormal Bundle $\Longleftrightarrow$ Regularized Galois Invariant Core ($\Phi_{\text{core}} = \text{Th}_{\text{MDL}}(S)$):**
    Consider the syntax–semantics Galois connection $(\text{Th} \dashv \text{Mod})$ between refinement theories $\Gamma \subseteq \mathcal{L}_{\mathcal{X} \times \mathcal{Y}}$ and classes of generative kernels:
    $$\text{Th}(S) = \{\varphi \in \mathcal{L}_{\text{reg}} : \forall s \in S,\; s \models \varphi\}, \qquad \text{Mod}(\Gamma) = \{K \in \mathfrak{K} : \forall \varphi \in \Gamma,\; K \models \varphi\}.$$
-   Just as the Zariski closure $V(I(S))$ in algebraic geometry extracts the vanishing polynomial ideal cutting out the variety through data points $S$, $\Phi_{\text{core}}(x, y) = \bigwedge \text{Th}_{\text{MDL}}(S)$ extracts the **universal structural and domain invariants** (exogenous verification, non-silent failure/rollback, Parnas disclosure, shared domain postconditions) satisfied across the family.
+   Just as the Zariski closure $V(I(S))$ in algebraic geometry extracts the vanishing polynomial ideal cutting out the variety through data points $S$, $\Phi_{\text{core}}(x, y) = \bigwedge \text{Th}_{\text{MDL}}(S)$ extracts the **universal structural and domain invariants** (exogenous verification, non-silent failure/rollback, idempotence $f \circ f = f$, zero TOCTOU, Parnas disclosure, shared domain postconditions) satisfied across the family.
 
 2. **Tangent Bundle $\Longleftrightarrow$ Plotkin–Reynolds Anti-Unification ($\sqcup_{\text{lgg}}$) Over Conflicting Clauses:**
    Wherever sampled skills $s_1, \dots, s_N$ specialize distinct or conflicting clauses on axis $a$ ($s_i \models \xi_a(y) \in V_{i,a}$ with $\exists i, j: V_{i,a} \neq V_{j,a}$), **anti-unification** lifts the conflicting locus into a **typed Lawvere fiber variable** $\theta_a \in \Theta_a = \bigcup_{i=1}^N V_{i,a}$ equipped with specialization substitutions $\sigma_i : \theta_a \mapsto V_{i,a}$. This yields the **Indexed Refinement Theory**:
@@ -98,7 +98,7 @@ In categorical logic (**Lawvere Hyperdoctrines** $\mathcal{T} : \Theta^{\text{op
 **Theorem 3.1 (Consistent Recombination & Exact Landmark Recovery).** *Let $\mathcal{T}_{\mathcal{M}}(\theta)$ be synthesized via Galois conormal extraction and Plotkin–Reynolds anti-unification over realizable skills $S = \{s_1, \dots, s_N\}$. Then:*
 1. **Landmark Pullback Exactness:** *For every observed skill $s_i \in S$, pulling back $\mathcal{T}_{\mathcal{M}}$ along $\sigma_i$ recovers $s_i$'s conormal-guarded theory: $\sigma_i^* \mathcal{T}_{\mathcal{M}} \equiv Q_i \land \Phi_{\text{core}}$.*
 2. **Global Consistency (Defeat of Concatenation Collapse):** *Even when $\bigwedge_{i=1}^N Q_i \vdash \bot$ ($\mathcal{Y}_{\cap}(x) = \emptyset$), every coordinate $\theta \in \prod_a \Theta_a$ yields a non-empty structured output fiber $\mathcal{Y}_{\mathcal{T}_{\mathcal{M}}(\theta)}(x) \neq \emptyset$.*
-3. **StrictSuperset of Union (Recombinant Generalization):** *Whenever $\ge 2$ independent chart axes vary across $S$, $\bigcup_{\theta \in \Theta} \mathcal{Y}_{\mathcal{T}_{\mathcal{M}}(\theta)}(x) \supsetneq \bigcup_{i=1}^N \mathcal{Y}_i(x)$, enabling synthesis of structured outputs unreachable by any single member or mixture.*
+3. **Strict Superset of Union (Recombinant Generalization):** *Whenever $\ge 2$ independent chart axes vary across $S$, $\bigcup_{\theta \in \Theta} \mathcal{Y}_{\mathcal{T}_{\mathcal{M}}(\theta)}(x) \supsetneq \bigcup_{i=1}^N \mathcal{Y}_i(x)$, enabling synthesis of structured outputs unreachable by any single member or mixture.*
 
 ### 3.2 Amari Conditional Fisher–Rao Geometry & Tangent Geodesic Basis
 
@@ -111,14 +111,15 @@ Given any unseen task input $x \in \mathcal{X}$, the **Inverse Chart Encoder** $
 2. Projects $x$ onto Fisher tangent coordinates $\theta_{\text{cont}}^*(x) = U^\top G_F^{1/2}(\hat{\eta}(x) - \bar{\eta}_0)$ (within Riemannian trust radius $\|\theta_{\text{cont}}^*\|_2 \le R$) and resolves discrete fiber coordinates $\theta_{\text{logic}}^*(x) \in \Theta$.
 3. Instantiates the synthesized conditional Markov kernel $K_{\theta^*(x)}(y \mid x)$ at $\eta^*(x) = \bar{\eta}_0 + \sum_{k=1}^r \theta_{\text{cont}, k}^*(x) v_k$ over $\mathcal{Y}_{\mathcal{T}_{\mathcal{M}}(\theta_{\text{logic}}^*(x))}(x)$.
 
-### 3.3 Kiefer–Wolfowitz Optimal Experimental Design: Submodular Log-Det Fisher Volume
+### 3.3 Query-Conditioned Optimal Experimental Design: Submodular Noisy-OR + Log-Det Fisher Volume
 
-To reconstruct a $d$-dimensional tangent space $T_{\bar{\eta}_0}\mathcal{M}$ from $N$ chosen skills, covering pipeline roles alone is insufficient—the chosen landmarks must **geometrically span** $T_{\bar{\eta}_0}\mathcal{M}$. `scripts/submodular_select.py` augments noisy-OR role coverage with the **D-Optimal Fisher Log-Determinant Volume**:
-$$V_{\text{Fisher}}(S) \;=\; \frac{1}{2} \log \det\!\left(I_D + \alpha \sum_{s \in S} \tilde{\psi}(s)\tilde{\psi}(s)^\top\right), \qquad \tilde{\psi}(s) = G_F(0)^{1/2}\eta(s).$$
+To reconstruct a $d$-dimensional tangent space $T_{\bar{\eta}_0}\mathcal{M}$ from $N$ chosen skills under query $Q$, `scripts/submodular_select.py` combines query-conditioned noisy-OR role coverage $M_{\text{role}}(S \mid Q) = \sum_{u \in \mathcal{U}} w_u \big(1 - \prod_{s \in S}(1 - p(u \mid s, Q))\big)$ with the **D-Optimal Fisher Log-Determinant Volume**:
+$$V_{\text{Fisher}}(S) \;=\; \frac{1}{2} \log \det\!\left(I_D + \alpha \sum_{s \in S} \tilde{\psi}(s)\tilde{\psi}(s)^\top\right), \qquad \tilde{\psi}(s) = G_F(0)^{1/2}\eta(s),$$
+penalized by blended JSD + Cilibrasi–Vitányi NCD similarity $\overline{\text{Sim}}_{\text{JSD+NCD}}(S)$ and off-domain + exemplar conflict divergence $\sum_{s \in S}(D_{\text{off}}(s \parallel Q) + D_{\text{conflict}}(s))$.
 
-**Theorem 3.2 (Monotone Submodularity of Fisher Spanning Volume).** *By Schur complement, for any $S \subseteq T$ and $e \notin T$,*
+**Theorem 3.2 (Monotone Submodularity of Joint Coverage + Fisher Volume).** *By Schur complement, for any $S \subseteq T$ and $e \notin T$,*
 $$V_{\text{Fisher}}(S \cup \{e\}) - V_{\text{Fisher}}(S) \;=\; \frac{1}{2}\log\!\Big(1 + \alpha\, \tilde{\psi}(e)^\top \big(I_D + \alpha \tilde{\Psi}_S^\top \tilde{\Psi}_S\big)^{-1} \tilde{\psi}(e)\Big) \;\ge\; V_{\text{Fisher}}(T \cup \{e\}) - V_{\text{Fisher}}(T) \;\ge\; 0$$
-*because $A_S = I_D + \alpha \tilde{\Psi}_S^\top \tilde{\Psi}_S \preceq A_T \implies A_S^{-1} \succeq A_T^{-1}$ in the Loewner positive-definite order. Consequently, $M_{\text{total}}(S) = M_{\text{role}}(S) + \gamma V_{\text{Fisher}}(S)$ is strictly monotone submodular, preserving both the worst-case $(1 - 1/e)$ guarantee and the online Nemhauser–Wolsey optimality certificate.*
+*because $A_S = I_D + \alpha \tilde{\Psi}_S^\top \tilde{\Psi}_S \preceq A_T \implies A_S^{-1} \succeq A_T^{-1}$ in the Loewner positive-definite order. Consequently, $M_{\text{total}}(S \mid Q) = M_{\text{role}}(S \mid Q) + \gamma V_{\text{Fisher}}(S)$ is strictly monotone submodular, preserving both the worst-case $(1 - 1/e)$ guarantee and the online Nemhauser–Wolsey optimality certificate.*
 
 ### 3.4 Presheaves of Structured Outputs & Čech Cohomology Gluing
 
@@ -133,7 +134,7 @@ Structured outputs $y \in \mathcal{Y}$ form sections of a presheaf $\mathcal{F}_
 Each module inside the manifold-parameterized workflow remains an **Open Effectful Kleisli Transducer** $\mathcal{S} = \langle I, O, P, Q, \mathcal{F}, \mathcal{E}, \mathcal{B} \rangle$ wired via **six algebraic operators** checked by `scripts/wiring_compiler.py`:
 
 1. **Lawvere–Amari Chart Projection ($\sigma^* : \mathcal{X} \to \Theta$):** Projects raw input onto contradiction-free fiber coordinates $\theta^*(x)$ and halts with exit-`2` `ABSTAIN_OFF_MANIFOLD` outside the conormal domain guard.
-2. **Sequential Kleisli Pipe ($S_2 \circ_\alpha S_1$):** Enforces Meyer Hoare refinement $Q_1(x, y_1) \implies P_2(\alpha(y_1))$ via minimal sufficient-statistic adapters $\alpha$.
+2. **Sequential Kleisli Pipe ($S_2 \circ_\alpha S_1$):** Enforces Meyer Hoare refinement $Q_1(x, y_1) \implies P_2(\alpha(y_1))$ and Benveniste–Henzinger contract consistency via minimal sufficient-statistic adapters $\alpha$.
 3. **Parallel Tensor ($S_1 \otimes S_2$):** Enforces Concurrent Separation Logic frame disjointness $\mathcal{W}_1 \cap (\mathcal{W}_2 \cup \mathcal{R}_2) = \emptyset$ and $\mathcal{W}_2 \cap \mathcal{R}_1 = \emptyset$.
 4. **Guarded Coproduct ($G \triangleright (S_1 \oplus S_2 \oplus \texttt{ABSTAIN})$):** Total routing with Liskov Behavioral Subtyping.
 5. **Sheaf Equalizer / Pullback Join ($\Gamma(\mathcal{U}, \mathcal{F}) = \ker \delta^0$):** Enforces $\delta^1 = 0$ statically and $\pi_K(O_u) = \pi_K(O_v)$ dynamically across overlapping artifact views.
@@ -146,7 +147,7 @@ Each module inside the manifold-parameterized workflow remains an **Open Effectf
 | Theoretical Mechanism | Executable Implementation | Reproducible Verification Suite |
 |---|---|---|
 | Guarded Markov kernels over 648 structured outputs, Conditional Fisher–Rao metric $G_F$, Galois conormal core, Plotkin–Reynolds anti-unification $\sqcup_{\text{lgg}}$, Čech cocycle checker | `scripts/manifold_engine.py` | `metrics/manifold-lift/measure.py` |
-| Monotone submodular Noisy-OR + Log-Det Fisher volume $V_{\text{Fisher}}(S)$ + JSD/NCD anti-redundancy + Nemhauser–Wolsey certificate | `scripts/submodular_select.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
+| Query-conditioned submodular Noisy-OR $p(u \mid s, Q)$ + Log-Det Fisher volume $V_{\text{Fisher}}(S)$ + JSD/NCD anti-redundancy + exemplar conflict penalty + Nemhauser–Wolsey certificate | `scripts/submodular_select.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
 | 6-operator Kleisli + Sheaf wiring compiler & 6-theorem static verifier (`type_safety`, `separation_logic`, `dpi_exogenous_grounding`, `dominator_orthogonality`, `parnas_encapsulation`, `manifold_sheaf_exactness`) | `scripts/wiring_compiler.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
-| End-to-end composite manifold compiler emitting `MANIFOLD_ATLAS.md`, standalone `project_manifold.py`, & sheaf/SHA-256 `verify_dominator_gate.py` | `scripts/compose_skills.py` | `metrics/manifold-lift/measure.py`, `metrics/principled-lift/measure.py` |
+| End-to-end composite manifold compiler emitting `MANIFOLD_ATLAS.md`, standalone `project_manifold.py`, & sheaf/SHA-256 `verify_dominator_gate.py` (+ 4-platform manifests) | `scripts/compose_skills.py`, `scripts/export_platform_targets.py` | `metrics/manifold-lift/measure.py`, `metrics/principled-lift/measure.py` |
 | Conditional DEFLATE/LZ novelty, Attention Channel SNR, & Lyapunov debt $\Phi$ | `scripts/information_gain.py` | `metrics/principled-lift/measure.py` |
