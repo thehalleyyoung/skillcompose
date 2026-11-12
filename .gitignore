@@ -4,8 +4,16 @@ __pycache__/
 skillremix-wip-*/
 skillcompose-wip-*/
 randomupgrade-wip-*/
-.gemini/
-.claude/
-.cursor/
-.codex/
 .agents/
+
+# Track workspace skill/command/rule bundles for Gemini, Codex, Claude, and Cursor
+.gemini/*
+!.gemini/skills/
+.codex/*
+!.codex/skills/
+.claude/*
+!.claude/skills/
+!.claude/commands/
+.cursor/*
+!.cursor/skills/
+!.cursor/rules/

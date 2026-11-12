@@ -1,8 +1,8 @@
 {
   "metric_id": "propose-audits-gate",
   "title": "propose_remix empty-audits must FAIL exit 2",
-  "at": "2026-11-12T00:38:13.415664+00:00",
-  "ts": 1794443893.415686,
+  "at": "2026-11-12T00:56:31.223963+00:00",
+  "ts": 1794444991.223983,
   "values": {
     "cases": [
       {

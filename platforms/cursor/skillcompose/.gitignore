@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+skillremix-wip-*/
+skillcompose-wip-*/
+randomupgrade-wip-*/
+.agents/
+
+# Track workspace skill/command/rule bundles for Gemini, Codex, Claude, and Cursor
+.gemini/*
+!.gemini/skills/
+.codex/*
+!.codex/skills/
+.claude/*
+!.claude/skills/
+!.claude/commands/
+.cursor/*
+!.cursor/skills/
+!.cursor/rules/

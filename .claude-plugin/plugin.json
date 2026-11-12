@@ -1,0 +1,13 @@
+{
+  "name": "skillcompose",
+  "version": "1.0.0",
+  "description": "Principled Kleisli, information-theoretic, and control-theoretic skill composition & upgrade meta-skill via /skillcompose [query|--pin owner/repo@skill] [--domain writing|devops|data|research|automation] [--n N] [--discover-only|--resume|--status|--local-only|--remix-plan-only]. Replaces naive \"best-of-GitHub\" concatenation with monotone submodular + JSD/NCD Kolmogorov skill selection (with Nemhauser-Wolsey optimality certificate), typed Kleisli transducer wiring (sequential sufficient-statistic adapters, separation-logic parallel tensors, pullback invariant joins, guarded ABSTAIN coproducts), Parnas progressive-disclosure compilation (compose_skills.py), read-only post-dominator verification gates (verify_dominator_gate.py), and 50 MDL/Lyapunov-ratcheted forge rounds. Use when the user invokes /skillcompose or $skillcompose, or asks for principled/algebraic/information-theoretic skill composition or remixing.",
+  "author": {
+    "name": "SkillCompose"
+  },
+  "license": "MIT",
+  "skills": "./",
+  "commands": [
+    "./commands"
+  ]
+}

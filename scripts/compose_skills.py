@@ -628,6 +628,10 @@ Manifold atlas & chart equations: [MANIFOLD_ATLAS.md](./references/MANIFOLD_ATLA
     graph["verification"] = verify_graph(graph, out_dir)
     (out_dir / "references" / "wiring_graph.json").write_text(json.dumps(graph, indent=2) + "\n", encoding="utf-8")
 
+    from export_platform_targets import stamp_in_place
+
+    stamp_in_place(out_dir, skill_name)
+
     return {
         "ok": graph["verification"]["decision"] == "PASS",
         "skill_dir": str(out_dir),

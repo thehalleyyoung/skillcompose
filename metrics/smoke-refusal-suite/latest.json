@@ -1,14 +1,14 @@
 {
   "metric_id": "smoke-refusal-suite",
   "title": "Smoke refusal suite green",
-  "at": "2026-11-12T00:38:16.139156+00:00",
-  "ts": 1794443896.1391778,
+  "at": "2026-11-12T00:56:33.983121+00:00",
+  "ts": 1794444993.9831655,
   "values": {
     "skill_root": "/home/antigravity/thehalleyyoung/skillcompose",
     "exit_code": 0,
     "smoke_ok": true,
     "has_refusal_suite": true,
-    "elapsed_ms": 1114,
-    "tail": "  \"dest\": \"/tmp/tmp.vPcko9xmvx/fork\",\n  \"fork_name\": \"demo-upgraded\",\n  \"files\": 7\n}\nSMOKE_OK"
+    "elapsed_ms": 1142,
+    "tail": "  \"dest\": \"/tmp/tmp.b7khNfM2M5/fork\",\n  \"fork_name\": \"demo-upgraded\",\n  \"files\": 7\n}\nSMOKE_OK"
   }
 }

@@ -26,7 +26,20 @@ import zlib
 from pathlib import Path
 from typing import Any
 
-EXCLUDED_DIRS = {".git", "__pycache__", "node_modules", ".claude", ".cursor", ".codex", ".gemini"}
+EXCLUDED_DIRS = {
+    ".git",
+    "__pycache__",
+    "node_modules",
+    ".claude",
+    ".claude-plugin",
+    ".cursor",
+    ".codex",
+    ".gemini",
+    ".agents",
+    "platforms",
+    "paper",
+    "evals",
+}
 EXCLUDED_FILES = {"usefulness_forge.jsonl", "USEFULNESS_FORGE.md"}
 
 

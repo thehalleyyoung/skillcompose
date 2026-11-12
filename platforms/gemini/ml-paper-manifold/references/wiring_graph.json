@@ -1,0 +1,711 @@
+{
+  "schema": "skillremix.wiring_graph.v3",
+  "package_name": "ml-paper-manifold",
+  "domain": "research",
+  "nodes": [
+    {
+      "id": "subskill:intent-guard-router",
+      "operator_class": "guard_router",
+      "composition_op": "coproduct_guard",
+      "inputs": [
+        "raw_user_request"
+      ],
+      "outputs": [
+        "task_request",
+        "workspace_context"
+      ],
+      "abstain_branch": "ABSTAIN_OUT_OF_DOMAIN",
+      "preconditions": [
+        "non_empty_request"
+      ],
+      "postconditions": [
+        "domain_sense_verified_or_abstained"
+      ],
+      "reads": [
+        "raw_user_request"
+      ],
+      "writes": [],
+      "exogenous_oracle": true
+    },
+    {
+      "id": "subskill:manifold-chart-projector",
+      "operator_class": "manifold_projector",
+      "composition_op": "lawvere_amari_chart_projection",
+      "inputs": [
+        "task_request",
+        "workspace_context"
+      ],
+      "outputs": [
+        "manifold_fiber_section",
+        "task_request",
+        "workspace_context"
+      ],
+      "preconditions": [
+        "domain_sense_verified_or_abstained"
+      ],
+      "postconditions": [
+        "conormal_invariants_locked",
+        "tangent_chart_coordinates_projected"
+      ],
+      "reads": [
+        "workspace_context"
+      ],
+      "writes": [
+        "spec/manifold_section.json"
+      ],
+      "exogenous_oracle": true
+    },
+    {
+      "id": "member:latex-fmt",
+      "source_id": "Calix-L/awesome-latex-skills@latex-fmt",
+      "operator_class": "specifier",
+      "primary_role": "spec_grounding",
+      "inputs": [
+        "task_request",
+        "workspace_context"
+      ],
+      "outputs": [
+        "locked_spec_packet"
+      ],
+      "preconditions": [
+        "domain_guard_matched"
+      ],
+      "postconditions": [
+        "ambiguities_enumerated",
+        "acceptance_invariants_typed"
+      ],
+      "reads": [
+        "workspace_context"
+      ],
+      "writes": [
+        "spec/locked_spec.json"
+      ],
+      "exogenous_oracle": false
+    },
+    {
+      "id": "member:anti-defensive-writing",
+      "source_id": "Boom5426/Nature-Paper-Skills@anti-defensive-writing",
+      "operator_class": "mutator",
+      "primary_role": "synthesis",
+      "inputs": [
+        "locked_spec_packet"
+      ],
+      "outputs": [
+        "candidate_artifact"
+      ],
+      "preconditions": [
+        "locked_spec_packet_valid"
+      ],
+      "postconditions": [
+        "artifact_materialized"
+      ],
+      "reads": [
+        "spec/locked_spec.json",
+        "workspace_context"
+      ],
+      "writes": [
+        "workspace_artifacts:slice_1"
+      ],
+      "exogenous_oracle": false
+    },
+    {
+      "id": "member:conference-paper-writing",
+      "source_id": "Boom5426/Nature-Paper-Skills@conference-paper-writing",
+      "operator_class": "mutator",
+      "primary_role": "synthesis",
+      "inputs": [
+        "locked_spec_packet"
+      ],
+      "outputs": [
+        "candidate_artifact"
+      ],
+      "preconditions": [
+        "locked_spec_packet_valid"
+      ],
+      "postconditions": [
+        "artifact_materialized"
+      ],
+      "reads": [
+        "spec/locked_spec.json",
+        "workspace_context"
+      ],
+      "writes": [
+        "workspace_artifacts:slice_2"
+      ],
+      "exogenous_oracle": false
+    },
+    {
+      "id": "member:research-paper-writing",
+      "source_id": "Master-cai/Research-Paper-Writing-Skills@research-paper-writing",
+      "operator_class": "mutator",
+      "primary_role": "synthesis",
+      "inputs": [
+        "locked_spec_packet"
+      ],
+      "outputs": [
+        "candidate_artifact"
+      ],
+      "preconditions": [
+        "locked_spec_packet_valid"
+      ],
+      "postconditions": [
+        "artifact_materialized"
+      ],
+      "reads": [
+        "spec/locked_spec.json",
+        "workspace_context"
+      ],
+      "writes": [
+        "workspace_artifacts:slice_3"
+      ],
+      "exogenous_oracle": false
+    },
+    {
+      "id": "member:paper-writing-skill",
+      "source_id": "SNL-UCSB/paper-writing-skill@paper-writing-skill",
+      "operator_class": "mutator",
+      "primary_role": "synthesis",
+      "inputs": [
+        "locked_spec_packet"
+      ],
+      "outputs": [
+        "candidate_artifact"
+      ],
+      "preconditions": [
+        "locked_spec_packet_valid"
+      ],
+      "postconditions": [
+        "artifact_materialized"
+      ],
+      "reads": [
+        "spec/locked_spec.json",
+        "workspace_context"
+      ],
+      "writes": [
+        "workspace_artifacts:slice_4"
+      ],
+      "exogenous_oracle": false
+    },
+    {
+      "id": "subskill:pullback-claim-provenance-table",
+      "operator_class": "pullback_join",
+      "composition_op": "pullback_join",
+      "shared_key": "claim_provenance_table",
+      "invariant": "every quantitative claim cites source_id + exact numerator/denominator check",
+      "inputs": [
+        "locked_spec_packet",
+        "candidate_artifact"
+      ],
+      "outputs": [
+        "reconciled_artifact_bundle",
+        "pullback_witness"
+      ],
+      "preconditions": [
+        "candidate_artifact_exists"
+      ],
+      "postconditions": [
+        "every quantitative claim cites source_id + exact numerator/denominator check"
+      ],
+      "reads": [
+        "spec/locked_spec.json",
+        "workspace_artifacts"
+      ],
+      "writes": [
+        "review/pullback_claim_ledger.json"
+      ],
+      "exogenous_oracle": true
+    },
+    {
+      "id": "member:citation-verifier",
+      "source_id": "Boom5426/Nature-Paper-Skills@citation-verifier",
+      "operator_class": "readonly_critic",
+      "primary_role": "static_contract",
+      "inputs": [
+        "reconciled_artifact_bundle",
+        "locked_spec_packet"
+      ],
+      "outputs": [
+        "static_contract_report"
+      ],
+      "preconditions": [
+        "candidate_artifact_exists"
+      ],
+      "postconditions": [
+        "schema_and_invariants_checked"
+      ],
+      "reads": [
+        "workspace_artifacts",
+        "spec/locked_spec.json"
+      ],
+      "writes": [],
+      "exogenous_oracle": true
+    },
+    {
+      "id": "member:citation-management",
+      "source_id": "K-Dense-AI/scientific-agent-skills@citation-management",
+      "operator_class": "readonly_critic",
+      "primary_role": "static_contract",
+      "inputs": [
+        "reconciled_artifact_bundle",
+        "locked_spec_packet"
+      ],
+      "outputs": [
+        "static_contract_report"
+      ],
+      "preconditions": [
+        "candidate_artifact_exists"
+      ],
+      "postconditions": [
+        "schema_and_invariants_checked"
+      ],
+      "reads": [
+        "workspace_artifacts",
+        "spec/locked_spec.json"
+      ],
+      "writes": [],
+      "exogenous_oracle": true
+    },
+    {
+      "id": "member:peer-review",
+      "source_id": "K-Dense-AI/scientific-agent-skills@peer-review",
+      "operator_class": "readonly_critic",
+      "primary_role": "adversarial_verify",
+      "inputs": [
+        "reconciled_artifact_bundle",
+        "locked_spec_packet"
+      ],
+      "outputs": [
+        "adversarial_critique_report"
+      ],
+      "preconditions": [
+        "candidate_artifact_exists"
+      ],
+      "postconditions": [
+        "counterexamples_and_smells_probed"
+      ],
+      "reads": [
+        "workspace_artifacts",
+        "spec/locked_spec.json"
+      ],
+      "writes": [],
+      "exogenous_oracle": false
+    },
+    {
+      "id": "oracle:exogenous-env-runner",
+      "operator_class": "exec_observation",
+      "composition_op": "exogenous_grounding",
+      "inputs": [
+        "reconciled_artifact_bundle",
+        "locked_spec_packet"
+      ],
+      "outputs": [
+        "empirical_execution_trace"
+      ],
+      "preconditions": [
+        "reconciled_artifact_bundle_exists"
+      ],
+      "postconditions": [
+        "deterministic_env_oracle_executed"
+      ],
+      "reads": [
+        "workspace_artifacts",
+        "spec/locked_spec.json"
+      ],
+      "writes": [],
+      "exogenous_oracle": true
+    },
+    {
+      "id": "subskill:verify-gate",
+      "operator_class": "oracle_gate",
+      "composition_op": "orthogonal_dominator_gate",
+      "inputs": [
+        "reconciled_artifact_bundle",
+        "pullback_witness",
+        "empirical_execution_trace"
+      ],
+      "outputs": [
+        "verified_certificate_or_lyapunov_repair_card"
+      ],
+      "preconditions": [
+        "all_upstream_critics_reported"
+      ],
+      "postconditions": [
+        "phi_debt_equals_zero",
+        "no_guard_regression"
+      ],
+      "reads": [
+        "workspace_artifacts",
+        "review/pullback_claim_ledger.json"
+      ],
+      "writes": [],
+      "exogenous_oracle": true
+    },
+    {
+      "id": "DONE",
+      "operator_class": "terminal",
+      "inputs": [
+        "verified_certificate_or_lyapunov_repair_card"
+      ],
+      "outputs": [],
+      "reads": [],
+      "writes": [],
+      "exogenous_oracle": true
+    }
+  ],
+  "edges": [
+    {
+      "from": "subskill:intent-guard-router",
+      "to": "subskill:manifold-chart-projector",
+      "op": "sequential_pipe",
+      "artifact": "task_request"
+    },
+    {
+      "from": "subskill:manifold-chart-projector",
+      "to": "member:latex-fmt",
+      "op": "sequential_pipe",
+      "artifact": "manifold_fiber_section"
+    },
+    {
+      "from": "member:latex-fmt",
+      "to": "member:anti-defensive-writing",
+      "op": "sequential_pipe",
+      "artifact": "locked_spec_packet"
+    },
+    {
+      "from": "member:anti-defensive-writing",
+      "to": "member:conference-paper-writing",
+      "op": "sequential_pipe",
+      "artifact": "candidate_artifact"
+    },
+    {
+      "from": "member:conference-paper-writing",
+      "to": "member:research-paper-writing",
+      "op": "sequential_pipe",
+      "artifact": "candidate_artifact"
+    },
+    {
+      "from": "member:research-paper-writing",
+      "to": "member:paper-writing-skill",
+      "op": "sequential_pipe",
+      "artifact": "candidate_artifact"
+    },
+    {
+      "from": "member:paper-writing-skill",
+      "to": "subskill:pullback-claim-provenance-table",
+      "op": "pullback_join",
+      "artifact": "candidate_artifact"
+    },
+    {
+      "from": "subskill:pullback-claim-provenance-table",
+      "to": "member:citation-verifier",
+      "op": "parallel_tensor",
+      "artifact": "reconciled_artifact_bundle"
+    },
+    {
+      "from": "subskill:pullback-claim-provenance-table",
+      "to": "member:citation-management",
+      "op": "parallel_tensor",
+      "artifact": "reconciled_artifact_bundle"
+    },
+    {
+      "from": "subskill:pullback-claim-provenance-table",
+      "to": "member:peer-review",
+      "op": "parallel_tensor",
+      "artifact": "reconciled_artifact_bundle"
+    },
+    {
+      "from": "subskill:pullback-claim-provenance-table",
+      "to": "oracle:exogenous-env-runner",
+      "op": "parallel_tensor",
+      "artifact": "reconciled_artifact_bundle"
+    },
+    {
+      "from": "member:citation-verifier",
+      "to": "subskill:verify-gate",
+      "op": "dominator_join",
+      "artifact": "critic_evidence"
+    },
+    {
+      "from": "member:citation-management",
+      "to": "subskill:verify-gate",
+      "op": "dominator_join",
+      "artifact": "critic_evidence"
+    },
+    {
+      "from": "member:peer-review",
+      "to": "subskill:verify-gate",
+      "op": "dominator_join",
+      "artifact": "critic_evidence"
+    },
+    {
+      "from": "oracle:exogenous-env-runner",
+      "to": "subskill:verify-gate",
+      "op": "dominator_join",
+      "artifact": "critic_evidence"
+    },
+    {
+      "from": "subskill:verify-gate",
+      "to": "DONE",
+      "op": "certified_ship",
+      "artifact": "verified_certificate"
+    },
+    {
+      "from": "subskill:verify-gate",
+      "to": "member:anti-defensive-writing",
+      "op": "lyapunov_feedback_retry",
+      "condition": "phi_debt > 0 (upstream-first repair; control-barrier ratchet enforced)",
+      "artifact": "lyapunov_repair_card"
+    }
+  ],
+  "parallel_groups": [
+    {
+      "id": "tensor:orthogonal-critics",
+      "members": [
+        "member:citation-verifier",
+        "member:citation-management",
+        "member:peer-review",
+        "oracle:exogenous-env-runner"
+      ],
+      "separation_invariant": "forall i!=j: writes(i) == [] && writes(j) == []"
+    }
+  ],
+  "pullback": {
+    "key": "claim_provenance_table",
+    "artifact": "review/pullback_claim_ledger.json",
+    "invariant": "every quantitative claim cites source_id + exact numerator/denominator check"
+  },
+  "sheaf_nerve": {
+    "domain": "research",
+    "open_cover": [
+      "U_claim_protocol",
+      "U_evidence_table",
+      "U_stat_computation",
+      "U_citation_audit"
+    ],
+    "overlaps": [
+      {
+        "u": "U_claim_protocol",
+        "v": "U_evidence_table",
+        "shared_keys": [
+          "claim_ids",
+          "denominators"
+        ],
+        "transform": "id"
+      },
+      {
+        "u": "U_evidence_table",
+        "v": "U_stat_computation",
+        "shared_keys": [
+          "claim_ids",
+          "denominators"
+        ],
+        "transform": "id"
+      },
+      {
+        "u": "U_claim_protocol",
+        "v": "U_stat_computation",
+        "shared_keys": [
+          "claim_ids",
+          "denominators"
+        ],
+        "transform": "id"
+      },
+      {
+        "u": "U_evidence_table",
+        "v": "U_citation_audit",
+        "shared_keys": [
+          "source_hashes"
+        ],
+        "transform": "id"
+      }
+    ]
+  },
+  "manifold_theory": {
+    "conormal_core": {
+      "spec_modality": [
+        "formal_grammar_adr",
+        "informal_prose",
+        "json_contract"
+      ],
+      "execution_regime": [
+        "single_shot",
+        "streaming_incremental",
+        "transactional_staged"
+      ],
+      "verification_channel": [
+        "adversarial_differential",
+        "exogenous_exec_oracle",
+        "static_ast_contract"
+      ],
+      "failure_semantics": [
+        "abstain_exit2",
+        "idempotent_rollback"
+      ],
+      "gluing_topology": [
+        "pairwise_handoff",
+        "sheaf_global_section"
+      ],
+      "context_disclosure": [
+        "progressive_parnas"
+      ]
+    },
+    "chart_variables": {
+      "spec_modality": {
+        "variable": "theta_spec_modality",
+        "domain": [
+          "formal_grammar_adr",
+          "informal_prose",
+          "json_contract"
+        ],
+        "cardinality": 3,
+        "had_hard_contradiction": true
+      },
+      "execution_regime": {
+        "variable": "theta_execution_regime",
+        "domain": [
+          "single_shot",
+          "transactional_staged"
+        ],
+        "cardinality": 2,
+        "had_hard_contradiction": true
+      },
+      "verification_channel": {
+        "variable": "theta_verification_channel",
+        "domain": [
+          "adversarial_differential",
+          "exogenous_exec_oracle",
+          "static_ast_contract"
+        ],
+        "cardinality": 3,
+        "had_hard_contradiction": true
+      },
+      "failure_semantics": {
+        "variable": "theta_failure_semantics",
+        "domain": [
+          "abstain_exit2",
+          "idempotent_rollback"
+        ],
+        "cardinality": 2,
+        "had_hard_contradiction": true
+      },
+      "gluing_topology": {
+        "variable": "theta_gluing_topology",
+        "domain": [
+          "pairwise_handoff",
+          "sheaf_global_section"
+        ],
+        "cardinality": 2,
+        "had_hard_contradiction": true
+      }
+    },
+    "lifted_conflicts_count": 6,
+    "unlifted_conflicts": [],
+    "manifold_total_fiber_size": 72,
+    "union_fiber_size": 32,
+    "recombinant_novel_states": 40,
+    "specialization_exact": true,
+    "tangent_rank": 6,
+    "intrinsic_dimension": 4.4743,
+    "fisher_logdet_volume": 6.5515
+  },
+  "synthesized_subskills": [
+    {
+      "name": "intent-guard-router",
+      "kind": "subskill",
+      "algebraic_role": "Guarded Coproduct (G |> Pipeline + ABSTAIN)",
+      "job": "Decidable domain/polysemy guard for research: routes valid requests into typed `task_request` and halts with exit-2 ABSTAIN on wrong-sense triggers.",
+      "pulls_from": [
+        "latex-fmt",
+        "citation-verifier",
+        "citation-management",
+        "anti-defensive-writing",
+        "conference-paper-writing",
+        "research-paper-writing",
+        "paper-writing-skill",
+        "peer-review"
+      ]
+    },
+    {
+      "name": "manifold-chart-projector",
+      "kind": "subskill",
+      "algebraic_role": "Lawvere-Amari Chart Projector (sigma* : X -> Theta)",
+      "job": "Projects input task onto Fisher-Rao tangent coordinates theta*(x) and resolves anti-unified Lawvere fiber variables without inter-skill contradiction.",
+      "pulls_from": [
+        "latex-fmt",
+        "citation-verifier",
+        "citation-management",
+        "anti-defensive-writing",
+        "conference-paper-writing",
+        "research-paper-writing",
+        "paper-writing-skill",
+        "peer-review"
+      ]
+    },
+    {
+      "name": "handoff-pack",
+      "kind": "subskill",
+      "algebraic_role": "Sufficient-Statistic Handoff Contract",
+      "job": "Normalizes specifier outputs into canonical `locked_spec.json` and enforces Meyer precondition compatibility (Q_spec => P_mutator) across stages.",
+      "pulls_from": [
+        "member:latex-fmt"
+      ]
+    },
+    {
+      "name": "pullback-research-bridge",
+      "kind": "subskill",
+      "algebraic_role": "Pullback Invariant Reconciler (S_spec x_{claim_provenance_table} S_mut)",
+      "job": "Deterministically checks every quantitative claim cites source_id + exact numerator/denominator check and emits `review/pullback_claim_ledger.json`.",
+      "pulls_from": [
+        "member:anti-defensive-writing",
+        "member:conference-paper-writing",
+        "member:research-paper-writing",
+        "member:paper-writing-skill"
+      ]
+    },
+    {
+      "name": "verify-gate",
+      "kind": "subskill",
+      "algebraic_role": "Post-Dominator Orthogonal Oracle & Lyapunov Controller",
+      "job": "Read-only executable gate (write_set = empty) that post-dominates every mutator before DONE; computes Lyapunov debt Phi and emits upstream-first repair cards on FAIL.",
+      "pulls_from": [
+        "member:citation-verifier",
+        "member:citation-management",
+        "member:peer-review",
+        "oracle:exogenous-env-runner"
+      ]
+    }
+  ],
+  "verification": {
+    "decision": "PASS",
+    "checks": {
+      "type_safety": true,
+      "separation_logic": true,
+      "dpi_exogenous_grounding": true,
+      "dominator_orthogonality": true,
+      "parnas_encapsulation": true,
+      "manifold_sheaf_exactness": true
+    },
+    "reasons": [],
+    "n_nodes": 14,
+    "n_edges": 17,
+    "exogenous_nodes": [
+      "subskill:manifold-chart-projector",
+      "subskill:pullback-claim-provenance-table",
+      "oracle:exogenous-env-runner",
+      "subskill:verify-gate"
+    ],
+    "readonly_gates": [
+      "subskill:verify-gate"
+    ],
+    "parnas": {
+      "skill_md_bytes": 4857,
+      "encapsulated_bytes": 233114,
+      "encapsulation_ratio": 0.9796
+    },
+    "sheaf_cocycle": {
+      "cocycle_exact": true,
+      "triangles_checked": 1,
+      "holonomy_defects": []
+    }
+  }
+}

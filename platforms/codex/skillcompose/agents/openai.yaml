@@ -1,0 +1,6 @@
+interface:
+  display_name: "SkillCompose"
+  short_description: "Principled Kleisli, information-theoretic, and control-theoretic skill composition & upgrade meta-skill via /skillcompose [query|--pin owner/repo@skill] [--d..."
+  default_prompt: "Use $skillcompose to execute its Lawvere-Amari manifold workflow and verify all deliverables before completion."
+policy:
+  allow_implicit_invocation: true

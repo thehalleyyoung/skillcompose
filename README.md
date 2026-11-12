@@ -20,7 +20,9 @@ Research paper (LaTeX + PDF): [`paper/main.pdf`](paper/main.pdf) ([`paper/main.t
 
 ---
 
-## Install (Antigravity / `agy` + Claude Code + Cursor + Codex)
+## Install & Platform Versions (Gemini + Codex + Claude + Cursor)
+
+Standalone platform builds for both **`skillcompose`** and **`ml-paper-manifold`** live in [`platforms/`](platforms/README.md) ([`gemini`](platforms/gemini/), [`codex`](platforms/codex/), [`claude`](platforms/claude/), [`cursor`](platforms/cursor/)) as well as workspace auto-discovery directories (`.gemini/skills/`, `.codex/skills/`, `.claude/skills/`, `.cursor/skills/`, `.cursor/rules/`).
 
 ```bash
 git clone https://github.com/thehalleyyoung/skillcompose.git
@@ -28,11 +30,11 @@ cd skillcompose
 bash install.sh
 ```
 
-Installs `skillcompose` cleanly into:
-- `~/.gemini/config/skills/skillcompose` (Antigravity / `agy`)
-- `~/.claude/skills/skillcompose` (Claude Code)
-- `~/.cursor/skills/skillcompose` (Cursor)
-- `~/.codex/skills/skillcompose` (Codex, auto-generating `agents/openai.yaml` when available)
+Installs both `skillcompose` and `ml-paper-manifold` cleanly into:
+- **Gemini (`gemini` / Antigravity `agy`)**: `~/.gemini/skills/<skill>` & `~/.gemini/config/skills/<skill>` (`SKILL.md`, `GEMINI.md`, `gemini-extension.json`)
+- **Codex (`codex`)**: `${CODEX_HOME:-~/.codex}/skills/<skill>` (`SKILL.md`, `agents/openai.yaml`)
+- **Claude (`claude`)**: `~/.claude/skills/<skill>` & `~/.claude/commands/<skill>.md` (`SKILL.md`, `.claude-plugin/plugin.json`)
+- **Cursor (`cursor`)**: `~/.cursor/skills/<skill>` (`SKILL.md`, `rules/<skill>.mdc`)
 
 ---
 

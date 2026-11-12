@@ -11,7 +11,7 @@ def find_skill_dirs(root: Path) -> list[Path]:
     found = []
     for p in root.rglob("SKILL.md"):
         # skip nested installs
-        if any(x in p.parts for x in (".git", "node_modules", ".claude", ".cursor")):
+        if any(x in p.parts for x in (".git", "node_modules", ".claude", ".cursor", ".codex", ".gemini", ".agents", "platforms")):
             continue
         found.append(p.parent)
     return found

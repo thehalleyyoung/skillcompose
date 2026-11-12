@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Install a skill package into ~/.gemini/config/skills (Antigravity),
-# ~/.claude/skills, ~/.cursor/skills, and $CODEX_HOME/skills (default ~/.codex/skills).
-# (Name kept as install_skill_dual.sh for compatibility; installs across all four agent roots.)
-# Excludes .git / .gemini / .agents / .agent / .claude / .cursor / .codex to prevent recursive nesting.
+# Install a skill package across all four agent platforms:
+#   - Gemini CLI (~/.gemini/skills) + Antigravity (~/.gemini/config/skills)
+#   - Claude Code (~/.claude/skills + ~/.claude/commands)
+#   - Cursor (~/.cursor/skills)
+#   - OpenAI Codex (${CODEX_HOME:-$HOME/.codex}/skills + agents/openai.yaml)
+# Excludes .git / .gemini / .agents / .agent / .claude / .cursor / .codex / platforms to prevent recursive nesting.
 set -euo pipefail
 
 usage() {
@@ -10,6 +12,7 @@ usage() {
   exit 1
 }
 
+SCRIPT_HERE="$(cd "$(dirname "$0")" && pwd)"
 SKILL_DIR=""
 NAME=""
 REPO_ROOT=""
@@ -42,7 +45,8 @@ NAME="$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9-]+/-/g; s
 
 CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 
-GEMINI_DEST="${HOME}/.gemini/config/skills/${NAME}"
+GEMINI_AGY_DEST="${HOME}/.gemini/config/skills/${NAME}"
+GEMINI_CLI_DEST="${HOME}/.gemini/skills/${NAME}"
 CLAUDE_DEST="${HOME}/.claude/skills/${NAME}"
 CURSOR_DEST="${HOME}/.cursor/skills/${NAME}"
 CODEX_DEST="${CODEX_HOME_DIR}/skills/${NAME}"
@@ -60,44 +64,69 @@ copy_one() {
   mkdir -p "$(dirname "$dest")"
   rm -rf "$dest"
   mkdir -p "$dest"
-  # Exclude VCS + prior install mirrors to avoid infinite nesting
-  tar -C "$SKILL_DIR" \
-    --exclude='.git' \
-    --exclude='.gemini' \
-    --exclude='.agents' \
-    --exclude='.agent' \
-    --exclude='.claude' \
-    --exclude='.cursor' \
-    --exclude='.codex' \
-    --exclude='__pycache__' \
-    --exclude='node_modules' \
-    --exclude='randomupgrade-wip-*' \
-    --exclude='skillremix-wip-*' \
-    -cf - . | tar -C "$dest" -xf -
+  python3 - "$SKILL_DIR" "$dest" <<'PY'
+import os, shutil, sys
+from pathlib import Path
+
+src, dst = Path(sys.argv[1]), Path(sys.argv[2])
+excl = {
+    ".git", ".gemini", ".agents", ".agent", ".claude", ".claude-plugin",
+    ".cursor", ".codex", "platforms", "paper", "evals", "__pycache__", "node_modules",
+}
+for root, dirs, files in os.walk(src):
+    rel_root = Path(root).relative_to(src)
+    dirs[:] = [
+        d for d in dirs
+        if d not in excl and not d.startswith(("randomupgrade-wip-", "skillremix-wip-", "skillcompose-wip-"))
+    ]
+    target_root = dst / rel_root
+    target_root.mkdir(parents=True, exist_ok=True)
+    for f in files:
+        if f.endswith((".pyc", ".pyo")) or f == ".DS_Store":
+            continue
+        sp = Path(root) / f
+        dp = target_root / f
+        shutil.copyfile(sp, dp)
+        if dp.suffix in {".sh", ".py"} or "scripts" in rel_root.parts:
+            try:
+                os.chmod(dp, 0o755)
+            except OSError:
+                pass
+PY
   echo "installed: $dest"
 }
 
-gen_codex_yaml() {
+stamp_manifests() {
   local dest="$1"
   [ "$DRY" -eq 1 ] && return 0
-  [ -f "$dest/agents/openai.yaml" ] && return 0
-  local gen="${CODEX_HOME_DIR}/skills/.system/skill-creator/scripts/generate_openai_yaml.py"
-  if [ -f "$gen" ]; then
-    python3 "$gen" "$dest" --name "$NAME" 2>/dev/null || true
+  local exporter="${SCRIPT_HERE}/export_platform_targets.py"
+  if [ -f "$exporter" ]; then
+    python3 "$exporter" --skill-dir "$dest" --name "$NAME" --in-place >/dev/null 2>&1 || true
   fi
 }
 
-copy_one "$GEMINI_DEST"
+copy_one "$GEMINI_AGY_DEST"
+stamp_manifests "$GEMINI_AGY_DEST"
+copy_one "$GEMINI_CLI_DEST"
+stamp_manifests "$GEMINI_CLI_DEST"
+
 if [ "$GEMINI_ONLY" -eq 0 ]; then
   copy_one "$CLAUDE_DEST"
+  stamp_manifests "$CLAUDE_DEST"
+  if [ "$DRY" -eq 0 ] && [ -f "$CLAUDE_DEST/commands/${NAME}.md" ]; then
+    mkdir -p "${HOME}/.claude/commands"
+    cp "$CLAUDE_DEST/commands/${NAME}.md" "${HOME}/.claude/commands/${NAME}.md"
+  fi
   copy_one "$CURSOR_DEST"
+  stamp_manifests "$CURSOR_DEST"
   copy_one "$CODEX_DEST"
-  gen_codex_yaml "$CODEX_DEST"
+  stamp_manifests "$CODEX_DEST"
 fi
 
 if [ "$DRY" -eq 0 ]; then
-  [ -f "$GEMINI_DEST/SKILL.md" ] || { echo "error: Antigravity (~/.gemini/config/skills) install incomplete" >&2; exit 1; }
-  if [ -d "$GEMINI_DEST/.gemini" ] || [ -d "$GEMINI_DEST/.agents" ] || [ -d "$GEMINI_DEST/.claude" ] || [ -d "$GEMINI_DEST/.cursor" ] || [ -d "$GEMINI_DEST/.codex" ]; then
+  [ -f "$GEMINI_AGY_DEST/SKILL.md" ] || { echo "error: Antigravity (~/.gemini/config/skills) install incomplete" >&2; exit 1; }
+  [ -f "$GEMINI_CLI_DEST/SKILL.md" ] || { echo "error: Gemini CLI (~/.gemini/skills) install incomplete" >&2; exit 1; }
+  if [ -d "$GEMINI_AGY_DEST/.gemini" ] || [ -d "$GEMINI_AGY_DEST/.agents" ] || [ -d "$GEMINI_AGY_DEST/.claude" ] || [ -d "$GEMINI_AGY_DEST/.cursor" ] || [ -d "$GEMINI_AGY_DEST/.codex" ]; then
     echo "error: nested config dir leaked into Antigravity install — fix excludes" >&2
     exit 1
   fi
@@ -105,6 +134,7 @@ if [ "$DRY" -eq 0 ]; then
     [ -f "$CLAUDE_DEST/SKILL.md" ] || { echo "error: Claude install incomplete" >&2; exit 1; }
     [ -f "$CURSOR_DEST/SKILL.md" ] || { echo "error: Cursor install incomplete" >&2; exit 1; }
     [ -f "$CODEX_DEST/SKILL.md" ] || { echo "error: Codex install incomplete" >&2; exit 1; }
+    [ -f "$CODEX_DEST/agents/openai.yaml" ] || { echo "error: Codex agents/openai.yaml missing" >&2; exit 1; }
     if [ -d "$CLAUDE_DEST/.claude" ] || [ -d "$CURSOR_DEST/.cursor" ] || [ -d "$CODEX_DEST/.codex" ]; then
       echo "error: nested .claude/.cursor/.codex leaked into install — fix excludes" >&2
       exit 1
@@ -114,6 +144,7 @@ fi
 
 if [ -n "$REPO_ROOT" ]; then
   REPO_ROOT="$(cd "$REPO_ROOT" && pwd)"
+  copy_one "${REPO_ROOT}/.gemini/skills/${NAME}"
   copy_one "${REPO_ROOT}/.agents/skills/${NAME}"
   if [ "$GEMINI_ONLY" -eq 0 ]; then
     copy_one "${REPO_ROOT}/.claude/skills/${NAME}"
@@ -128,7 +159,8 @@ targets = ["gemini"] if int("$GEMINI_ONLY") == 1 else ["gemini", "claude", "curs
 print(json.dumps({
   "skill": "$NAME",
   "source": "$SKILL_DIR",
-  "gemini": "$GEMINI_DEST",
+  "gemini_antigravity": "$GEMINI_AGY_DEST",
+  "gemini_cli": "$GEMINI_CLI_DEST",
   "claude": "$CLAUDE_DEST" if int("$GEMINI_ONLY") == 0 else None,
   "cursor": "$CURSOR_DEST" if int("$GEMINI_ONLY") == 0 else None,
   "codex": "$CODEX_DEST" if int("$GEMINI_ONLY") == 0 else None,

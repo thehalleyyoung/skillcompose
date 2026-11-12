@@ -1,0 +1,323 @@
+{
+  "strategy": "submodular_kleisli_jsd_ncd",
+  "domain": "research",
+  "query": "post-research ml conference paper writing latex booktabs venue templates claim2evidence figures citations peer review",
+  "requested_n": 8,
+  "eligible_count": 15,
+  "chosen": [
+    {
+      "id": "K-Dense-AI/scientific-agent-skills@peer-review",
+      "repo": "K-Dense-AI/scientific-agent-skills",
+      "skill": "peer-review",
+      "path": "skills/peer-review/SKILL.md",
+      "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/main/skills/peer-review/SKILL.md",
+      "stars": 56846,
+      "license": "MIT",
+      "eligible": true,
+      "local_dir": "/tmp/ml_paper_wip/upstreams/k-dense-ai__scientific-agent-skills__peer-review",
+      "chars": 13807,
+      "role_posterior": {
+        "spec_grounding": 0.0,
+        "synthesis": 0.0,
+        "static_contract": 0.0,
+        "exec_observation": 0.0,
+        "adversarial_verify": 0.343,
+        "state_recovery": 0.0
+      },
+      "marginal_information_gain": 0.704,
+      "off_domain_divergence": 0.0
+    },
+    {
+      "id": "SNL-UCSB/paper-writing-skill@paper-writing-skill",
+      "repo": "SNL-UCSB/paper-writing-skill",
+      "skill": "paper-writing-skill",
+      "path": "SKILL.md",
+      "url": "https://github.com/SNL-UCSB/paper-writing-skill/blob/main/SKILL.md",
+      "stars": 249,
+      "license": "MIT",
+      "eligible": true,
+      "local_dir": "/tmp/ml_paper_wip/upstreams/snl-ucsb__paper-writing-skill__paper-writing-skill",
+      "chars": 35360,
+      "role_posterior": {
+        "spec_grounding": 0.0,
+        "synthesis": 0.343,
+        "static_contract": 0.0,
+        "exec_observation": 0.0,
+        "adversarial_verify": 0.0,
+        "state_recovery": 0.0
+      },
+      "marginal_information_gain": 0.5657,
+      "off_domain_divergence": 0.0
+    },
+    {
+      "id": "K-Dense-AI/scientific-agent-skills@citation-management",
+      "repo": "K-Dense-AI/scientific-agent-skills",
+      "skill": "citation-management",
+      "path": "skills/citation-management/SKILL.md",
+      "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/main/skills/citation-management/SKILL.md",
+      "stars": 56846,
+      "license": "MIT",
+      "eligible": true,
+      "local_dir": "/tmp/ml_paper_wip/upstreams/k-dense-ai__scientific-agent-skills__citation-management",
+      "chars": 16618,
+      "role_posterior": {
+        "spec_grounding": 0.0,
+        "synthesis": 0.0,
+        "static_contract": 0.343,
+        "exec_observation": 0.0,
+        "adversarial_verify": 0.0,
+        "state_recovery": 0.0
+      },
+      "marginal_information_gain": 0.5573,
+      "off_domain_divergence": 0.0
+    },
+    {
+      "id": "Boom5426/Nature-Paper-Skills@anti-defensive-writing",
+      "repo": "Boom5426/Nature-Paper-Skills",
+      "skill": "anti-defensive-writing",
+      "path": "skills/core/anti-defensive-writing/SKILL.md",
+      "url": "https://github.com/Boom5426/Nature-Paper-Skills/blob/main/skills/core/anti-defensive-writing/SKILL.md",
+      "stars": 669,
+      "license": "MIT",
+      "eligible": true,
+      "local_dir": "/tmp/ml_paper_wip/upstreams/boom5426__nature-paper-skills__anti-defensive-writing",
+      "chars": 33387,
+      "role_posterior": {
+        "spec_grounding": 0.0,
+        "synthesis": 0.343,
+        "static_contract": 0.0,
+        "exec_observation": 0.0,
+        "adversarial_verify": 0.0,
+        "state_recovery": 0.0
+      },
+      "marginal_information_gain": 0.4461,
+      "off_domain_divergence": 0.0
+    },
+    {
+      "id": "Master-cai/Research-Paper-Writing-Skills@research-paper-writing",
+      "repo": "Master-cai/Research-Paper-Writing-Skills",
+      "skill": "research-paper-writing",
+      "path": "research-paper-writing/SKILL.md",
+      "url": "https://github.com/Master-cai/Research-Paper-Writing-Skills/blob/main/research-paper-writing/SKILL.md",
+      "stars": 8276,
+      "license": "MIT",
+      "eligible": true,
+      "local_dir": "/tmp/ml_paper_wip/upstreams/master-cai__research-paper-writing-skills__research-paper-writing",
+      "chars": 4834,
+      "role_posterior": {
+        "spec_grounding": 0.0,
+        "synthesis": 0.343,
+        "static_contract": 0.0,
+        "exec_observation": 0.0,
+        "adversarial_verify": 0.0,
+        "state_recovery": 0.0
+      },
+      "marginal_information_gain": 0.3286,
+      "off_domain_divergence": 0.0
+    },
+    {
+      "id": "Boom5426/Nature-Paper-Skills@citation-verifier",
+      "repo": "Boom5426/Nature-Paper-Skills",
+      "skill": "citation-verifier",
+      "path": "skills/core/citation-verifier/SKILL.md",
+      "url": "https://github.com/Boom5426/Nature-Paper-Skills/blob/main/skills/core/citation-verifier/SKILL.md",
+      "stars": 669,
+      "license": "MIT",
+      "eligible": true,
+      "local_dir": "/tmp/ml_paper_wip/upstreams/boom5426__nature-paper-skills__citation-verifier",
+      "chars": 5778,
+      "role_posterior": {
+        "spec_grounding": 0.0,
+        "synthesis": 0.0,
+        "static_contract": 0.343,
+        "exec_observation": 0.0,
+        "adversarial_verify": 0.0,
+        "state_recovery": 0.0
+      },
+      "marginal_information_gain": 0.306,
+      "off_domain_divergence": 0.0
+    },
+    {
+      "id": "Boom5426/Nature-Paper-Skills@conference-paper-writing",
+      "repo": "Boom5426/Nature-Paper-Skills",
+      "skill": "conference-paper-writing",
+      "path": "skills/optional/conference-paper-writing/SKILL.md",
+      "url": "https://github.com/Boom5426/Nature-Paper-Skills/blob/main/skills/optional/conference-paper-writing/SKILL.md",
+      "stars": 669,
+      "license": "MIT",
+      "eligible": true,
+      "local_dir": "/tmp/ml_paper_wip/upstreams/boom5426__nature-paper-skills__conference-paper-writing",
+      "chars": 38605,
+      "role_posterior": {
+        "spec_grounding": 0.0,
+        "synthesis": 0.343,
+        "static_contract": 0.0,
+        "exec_observation": 0.0,
+        "adversarial_verify": 0.0,
+        "state_recovery": 0.0
+      },
+      "marginal_information_gain": 0.2137,
+      "off_domain_divergence": 0.0
+    },
+    {
+      "id": "Calix-L/awesome-latex-skills@latex-fmt",
+      "repo": "Calix-L/awesome-latex-skills",
+      "skill": "latex-fmt",
+      "path": "latex-fmt/SKILL.md",
+      "url": "https://github.com/Calix-L/awesome-latex-skills/blob/main/latex-fmt/SKILL.md",
+      "stars": 187,
+      "license": "MIT",
+      "eligible": true,
+      "local_dir": "/tmp/ml_paper_wip/upstreams/calix-l__awesome-latex-skills__latex-fmt",
+      "chars": 5777,
+      "role_posterior": {
+        "spec_grounding": 0.0,
+        "synthesis": 0.0,
+        "static_contract": 0.0,
+        "exec_observation": 0.0,
+        "adversarial_verify": 0.0,
+        "state_recovery": 0.0
+      },
+      "marginal_information_gain": 0.1566,
+      "off_domain_divergence": 0.0
+    }
+  ],
+  "greedy_trace": [
+    {
+      "step": 1,
+      "picked_id": "K-Dense-AI/scientific-agent-skills@peer-review",
+      "marginal_gain": 0.704,
+      "cumulative_objective": 0.704,
+      "normalized_coverage": 0.0635,
+      "role_entropy_bits": 0.0
+    },
+    {
+      "step": 2,
+      "picked_id": "SNL-UCSB/paper-writing-skill@paper-writing-skill",
+      "marginal_gain": 0.5657,
+      "cumulative_objective": 1.2697,
+      "normalized_coverage": 0.1194,
+      "role_entropy_bits": 1.0
+    },
+    {
+      "step": 3,
+      "picked_id": "K-Dense-AI/scientific-agent-skills@citation-management",
+      "marginal_gain": 0.5573,
+      "cumulative_objective": 1.827,
+      "normalized_coverage": 0.1728,
+      "role_entropy_bits": 1.585
+    },
+    {
+      "step": 4,
+      "picked_id": "Boom5426/Nature-Paper-Skills@anti-defensive-writing",
+      "marginal_gain": 0.4461,
+      "cumulative_objective": 2.2731,
+      "normalized_coverage": 0.2095,
+      "role_entropy_bits": 1.5405
+    },
+    {
+      "step": 5,
+      "picked_id": "Master-cai/Research-Paper-Writing-Skills@research-paper-writing",
+      "marginal_gain": 0.3286,
+      "cumulative_objective": 2.6017,
+      "normalized_coverage": 0.2336,
+      "role_entropy_bits": 1.4888
+    },
+    {
+      "step": 6,
+      "picked_id": "Boom5426/Nature-Paper-Skills@citation-verifier",
+      "marginal_gain": 0.306,
+      "cumulative_objective": 2.9077,
+      "normalized_coverage": 0.2687,
+      "role_entropy_bits": 1.5246
+    },
+    {
+      "step": 7,
+      "picked_id": "Boom5426/Nature-Paper-Skills@conference-paper-writing",
+      "marginal_gain": 0.2137,
+      "cumulative_objective": 3.1214,
+      "normalized_coverage": 0.2845,
+      "role_entropy_bits": 1.5024
+    },
+    {
+      "step": 8,
+      "picked_id": "Calix-L/awesome-latex-skills@latex-fmt",
+      "marginal_gain": 0.1566,
+      "cumulative_objective": 3.278,
+      "normalized_coverage": 0.2845,
+      "role_entropy_bits": 1.5024
+    }
+  ],
+  "nemhauser_wolsey_certificate": {
+    "achieved_coverage": 3.3619,
+    "opt_upper_bound": 4.1381,
+    "optimality_ratio_lower_bound": 0.8124,
+    "nemhauser_wolsey_worst_case_floor": 0.6321
+  },
+  "principled_metrics": {
+    "objective": 3.278,
+    "submodular_coverage": 1.9206,
+    "fisher_logdet_volume": 6.5515,
+    "manifold_submodular_potential": 3.3619,
+    "normalized_coverage": 0.2845,
+    "chain_synergy": 0.0686,
+    "mean_redundancy": 0.1269,
+    "mean_jsd": 0.8922,
+    "mean_ncd": 0.9365,
+    "off_domain_penalty": 0.0,
+    "role_coverage": {
+      "spec_grounding": 0.0,
+      "synthesis": 0.8137,
+      "static_contract": 0.5684,
+      "exec_observation": 0.0,
+      "adversarial_verify": 0.343,
+      "state_recovery": 0.0
+    },
+    "role_entropy_bits": 1.5024,
+    "has_exogenous_grounding": false,
+    "has_orthogonal_verify": false
+  },
+  "counterfactual_popularity_top_n": {
+    "chosen_ids": [
+      "K-Dense-AI/scientific-agent-skills@citation-management",
+      "K-Dense-AI/scientific-agent-skills@peer-review",
+      "K-Dense-AI/scientific-agent-skills@scientific-visualization",
+      "K-Dense-AI/scientific-agent-skills@scientific-writing",
+      "K-Dense-AI/scientific-agent-skills@venue-templates",
+      "Master-cai/Research-Paper-Writing-Skills@research-paper-writing",
+      "Haojae/scipilot-figure-skill@scipilot-figure-skill",
+      "Boom5426/Nature-Paper-Skills@anti-defensive-writing"
+    ],
+    "metrics": {
+      "objective": 1.4304,
+      "submodular_coverage": 1.5769,
+      "fisher_logdet_volume": 5.9861,
+      "manifold_submodular_potential": 2.8939,
+      "normalized_coverage": 0.2336,
+      "chain_synergy": 0.0686,
+      "mean_redundancy": 0.2266,
+      "mean_jsd": 0.9113,
+      "mean_ncd": 0.9269,
+      "off_domain_penalty": 1.2949,
+      "role_coverage": {
+        "spec_grounding": 0.0,
+        "synthesis": 0.7164,
+        "static_contract": 0.343,
+        "exec_observation": 0.0,
+        "adversarial_verify": 0.343,
+        "state_recovery": 0.0
+      },
+      "role_entropy_bits": 1.4888,
+      "has_exogenous_grounding": false,
+      "has_orthogonal_verify": false
+    }
+  },
+  "lift_over_popularity_top_n": {
+    "objective_delta": 1.8476,
+    "coverage_delta": 0.0509,
+    "fisher_volume_delta": 0.5654,
+    "synergy_delta": 0.0,
+    "redundancy_reduction": 0.0997,
+    "entropy_bits_delta": 0.0136
+  }
+}
