@@ -35,6 +35,8 @@ def main() -> int:
         rc_res, res = parse(*base, "--new-skill-name", "skillcompose")
         rc_conf, conf = parse(*base, "--new-skill-name", "a-b", "--name", "c-d")
         rc_none, none = parse(*base)
+        rc_slash, slash = parse(*base, "--new-skill-name", "/fantasy-draft", "--new")
+        rc_bare_new, bare_new = parse(*base, "--new")
 
         pkg = tmp / "pkg"
         pkg.mkdir()
@@ -54,6 +56,8 @@ def main() -> int:
             "reserved_name_refused": rc_res == 2 and res.get("error") == "reserved_new_skill_name",
             "conflicting_name_refused": rc_conf == 2 and conf.get("error") == "conflicting_skill_names",
             "flag_optional": rc_none == 0 and none.get("new_skill_name") is None,
+            "leading_slash_dropped_with_new": rc_slash == 0 and slash.get("new_skill_name") == "fantasy-draft",
+            "bare_new_refused": rc_bare_new == 2 and bare_new.get("error") == "new_requires_new_skill_name",
             "installer_new_refuses_existing": inst_taken.returncode == 2 and "skill_name_taken" in inst_taken.stdout,
             "existing_skill_untouched": old_intact,
             "installer_new_accepts_fresh": inst_fresh.returncode == 0

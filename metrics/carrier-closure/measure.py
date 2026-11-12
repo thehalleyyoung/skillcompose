@@ -106,12 +106,32 @@ def check_install_guard(tmp: Path) -> dict:
     }
 
 
+def check_locator(tmp: Path) -> dict:
+    """The carrier is only right if the member folder is: prefer the folder whose frontmatter declares the name."""
+    from locate_skill import pick
+
+    repo = tmp / "repo"
+    for rel, name in (
+        ("templates/skills/genre/fantasy", "fantasy"),
+        ("templates/skills/qa/consistency-checker", "story-monitor"),
+        ("distributions/codex/skills/craft", "craft"),
+        ("skills/creative/craft", "craft"),
+    ):
+        (repo / rel).mkdir(parents=True)
+        (repo / rel / "SKILL.md").write_text(f"---\nname: {name}\n---\nbody\n", encoding="utf-8")
+    return {
+        "locator_prefers_declared_name": pick(repo, "story-monitor", None).relative_to(repo).as_posix() == "templates/skills/qa/consistency-checker",
+        "locator_skips_distribution_mirror": pick(repo, "craft", None).relative_to(repo).as_posix() == "skills/creative/craft",
+    }
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as t:
         tmp = Path(t)
         closure = check_closure(tmp / "c")
         guard = check_install_guard(tmp / "g")
-    checks = {k: v for k, v in {**closure, **guard}.items() if isinstance(v, bool)}
+        locator = check_locator(tmp / "l")
+    checks = {k: v for k, v in {**closure, **guard, **locator}.items() if isinstance(v, bool)}
     ok = all(checks.values())
     print(json.dumps({"ok": ok, "checks": checks, "carried": closure["carried"]}, indent=2))
     return 0 if ok else 1

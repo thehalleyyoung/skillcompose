@@ -112,9 +112,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--new-skill-name",
         default=None,
         help=(
-            "Name of the skill this run creates (kebab-case). Must not already be "
-            "installed on any host, so a new composition never lands on an old skill."
+            "Name of the skill this run creates (kebab-case; a leading / is dropped). "
+            "Must not already be installed on any host, so a new composition never lands on an old skill."
         ),
+    )
+    p.add_argument(
+        "--new",
+        action="store_true",
+        help="Assert that this run creates a new skill; requires --new-skill-name (implied by it).",
     )
     p.add_argument("--seed", default=None, help="PRNG seed for eligible pick")
     p.add_argument("--min-installs", type=int, default=80)
@@ -201,6 +206,11 @@ def main() -> int:
         return 2
     if args.n is not None and args.pin:
         print("error: --n remix mode cannot combine with --pin (pin is single-skill)", file=sys.stderr)
+        return 2
+    if args.new_skill_name is not None:
+        args.new_skill_name = args.new_skill_name.strip().lstrip("/")
+    if args.new and not args.new_skill_name:
+        print(json.dumps({"ok": False, "error": "new_requires_new_skill_name", "message": "--new needs --new-skill-name NAME"}, indent=2))
         return 2
     refusal = check_new_skill_name(args.new_skill_name, args.name, args.resume or args.status)
     if refusal:
