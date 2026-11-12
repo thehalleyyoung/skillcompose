@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Parse CLI args for thehalleyyoung/skillcompose (/skillcompose) into JSON.
 
-`--args` is an exogenous Lawvere fiber Θ_args for the *composed* skill.
-It is not a meta-skill control flag and is not folded into the discovery query.
+`--args` is the optional desired argument interface of the final skill:
+arguments it should be able to take, and, with a take: prefix, arguments it
+should take. It is not a meta-skill control flag and is not folded into the
+discovery query. See references/theory.md §3.5.
 """
 from __future__ import annotations
 
@@ -13,7 +15,7 @@ import sys
 
 
 def split_composed_args(raw: str | None) -> list[str]:
-    """Split `--args` into fiber tokens. Commas win; otherwise shlex."""
+    """Split `--args` into interface tokens. Commas win; otherwise shlex."""
     if raw is None:
         return []
     text = str(raw).strip()
@@ -25,6 +27,30 @@ def split_composed_args(raw: str | None) -> list[str]:
         return shlex.split(text)
     except ValueError:
         return [text]
+
+
+def classify_desired_interface(tokens: list[str]) -> dict[str, list[str]]:
+    """Map `--args` tokens onto D = (D_take, D_able).
+
+    An unmarked name is an argument the final skill is able to take.
+    A `take:` prefix also puts it in the set of arguments the final skill takes.
+    Taking implies being able to take, so D_take is a subset of D_able.
+    """
+    take: list[str] = []
+    able: list[str] = []
+    for token in tokens:
+        raw = token.strip()
+        required = False
+        if raw.lower().startswith("take:"):
+            raw = raw[5:].strip()
+            required = True
+        if not raw:
+            continue
+        if raw not in able:
+            able.append(raw)
+        if required and raw not in take:
+            take.append(raw)
+    return {"take": take, "able": able}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -98,9 +124,10 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         dest="composed_args",
         help=(
-            "Exogenous fiber parameters for the composed skill (Θ_args), "
-            "e.g. '--author-persona, --premise'. Not folded into the discovery query "
-            "and not skillcompose control flags."
+            "Optional desired interface of the final skill: arguments it should "
+            "be able to take, e.g. '--author-persona, --premise'. Prefix take: "
+            "for an argument it should take, e.g. 'take:--premise'. Not folded "
+            "into the discovery query."
         ),
     )
     return p
@@ -150,6 +177,7 @@ def main() -> int:
         "allow_unknown": args.allow_unknown,
         "composed_args": split_composed_args(args.composed_args),
         "composed_args_raw": args.composed_args,
+        "desired_interface": classify_desired_interface(split_composed_args(args.composed_args)),
         "mode": mode,
         "raw": raw,
     }

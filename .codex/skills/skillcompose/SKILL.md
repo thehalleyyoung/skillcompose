@@ -72,9 +72,9 @@ python3 "$SCRIPTS/parse_args.py" $ARGS > /tmp/sr_args.json
 # mode: upgrade (default) | remix (--n N, N>=2)
 ```
 
-Modes: default single-upgrade · **`--n N` remix** · **`--args "<Θ_args>"`** (exogenous fiber for the composed skill; not folded into the discovery query) · `--discover-only` · `--audit-only` · `--remix-plan-only` · `--resume --wip PATH` · `--status --wip PATH` · `--local-only` · `--ask-phases` / `--ask-themes` · `--private` · `--domain <pack>`.
+Modes: default single-upgrade · **`--n N` remix** · **`--args "<D>"`** (optional desired interface of the final skill: arguments it should be able to take; prefix `take:` for arguments it should take; not folded into the discovery query) · `--discover-only` · `--audit-only` · `--remix-plan-only` · `--resume --wip PATH` · `--status --wip PATH` · `--local-only` · `--ask-phases` / `--ask-themes` · `--private` · `--domain <pack>`.
 
-`composed_args` in `/tmp/sr_args.json` is the Lawvere fiber $\Theta_{\text{args}}$ (see `references/theory.md`). Pass those tokens into the composed skill's locked handoff. Do not treat them as `/skillcompose` control flags.
+`desired_interface` in `/tmp/sr_args.json` is $D = (D_{\text{take}}, D_{\text{able}})$ from `references/theory.md` §3.5. Empty $D$ leaves the anti-unified member signature. These tokens are the arity of the skill being composed. They are not `/skillcompose` control flags.
 
 Refusal / FAIL exits are **2** across parse_args, license_gate, propose_remix, forge_log, check_phases, unify_wholeness, and ship_check (PASS = 0).
 

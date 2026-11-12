@@ -160,7 +160,7 @@ def build_sheaf_payloads() -> tuple[dict[str, Any], dict[str, Any]]:
             {
                 "claim_id": "C2_E_GEODESIC_FACTORIZATION_AND_ANTIUNIFY",
                 "manuscript_anchor": "Theorems 1-2 & Appendix A.1 (sec:manifold)",
-                "statement": "Conditional Fisher-Rao e-geodesics factor as weighted products of experts with strict Bregman gap Delta_{e,m} > 0, while Plotkin-Reynolds anti-unification preserves exact landmark pullbacks and expands admissible fibers across all 7 families.",
+                "statement": "Conditional Fisher-Rao e-geodesics factor as weighted products of experts with strict Bregman gap Delta_{e,m} > 0, while Plotkin-Reynolds anti-unification preserves exact landmark pullbacks and expands admissible fibers across all 7 families. The same split publishes the finished skill's argument signature: arguments it takes, arguments it is able to take, and an optional desired interface for arguments the caller wants the final skill to take or be able to take.",
                 "verification_type": "formal_proof_and_compiler_certificate",
             },
             {
@@ -210,7 +210,7 @@ def build_sheaf_payloads() -> tuple[dict[str, Any], dict[str, Any]]:
         ],
         "five_dimension_adversarial_review": {
             "novelty_and_positioning": "PASS (Formalizes dual Fisher-Rao e-geodesic + Galois/Plotkin-Reynolds fibered Lawvere manifold; distinct from embedding retrieval and mixture routing)",
-            "mathematical_rigor": "PASS (2 Definitions, 2 Propositions, 4 Theorems with complete proofs in main text and Appendix A)",
+            "mathematical_rigor": "PASS (2 Definitions, 2 Propositions, 4 Theorems, and Corollary 1 on the optional desired argument interface, with complete proofs in main text and Appendix A)",
             "experimental_isolation": "PASS (Identical 4 member skills per family, 1 isolated solver call per cell, exogenous oracle + shuffled double-blind judge)",
             "clarity_and_visuals": "PASS (Vector TikZ geometry figure, vector PGFPlots 7-family chart, 3 booktabs tables, zero Overfull hboxes)",
             "reproducibility_and_citations": "PASS (22/22 verified BibTeX keys cited, deterministic Python 3 stdlib compiler and benchmark runner)",

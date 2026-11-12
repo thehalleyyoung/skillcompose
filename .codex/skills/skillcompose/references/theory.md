@@ -76,7 +76,8 @@ Dumping raw member prompts inflates denominator context $|C|_{\text{tokens}}$ (v
 ## 3. Lawvere–Amari Generative Skill Manifolds: Unifying Geometry and Logic
 
 To synthesize a single generative skill $\mathfrak{G}_{\mathcal{M}}$ from sampled skills $S = \{s_1, \dots, s_N\}$ that **encompasses the underlying manifold** while **acting as a rigorous input-to-structured-output transducer**, `/skillcompose` constructs a **Lawvere–Amari Generative Bundle**:
-$$\mathfrak{G}_{\mathcal{M}} \;=\; \big\langle \Theta,\; \mathcal{T}_{\mathcal{M}},\; (\bar{\eta}_0, G_F, V),\; \mathcal{N}(\mathcal{U}),\; \sigma^* \big\rangle.$$
+$$\mathfrak{G}_{\mathcal{M}}(D) \;=\; \big\langle \Theta,\; \mathcal{T}_{\mathcal{M}},\; (\bar{\eta}_0, G_F, V),\; \mathcal{N}(\mathcal{U}),\; \sigma^*,\; \mathcal{A}_{\mathcal{M}}(D) \big\rangle,$$
+where the optional desired argument theory $D$ (empty by default) is defined in §3.5. It is part of the composed object, not a side channel around it.
 
 ### 3.1 Exact Normal–Tangent Duality Between Differential Geometry and Categorical Logic
 
@@ -127,6 +128,36 @@ Structured outputs $y \in \mathcal{Y}$ form sections of a presheaf $\mathcal{F}_
 - **Static 1-Cocycle Exactness ($\delta^1 = 0$):** On every 2-simplex triangle $(U_a, U_b, U_c)$ in $\mathcal{N}(\mathcal{U})$, `wiring_compiler.py` verifies loop holonomy $g_{ca} \circ g_{bc} \circ g_{ab} = \mathrm{id}$ (`manifold_sheaf_exactness`).
 - **Runtime 0-Coboundary Enforcement ($\Gamma(\mathcal{U}, \mathcal{F}_x) = \ker \delta^0$):** `verify_dominator_gate.py --glue` checks $(\delta^0 y)_{uv} = \rho_{u \to uv}(y_u) \ominus \rho_{v \to uv}(y_v) = 0$ across materialized JSON/artifact views, rejecting drifted multi-file outputs with exit `2`.
 
+### 3.5 What the final skill takes, and what it is able to take
+
+The object produced by composition is itself a skill, so it has an input signature. Each landmark $s_i$ already has one. Write $T_i$ for the arguments $s_i$ **takes** (the precondition $P_i$ fails until they are instantiated) and $B_i \supseteq T_i$ for the arguments $s_i$ is **able to take** (supplying one stays inside $P_i$; omitting an argument in $B_i \setminus T_i$ is still a legal input).
+
+Member signatures compose by the same normal/tangent split as output clauses (§3.1):
+
+- **Conormal input core.** $T_\cap = \bigcap_{i=1}^N T_i$ is the set of arguments every landmark takes. The final skill takes them. Dropping one would delete a precondition the whole family shares.
+- **Tangent input axes.** $B_\cup = \bigcup_{i=1}^N B_i$ is the set of arguments some landmark is able to take. Plotkin–Reynolds anti-unification $\sqcup_{\text{lgg}}$ lifts the ones that landmarks disagree on (required here, hard-coded there, absent elsewhere) into chart variables. That is what it means for the final skill to be *able* to take them: each landmark pullback $\sigma_i$ puts back the constant that landmark had specialized.
+
+A caller often knows the interface they want back before the landmarks are fused. That knowledge is an **optional desired argument theory**
+$$D \;=\; (D_{\text{take}},\, D_{\text{able}}), \qquad D_{\text{take}} \subseteq D_{\text{able}},$$
+with either component allowed to be empty.
+
+- $D_{\text{take}}$: arguments the final skill should **take**.
+- $D_{\text{able}}$: arguments the final skill should **be able to take**.
+
+$D$ is not the discovery query $Q$ and not a meta-control flag (`--n`, `--domain`, `--pin`, …). $Q$ selects landmarks. $D$ fixes the arity of the skill those landmarks must become. Folding $D$ into $Q$ would turn a typed signature into bag-of-words context and would let an interface constraint masquerade as a control flag. The reference parser therefore keeps them apart: `--args` is recorded as `composed_args` and classified into `desired_interface`. An unmarked name lands in $D_{\text{able}}$. A name marked `take:` also lands in $D_{\text{take}}$ (and therefore in $D_{\text{able}}$, since taking implies being able to take).
+
+**Definition 3.3 (Composed argument interface).**
+$$\mathcal{A}_{\mathcal{M}}(D) \;=\; \big( T_\cap \cup D_{\text{take}},\; B_\cup \cup D_{\text{able}} \big).$$
+The final skill is the Kleisli morphism whose precondition requires the first component and accepts the second. An argument in the second component but not the first may be absent; that absence is an optional chart point, not an off-manifold input.
+
+**Corollary 3.1 (Empty desire, required interface, fresh axes).** *Let $\mathcal{A}_{\mathcal{M}}(D)$ be as above, and assume no demanded value contradicts $\Phi_{\text{core}}$. Then:*
+1. **Empty desire is anti-unification.** *$D = (\emptyset, \emptyset)$ yields $\mathcal{A}_{\mathcal{M}}(D) = (T_\cap, B_\cup)$, the signature already latent in the landmarks.*
+2. **Taking implies being able to take.** *$T_\cap \cup D_{\text{take}} \subseteq B_\cup \cup D_{\text{able}}$.*
+3. **Landmark recovery.** *Pulling $\mathcal{A}_{\mathcal{M}}(D)$ back along $\sigma_i$ instantiates every newly required argument at the constant $s_i$ had hard-coded, and forgets every optional argument $s_i$ did not mention, recovering $P_i$. This is the input half of Theorem 3.1.*
+4. **A new able-argument is a new chart coordinate.** *A name in $D_{\text{able}} \setminus B_\cup$ extends $\Theta$ by a free input axis, and $\mathcal{T}_{\mathcal{M}}$ may depend on it. If a demanded value together with $\Phi_{\text{core}}$ derives $\bot$, the conormal guard fails and composition abstains (`ABSTAIN_OFF_MANIFOLD`, exit 2): the requested interface does not lie on $\mathcal{M}$.*
+
+Example. For an end-to-end fantasy-novel skill the caller may pass $D_{\text{able}} = \{\texttt{author-persona}, \texttt{premise}\}$ and $D_{\text{take}} = \emptyset$. The finished skill is able to take both, and it still runs when they are omitted. Marking premise as taken ($D_{\text{take}} = \{\texttt{premise}\}$) puts premise in the precondition: a later invocation without a premise is outside $P_{\mathcal{M}}$.
+
 ---
 
 ## 4. Software Engineering Kleisli Composition & Agentic Control Laws
@@ -142,16 +173,6 @@ Each module inside the manifold-parameterized workflow remains an **Open Effectf
 
 ---
 
-### 4.1 Exogenous caller fiber $\Theta_{\text{args}}$ (`--args`)
-
-Meta-control flags (`--n`, `--domain`, `--pin`, `--wip`, `--resume`, …) are the control surface of **thehalleyyoung/skillcompose**. They are not coordinates of the composed transducer.
-
-`--args` carries a separate Lawvere fiber $\Theta_{\text{args}}$: caller parameters of the *composed* skill (for example `--author-persona`, `--premise`). `parse_args.py` emits them as `composed_args` and does **not** fold them into the discovery query $Q$. Folding would erase the distinction between control surface and chart variables and would leak $\Theta_{\text{args}}$ into a bag-of-words channel, violating the sufficient-statistic adapter $\alpha$ (DPI: $I(Y;\Theta_{\text{args}})$ must survive as an explicit handoff field, not as diluted query tokens).
-
-Separation: $\mathrm{names}(\Theta_{\text{args}}) \cap \mathrm{names}(\text{meta-flags}) = \emptyset$. The only meta carrier is the flag `--args` itself. Empty $\Theta_{\text{args}}$ is allowed. Downstream Kleisli stages lock non-empty tokens into the composed skill's handoff (`locked_spec` / phase contract) before synthesis. This fiber is part of `/skillcompose`, not a leftover `/skillremix` query default.
-
----
-
 ## 5. Mapping Theory to Executable `/skillcompose` Scripts & Proof Suites
 
 | Theoretical Mechanism | Executable Implementation | Reproducible Verification Suite |
@@ -159,6 +180,6 @@ Separation: $\mathrm{names}(\Theta_{\text{args}}) \cap \mathrm{names}(\text{meta
 | Guarded Markov kernels over 648 structured outputs, Conditional Fisher–Rao metric $G_F$, Galois conormal core, Plotkin–Reynolds anti-unification $\sqcup_{\text{lgg}}$, Čech cocycle checker | `scripts/manifold_engine.py` | `metrics/manifold-lift/measure.py` |
 | Query-conditioned submodular Noisy-OR $p(u \mid s, Q)$ + Log-Det Fisher volume $V_{\text{Fisher}}(S)$ + JSD/NCD anti-redundancy + exemplar conflict penalty + Nemhauser–Wolsey certificate | `scripts/submodular_select.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
 | 6-operator Kleisli + Sheaf wiring compiler & 6-theorem static verifier (`type_safety`, `separation_logic`, `dpi_exogenous_grounding`, `dominator_orthogonality`, `parnas_encapsulation`, `manifold_sheaf_exactness`) | `scripts/wiring_compiler.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
-| Exogenous caller fiber $\Theta_{\text{args}}$ (`--args` → `composed_args`), separated from meta-control flags and from discovery query $Q$ | `scripts/parse_args.py` | invocation: `/skillcompose … --args "--author-persona, --premise"` |
+| Composed argument interface $\mathcal{A}_{\mathcal{M}}(D)$: arguments the final skill takes ($T_\cap \cup D_{\text{take}}$) and is able to take ($B_\cup \cup D_{\text{able}}$); empty $D$ is anti-unification of member signatures | `scripts/parse_args.py` (`--args` → `desired_interface`) | Corollary 3.1; `/skillcompose … --args "--author-persona, take:--premise"` |
 | End-to-end composite manifold compiler emitting `MANIFOLD_ATLAS.md`, standalone `project_manifold.py`, & sheaf/SHA-256 `verify_dominator_gate.py` (+ 4-platform manifests) | `scripts/compose_skills.py`, `scripts/export_platform_targets.py` | `metrics/manifold-lift/measure.py`, `metrics/principled-lift/measure.py` |
 | Conditional DEFLATE/LZ novelty, Attention Channel SNR, & Lyapunov debt $\Phi$ | `scripts/information_gain.py` | `metrics/principled-lift/measure.py` |
