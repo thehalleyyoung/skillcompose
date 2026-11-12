@@ -161,10 +161,33 @@ def main() -> int:
     ap.add_argument("--atlas", type=Path, default=default_atlas)
     ap.add_argument("--input", required=True, help="Task prompt string or path to task file")
     ap.add_argument("--require", action="append", default=[], help="Optional axis=value override")
+    ap.add_argument("--arg", action="append", default=[], help="Interface argument name=value (see SKILL.md Arguments)")
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
 
     atlas = json.loads(args.atlas.read_text(encoding="utf-8"))
+
+    iface = atlas.get("argument_interface") or {"take": [], "able": []}
+    bound = {}
+    for item in args.arg:
+        k, _, v = item.partition("=")
+        bound[k.strip().lstrip("-")] = v.strip()
+    missing = [a for a in iface.get("take", []) if not bound.get(a)]
+    unknown = sorted(k for k in bound if k not in iface.get("able", []))
+    if missing or unknown:
+        rep = {
+            "ok": False,
+            "decision": "ABSTAIN_OFF_MANIFOLD",
+            "domain": atlas.get("domain"),
+            "reasons": [f"argument_interface_rejected: missing_required={missing}, not_in_interface={unknown}"],
+            "argument_interface": iface,
+        }
+        if args.out:
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            args.out.write_text(json.dumps(rep, indent=2) + "\\n", encoding="utf-8")
+        print(json.dumps(rep, indent=2))
+        return 2
+    omitted = [a for a in iface.get("able", []) if a not in bound]
     inp = Path(args.input)
     text = inp.read_text(encoding="utf-8", errors="replace") if inp.is_file() else args.input
     toks = set(tokenize(text))
@@ -266,6 +289,9 @@ def main() -> int:
         "admissible_output_fiber_cardinality": len(valid),
         "map_structured_output": {axes_order[j]: space[ranked[0][1]][j] for j in range(len(axes_order))} if ranked else {},
         "sheaf_gluing_obligations": atlas["sheaf_nerve"]["overlaps"],
+        "argument_interface": iface,
+        "bound_arguments": bound,
+        "omitted_optional_arguments": omitted,
     }
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -439,6 +465,51 @@ def strip_frontmatter(md_text: str) -> str:
     return md_text.strip()
 
 
+def argument_interface(desired: dict[str, list[str]] | None) -> dict[str, list[str]]:
+    """A_M(D) = (T_cap | D_take, B_cup | D_able), theory.md §3.5.
+
+    Landmark signatures (T_cap, B_cup) are not extracted from member SKILL.md
+    yet, so they enter as empty and the interface is D itself.
+    """
+    d = desired or {}
+
+    def names(xs: list[str] | None) -> list[str]:
+        out: list[str] = []
+        for x in xs or []:
+            n = str(x).strip().lstrip("-")
+            if n and n not in out:
+                out.append(n)
+        return out
+
+    take = names(d.get("take"))
+    able = names(d.get("able"))
+    for t in take:
+        if t not in able:
+            able.append(t)
+    return {"take": take, "able": able}
+
+
+def render_arguments_md(iface: dict[str, list[str]], skill_rel_base: str, skill_name: str) -> str:
+    if not iface["able"]:
+        return ""
+    rows = "\n".join(
+        f"| `--{a}` | {'takes (required)' if a in iface['take'] else 'able to take (optional)'} |"
+        for a in iface["able"]
+    )
+    flags = " ".join(f'--arg {a}="<value>"' for a in iface["able"])
+    return f"""
+## Arguments
+
+Composed interface $\\mathcal{{A}}_{{\\mathcal{{M}}}}(D)$ (`references/theory.md` §3.5 in skillcompose):
+
+| Argument | Role |
+|---|---|
+{rows}
+
+Bind supplied arguments at Stage 1 with `{flags}` on `project_manifold.py`. A missing required argument, or a name outside this table, exits `2`. An omitted optional argument is a legal chart point: derive it from the task instead of inventing a caller value.
+"""
+
+
 def compose_package(
     candidates_path: Path,
     *,
@@ -449,7 +520,9 @@ def compose_package(
     skill_name: str = "domain-pack",
     upstreams_root: Path | None = None,
     seed: str = "skillcompose",
+    desired_interface: dict[str, list[str]] | None = None,
 ) -> dict[str, Any]:
+    iface = argument_interface(desired_interface)
     raw = candidates_path.read_text(encoding="utf-8").strip()
     rows: list[dict[str, Any]] = (
         json.loads(raw)
@@ -501,6 +574,7 @@ def compose_package(
         query=query,
         skill_name=skill_name,
     )
+    manifold_atlas["argument_interface"] = iface
     gen_proof = evaluate_generalization_over_union(manifold_atlas)
     graph = compile_wiring(ordered_members, audits, domain=domain, package_name=skill_name)
 
@@ -571,6 +645,8 @@ def compose_package(
     )
     if helper_block:
         helper_block = "\n" + helper_block
+    arguments_md = render_arguments_md(iface, skill_rel_base, skill_name)
+    arg_flags = "".join(f' \\\n       --arg {a}="<value>"' for a in iface["able"])
 
     skill_md = f"""---
 name: {skill_name}
@@ -587,14 +663,14 @@ This skill is **not** a prompt concatenation ($\\bigwedge_i Q_i$) nor a discrete
 {chr(10).join(stage_lines)}
 
 Manifold atlas & chart equations: [MANIFOLD_ATLAS.md](./references/MANIFOLD_ATLAS.md) · Wiring contract: [WIRING_CONTRACT.md](./references/WIRING_CONTRACT.md).
-
+{arguments_md}
 ## Mandatory Execution Protocol
 
 1. **Stage 1 — Chart Projection & Contradiction-Free Fiber Lock ($\\sigma^* : \\mathcal{{X}} \\to \\Theta$)**:
    - Project the user's task onto the manifold before writing deliverables:
      ```bash
      python3 {skill_rel_base}/scripts/project_manifold.py \\
-       --input "<task_summary_or_prompt_file>" \\
+       --input "<task_summary_or_prompt_file>"{arg_flags} \\
        --out "/tmp/manifold_section_{skill_name}_$$.json"
      ```
    - If `project_manifold.py` exits `2` (`ABSTAIN_OFF_MANIFOLD`), halt cleanly, do **not** generate off-domain deliverables, and report refusal.
@@ -638,6 +714,7 @@ Manifold atlas & chart equations: [MANIFOLD_ATLAS.md](./references/MANIFOLD_ATLA
         "skill_dir": str(out_dir),
         "skill_md_bytes": (out_dir / "SKILL.md").stat().st_size,
         "chosen_ids": [m.get("id") for m in ordered_members],
+        "argument_interface": iface,
         "oracle_scripts": oracle_scripts + ["project_manifold.py", "verify_dominator_gate.py"],
         "nemhauser_wolsey_certificate": sel_report["nemhauser_wolsey_certificate"],
         "lift_over_popularity_top_n": sel_report["lift_over_popularity_top_n"],
@@ -667,7 +744,16 @@ def main() -> int:
     ap.add_argument("--skill-name", default="domain-pack")
     ap.add_argument("--upstreams-root", type=Path, default=None)
     ap.add_argument("--seed", default="skillcompose")
+    ap.add_argument(
+        "--args-json",
+        type=Path,
+        default=None,
+        help="parse_args.py output; its desired_interface becomes the composed skill's arguments",
+    )
     args = ap.parse_args()
+    desired = None
+    if args.args_json is not None:
+        desired = json.loads(args.args_json.read_text(encoding="utf-8")).get("desired_interface")
 
     res = compose_package(
         args.candidates,
@@ -678,6 +764,7 @@ def main() -> int:
         skill_name=args.skill_name,
         upstreams_root=args.upstreams_root,
         seed=args.seed,
+        desired_interface=desired,
     )
     print(json.dumps(res, indent=2))
     return 0 if res["ok"] else 2
