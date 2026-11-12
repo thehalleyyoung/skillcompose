@@ -1,8 +1,8 @@
 {
   "metric_id": "manifold-lift",
   "title": "Lawvere-Amari generative skill manifold, anti-unification & Cech sheaf gates",
-  "at": "2026-11-12T03:19:52.083318+00:00",
-  "ts": 1794453592.0833275,
+  "at": "2026-11-12T03:31:55.097660+00:00",
+  "ts": 1794454315.0976691,
   "values": {
     "skill_root": "/tmp/skillcompose-src/skillcompose",
     "cases": [
@@ -55,7 +55,7 @@
         "name": "compiled_package_projector_and_sheaf_coboundary_gate",
         "ok": true,
         "skill_md_bytes": 4949,
-        "parnas_ratio": 0.9301
+        "parnas_ratio": 0.9308
       }
     ],
     "passed": 6,

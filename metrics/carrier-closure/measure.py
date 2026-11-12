@@ -125,13 +125,37 @@ def check_locator(tmp: Path) -> dict:
     }
 
 
+def check_signatures(tmp: Path) -> dict:
+    from compose_skills import script_signature
+
+    tmp.mkdir(parents=True)
+    py = tmp / "tool.py"
+    py.write_text(
+        "#!/usr/bin/env python3\nimport argparse, sys\n"
+        "def main():\n    ap = argparse.ArgumentParser()\n    ap.add_argument('target')\n"
+        "    ap.add_argument('--strict', action='store_true')\n    ap.add_argument('--input', required=True)\n"
+        "    a = ap.parse_args()\n    if not a.input:\n        sys.exit(3)\n    return 1 if a.strict else 0\n"
+        "raise SystemExit(main())\n",
+        encoding="utf-8",
+    )
+    sh = tmp / "tool.sh"
+    sh.write_text("#!/bin/bash\n[ -f x ] || exit 2\nexit 0\n", encoding="utf-8")
+    p, s = script_signature(py), script_signature(sh)
+    return {
+        "python_argv_extracted": p["positionals"] == ["target"] and p["options"] == ["--strict", "--input"] and p["required_options"] == ["--input"],
+        "python_exit_codes_extracted": p["exit_codes"] == [0, 1, 3],
+        "shell_exit_codes_extracted": s["exit_codes"] == [0, 2] and s["interpreter"] == "/bin/bash",
+    }
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as t:
         tmp = Path(t)
         closure = check_closure(tmp / "c")
         guard = check_install_guard(tmp / "g")
         locator = check_locator(tmp / "l")
-    checks = {k: v for k, v in {**closure, **guard, **locator}.items() if isinstance(v, bool)}
+        sigs = check_signatures(tmp / "s")
+    checks = {k: v for k, v in {**closure, **guard, **locator, **sigs}.items() if isinstance(v, bool)}
     ok = all(checks.values())
     print(json.dumps({"ok": ok, "checks": checks, "carried": closure["carried"]}, indent=2))
     return 0 if ok else 1

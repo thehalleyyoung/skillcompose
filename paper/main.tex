@@ -6,6 +6,8 @@
 \usepackage{microtype}
 \usepackage[letterpaper,top=1.0in,bottom=1.0in,left=1.1in,right=1.1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{enumitem}
@@ -55,6 +57,36 @@
 \newcommand{\Ebb}{\mathbb{E}}
 \newcommand{\Rbb}{\mathbb{R}}
 \newcommand{\Cov}{\mathrm{Cov}}
+% Contract calculus
+\newcommand{\pass}{\mathsf{pass}}
+\newcommand{\abst}{\mathsf{abstain}}
+\newcommand{\fail}{\mathsf{fail}}
+\newcommand{\Vset}{\mathbb{V}}
+\newcommand{\prose}[1]{\langle #1 \rangle}
+\newcommand{\script}[1]{\llbracket #1 \rrbracket}
+\newcommand{\sem}[1]{\llbracket #1 \rrbracket}
+\newcommand{\seqc}{\mathbin{;}}
+\newcommand{\vseq}{\mathbin{\triangleright}}
+\newcommand{\vpar}{\mathbin{\sqcap}}
+\newcommand{\gate}{\mathsf{gate}}
+\newcommand{\proj}{\mathsf{proj}}
+\newcommand{\glue}{\mathsf{glue}}
+\newcommand{\ex}{\mathsf{ex}}
+\newcommand{\rd}{\mathsf{rd}}
+\newcommand{\wrt}{\mathsf{wr}}
+\newcommand{\done}{\mathsf{done}}
+\newcommand{\abs}{\mathsf{abs}}
+\newcommand{\sig}{\mathrm{sig}}
+\newcommand{\Paths}{\mathsf{Path}}
+\newcommand{\LTLG}{\mathbf{G}}
+\newcommand{\LTLF}{\mathbf{F}}
+\newcommand{\LTLU}{\mathbin{\mathbf{U}}}
+\newcommand{\LTLW}{\mathbin{\mathbf{W}}}
+\newcommand{\LTLO}{\mathbf{O}}
+\newcommand{\hoare}[5]{\vdash #1 : \{#2\}\; #3 \leadsto #4\; \{#5\}}
+\newcommand{\checkedS}{\textsuperscript{\textsf{S}}}
+\newcommand{\checkedD}{\textsuperscript{\textsf{D}}}
+\newcommand{\assumedA}{\textsuperscript{\textsf{A}}}
 
 \setlength{\parskip}{3pt}
 \setlength{\parindent}{15pt}
@@ -63,7 +95,7 @@
 \title{%
   \vspace{-1.2em}
   \rule{0.94\textwidth}{1.5pt}\\[0.55em]
-  {\LARGE\bfseries Beyond Unions and Concatenations: Lawvere--Amari Generative Skill Manifolds for Compositional Agentic Systems}\\[0.45em]
+  {\LARGE\bfseries Beyond Unions and Concatenations: A Contract Calculus and Lawvere--Amari Manifolds for Sound Composition of Agentic Skills}\\[0.45em]
   \rule{0.94\textwidth}{0.7pt}
 }
 
@@ -79,7 +111,7 @@
 
 \begin{abstract}
 \noindent
-Modular skill libraries equip language-model agents with reusable domain procedures, yet composing multiple skills for tasks that span several operational constraints remains brittle. Naive prompt concatenation takes the logical conjunction of all member specifications, which collapses onto an empty admissible output set whenever standalone skills prescribe conflicting local defaults, and leaves the agent unguarded against off-domain requests. Conversely, discrete skill-union routing selects a single member skill per query, confining generation to the union of individual skill supports and failing cross-artifact consistency on multi-stage tasks. We address both failure modes by formulating a skill not as a static text prompt, but as a guarded conditional generative transducer mapping each input to a constrained fiber of structured multi-view outputs. From a finite set of landmark skills, we construct a \emph{Lawvere--Amari Generative Skill Manifold} ($\Gfrak_{\Mcal}$) that unifies two dual structures: (i) an exponential-family statistical submanifold equipped with the conditional Fisher--Rao metric, whose $e$-geodesics synthesize multiplicative product-of-experts intersections across skill fibers, and (ii) a fibered logical specification combining a Galois-closed conormal core of universal safety invariants with Plotkin--Reynolds anti-unification of conflicting regime defaults and \v{C}ech sheaf gluing across coupled output views. The same normal/tangent split fixes the composed skill's input signature: the finished skill takes the arguments shared by every landmark and is able to take every argument present in any landmark, while an optional desired interface adds arguments the caller wants that skill to take or merely be able to take. Landmark recovery extends from specifications to executed kernels when the composed package carries each landmark's reference closure of scripts and modules, and installing a recomposition must join package carriers rather than overwrite them. To select landmark skills from noisy repositories, we prove that combining noisy-OR role coverage with the D-optimal Fisher log-determinant volume yields a monotone submodular objective with constant-factor optimality certificates, while a read-only post-dominator verification gate breaks the Data Processing Inequality of pure-prompt chains. Across seven concrete task families evaluated with one isolated agent call per task and regime, $\Gfrak_{\Mcal}$ achieves a $98.71/100$ mean double-blind judge score, a $100.0\%$ ($7/7$) exogenous verification pass rate, and $7/7$ blind first-place wins over prompt concatenation ($87.27/100$, $0/7$ wins) and skill-union routing ($53.66/100$, $0/7$ wins).
+Modular skill libraries equip language-model agents with reusable domain procedures, yet composing multiple skills for tasks that span several operational constraints remains brittle. Naive prompt concatenation takes the logical conjunction of all member specifications, which collapses onto an empty admissible output set whenever standalone skills prescribe conflicting local defaults, and leaves the agent unguarded against off-domain requests. Conversely, discrete skill-union routing selects a single member skill per query, confining generation to the union of individual skill supports and failing cross-artifact consistency on multi-stage tasks. We address both failure modes by formulating a skill not as a static text prompt, but as a guarded conditional generative transducer mapping each input to a constrained fiber of structured multi-view outputs. From a finite set of landmark skills, we construct a \emph{Lawvere--Amari Generative Skill Manifold} ($\Gfrak_{\Mcal}$) that unifies two dual structures: (i) an exponential-family statistical submanifold equipped with the conditional Fisher--Rao metric, whose $e$-geodesics synthesize multiplicative product-of-experts intersections across skill fibers, and (ii) a fibered logical specification combining a Galois-closed conormal core of universal safety invariants with Plotkin--Reynolds anti-unification of conflicting regime defaults and \v{C}ech sheaf gluing across coupled output views. The same normal/tangent split fixes the composed skill's input signature: the finished skill takes the arguments shared by every landmark and is able to take every argument present in any landmark, while an optional desired interface adds arguments the caller wants that skill to take or merely be able to take. Landmark recovery extends from specifications to executed kernels when the composed package carries each landmark's reference closure of scripts and modules, and installing a recomposition must join package carriers rather than overwrite them. We give composition a formal semantics over both kinds of component a skill contains, natural-language prose and executable scripts: a typed contract calculus whose judgments track argument signatures, read and write footprints, exit statuses, and per-component verdict maps, with script signatures extracted from program syntax; a trace semantics in which the language model is an adversary at every prose position; and a soundness theorem stating that, under three explicit trust assumptions, every compiled package satisfies four safety properties in linear temporal logic (no writes before the domain projector decides or after it abstains, no completion without a passing gate after the last write, bit-identical deliverables across verification, and glued output views) whatever the model does. To select landmark skills from noisy repositories, we prove that combining noisy-OR role coverage with the D-optimal Fisher log-determinant volume yields a monotone submodular objective with constant-factor optimality certificates, while a read-only post-dominator verification gate breaks the Data Processing Inequality of pure-prompt chains. Across seven concrete task families evaluated with one isolated agent call per task and regime, $\Gfrak_{\Mcal}$ achieves a $98.71/100$ mean double-blind judge score, a $100.0\%$ ($7/7$) exogenous verification pass rate, and $7/7$ blind first-place wins over prompt concatenation ($87.27/100$, $0/7$ wins) and skill-union routing ($53.66/100$, $0/7$ wins).
 \end{abstract}
 
 % ============================================================================
@@ -150,11 +182,14 @@ We resolve this tension by introducing the \textbf{Lawvere--Amari Generative Ski
 
 To make manifold composition practical over noisy open-source skill repositories, we pair the manifold compiler with four systems mechanisms. First, we prove that augmenting noisy-OR pipeline role coverage with the D-optimal Fisher--Rao log-determinant spanning volume produces a monotone submodular selection objective that avoids popularity-driven redundancy and carries an instance-specific Nemhauser--Wolsey optimality bound \citep{nemhauser1978analysis}. Second, we equip every compiled skill package with an inverse-chart projector that measures Fisher residual distance to reject out-of-manifold and polysemic trap inputs before generation. Third, we enforce cross-file output coherence via \v{C}ech sheaf coboundary checks and a SHA-256 read-only post-dominator verification gate, breaking the Data Processing Inequality of pure-prompt chains \citep{cover2006elements} while guaranteeing zero state mutation by verification steps \citep{reynolds2002separation}. Fourth, we carry each landmark's reference closure of scripts and modules into the package and refuse installations that would discard files, because a package that keeps a specification but drops the channels it invokes runs a different kernel (\Cref{prop:carrier}).
 
-Our contributions are fourfold:
+These mechanisms are only as trustworthy as the semantics that ties them together. A skill package is a program with two kinds of component: prose interpreted by a model whose behavior we cannot specify, and scripts whose behavior we can read off their code. We therefore treat composition as a problem in formal methods for agentic systems. We give a typed composition language over prose and script components, assign it a trace semantics in which the model is an adversary at prose positions, and state the package's guarantees as safety properties that generated monitors enforce \citep{alpern1985defining,schneider2000enforceable}. Each typing premise is marked as discharged statically by the compiler, dynamically by a monitor, or assumed of the model, so the trusted computing base of a composed skill is explicit (\Cref{sec:calculus}).
+
+Our contributions are fivefold:
 \begin{enumerate}[leftmargin=1.8em,itemsep=2pt,topsep=3pt]
   \item \textbf{Duality of Statistical and Logical Skill Manifolds (\Cref{sec:problem,sec:manifold}):} We formalize skills as guarded conditional generative transducers and prove that Lawvere--Amari manifold synthesis simultaneously avoids the fiber collapse of concatenation ($\bigwedge_i \Phi_i = \bot$) and the infinite Kullback--Leibler divergence of skill unions on recombinant tasks (\Cref{prop:impossibility} and \Cref{thm:geodesic,thm:antiunify}). The input-side of the same split is the finished skill's argument signature, optionally refined by arguments the caller wants that skill to take or be able to take (\Cref{cor:args}).
   \item \textbf{\v{C}ech Sheaf Gluing over Multi-View Outputs (\Cref{subsec:sheaf}):} We formulate multi-artifact agent deliverables as sections of a presheaf over an output cover $\Ucal$ and establish exact 1-cocycle holonomy conditions ($\delta^1 = 0$) and runtime 0-coboundary verification ($\ker \delta^0$) for cross-file schema and digest consistency (\Cref{thm:sheaf}).
   \item \textbf{Submodular Fisher--Rao Selection and Anti-DPI Gate (\Cref{sec:selection}):} We prove exact monotonicity and submodularity of the Fisher log-determinant spanning volume (\Cref{thm:submodular}), pair it with Normalized Compression Distance redundancy control and Parnas module encapsulation \citep{parnas1972criteria}, and prove strict ground-truth information gain via exogenous read-only post-dominator gates (\Cref{prop:dpi}). We show that the same gain is lost when composition or installation drops a landmark's executable channels, and that landmark exactness holds for kernels when the package carries each reference closure (\Cref{prop:carrier}).
+  \item \textbf{A Contract Calculus for Hybrid Prose--Script Skills (\Cref{sec:calculus}):} We give a typed composition language whose constructors match the compiler's operator classes, component interfaces with statically extracted script signatures and per-component verdict maps, a verdict algebra (\Cref{lem:verdict}), and a soundness theorem stating that every compiled package satisfies four linear-temporal safety properties against an adversarial model under three explicit trust assumptions (\Cref{thm:soundness}).
   \item \textbf{Isolated 7-Family Empirical Benchmark and Self-Hosted Paper Study (\Cref{sec:eval}):} Holding the four upstream member skills identical across regimes and invoking the solver agent once per task and regime ($21$ isolated runs), $\Gfrak_{\Mcal}$ wins $7/7$ families under double-blind evaluation ($98.71/100$ mean score, $100.0\%$ exogenous pass rate) against concatenation ($87.27/100$, $90.48\%$) and union routing ($53.66/100$, $39.35\%$). We additionally demonstrate self-hosted composition of an eight-landmark ML manuscript skill from $15$ public skills across six GitHub repositories (Nemhauser--Wolsey bound $0.8124$, $97.96\%$ encapsulation ratio), used to verify this manuscript.
 \end{enumerate}
 
@@ -405,6 +440,116 @@ Item (1) holds because, under reference locality, $\kappa_i$ depends on its carr
 Our compiler computes $\mathrm{cl}(s_i)$ by scanning each landmark specification and the files it reaches, within the landmark's repository and to bounded depth. It copies the closure into per-landmark script and reference directories and records source path and SHA-256 digest for each file in the manifold atlas. The installer checks item (4) at every host destination before writing: if any installed file would be lost, it refuses with exit code $2$ and lists the lost paths, so the caller forms the join instead of overwriting. Item (4) joins packages that share an install name. A caller who requests a fresh name instead takes $p_{\mathrm{old}}$ to be the empty package, so the join is $p_{\mathrm{new}}$ and no earlier skill is touched; the parser and installer both refuse a fresh name that is already installed, which keeps a new composition from silently updating an older skill.
 
 % ============================================================================
+\section{A Contract Calculus for Hybrid Prose--Script Skills}
+\label{sec:calculus}
+
+A skill package mixes two kinds of components. \emph{Prose components} are natural-language instructions that a language model interprets. \emph{Script components} are executable programs that the prose tells the model to run, such as validators, projectors, and manuscript checkers. The two differ in trust. A script is deterministic in its inputs, and its interface can be read off its code. Prose is executed by a model whose choices we cannot predict, and treating its behavior as specified is the source of most composition failures. This section gives a typed composition language over both kinds of component, a trace semantics in which the model is an adversary, and safety properties that a compiled package enforces whatever the model does at prose positions. The manifold of \Cref{sec:manifold} chooses which composition to build. The calculus constrains what any composition may do.
+
+\subsection{Syntax}
+\label{subsec:syntax}
+
+Components and skill terms are generated by
+\begin{align*}
+  c &\;::=\; \prose{\pi} \;\mid\; \script{f}, \\
+  s &\;::=\; c \;\mid\; s \seqc_\alpha s \;\mid\; s \otimes s \;\mid\; g \triangleright (s \oplus s \oplus \abst) \;\mid\; \glue_{\Ucal}(s_u)_{u \in \Ucal} \;\mid\; \gate_G(s) \;\mid\; \proj_{\Mcal} \triangleright s,
+\end{align*}
+where $\prose{\pi}$ is a prose component with specification text $\pi$, $\script{f}$ is a script component with program text $f$, $\alpha$ is a sufficient-statistic adapter, $g$ is a decidable guard, $G$ is a finite set of read-only check commands, and $\proj_{\Mcal}$ is the inverse-chart projector of \Cref{subsec:runtime}. The constructors correspond one to one with the operator classes our wiring compiler emits: sequential pipe, parallel tensor, guarded coproduct, pullback join over a sheaf cover, post-dominator gate, and chart projection. A compiled package has the shape $\proj_{\Mcal} \triangleright \gate_G(s)$, which is Stage~1 and Stage~3 of the runtime protocol wrapped around the composed body $s$.
+
+\subsection{Interfaces and Verdicts}
+\label{subsec:interfaces}
+
+\begin{definition}[Component Interface]
+\label{def:interface}
+The interface of a component $c$ is a tuple $\iota(c) = (\Acal_c, R_c, W_c, E_c, \nu_c)$: an argument signature $\Acal_c = (T_c, B_c)$ as in \Cref{def:skill}; read and write footprints $R_c, W_c \subseteq \Paths$ over workspace paths; a finite set $E_c \subseteq \mathbb{Z}$ of exit statuses; and a total verdict map $\nu_c : \mathbb{Z} \to \Vset$ into $\Vset = \{\pass, \abst, \fail\}$ with $\nu_c(e) = \fail$ for every $e \notin E_c$.
+\end{definition}
+
+For a script component, $\Acal_f$ and $E_f$ are extracted statically by a signature function $\sig(f)$. For Python programs, $\sig$ parses the abstract syntax tree: argument-parser declarations give the positional and required options $T_f$ and all options $B_f$, and $E_f$ collects the integer literals passed to exit calls together with the integer literals returned, directly or through a conditional expression, by the function whose result is passed to an exit call. For other interpreters, $\sig$ records the interpreter and literal exit statuses only. Footprints are declared in the wiring graph. Verdict maps are per component, because exit statuses do not mean the same thing across programs. Our projector maps $0 \mapsto \pass$ and $2 \mapsto \abst$. Our gate maps $0 \mapsto \pass$ and $2 \mapsto \fail$. A foreign landmark script maps $0 \mapsto \pass$ and every other status to $\fail$, because for such programs status $2$ conventionally reports a command-line usage error; reading it as $\abst$ would let a malformed invocation pass as a principled refusal. In a composed eight-landmark fantasy-writing package, $\sig$ yields $E = \{0, 1, 2\}$ for a carried manuscript checker and $E = \{0, 2\}$ for both generated monitors. Totality matters because $E_c$ is extracted from literals: an uncaught Python exception exits with status $1$ whether or not $1$ appears in the code, and it must not read as success. A prose component has $E = \{0\}$ and $\nu(0) = \pass$: prose never reports a verdict, so its correctness must be discharged by a downstream script.
+
+Verdicts compose by two operations. Sequential composition short-circuits, $v_1 \vseq v_2 = v_1$ if $v_1 \neq \pass$ and $v_2$ otherwise. Parallel composition takes the meet $v_1 \vpar v_2 = \min(v_1, v_2)$ in the chain $\fail < \abst < \pass$. Both lift pointwise to sets of verdicts.
+
+\begin{lemma}[Verdict Algebra]
+\label{lem:verdict}
+$(\Vset, \vseq, \pass)$ is a monoid in which $\abst$ and $\fail$ are left zeros, and $(\Vset, \vpar, \pass)$ is a bounded meet-semilattice with top $\pass$ and absorbing element $\fail$. Hence the verdict of a sequential pipeline is independent of bracketing, and the verdict of a parallel tensor of checks is independent of the order and multiplicity of its members.
+\end{lemma}
+
+\begin{proof}
+For associativity of $\vseq$: if $v_1 \neq \pass$, both $(v_1 \vseq v_2) \vseq v_3$ and $v_1 \vseq (v_2 \vseq v_3)$ equal $v_1$; otherwise both equal $v_2 \vseq v_3$. $\pass$ is a two-sided unit by definition, and $v \vseq v' = v$ for $v \neq \pass$ makes $\abst$ and $\fail$ left zeros. The meet of a finite chain is associative, commutative, and idempotent, with the top element as unit and the bottom element absorbing.
+\end{proof}
+
+\subsection{Typing}
+\label{subsec:typing}
+
+Judgments $\hoare{s}{P}{R}{W}{Q} \;!\; V$ state that, from inputs satisfying $P$, the term $s$ reads within $R$, writes within $W$, establishes $Q$ when its verdict is $\pass$, and returns a verdict in $V \subseteq \Vset$. Premises carry a superscript that records how the implementation discharges them: \checkedS{} statically by the compiler, \checkedD{} dynamically by a generated monitor, and \assumedA{} assumed of the model and checked only through a downstream monitor.
+{\small
+\begin{mathpar}
+\inferrule*[right=T-Prose]
+  {(P_\pi, Q_\pi) \text{ read from } \pi^{\,\assumedA}}
+  {\hoare{\prose{\pi}}{P_\pi}{R_\pi}{W_\pi}{Q_\pi} \;!\; \{\pass\}}
+\and
+\inferrule*[right=T-Script]
+  {\sig(f) = (\Acal_f, E_f)^{\,\checkedS} \\ \mathit{argv} \models \Acal_f^{\,\checkedD}}
+  {\hoare{\script{f}}{P_f}{R_f}{W_f}{Q_f} \;!\; \nu_f(E_f) \cup \{\fail\}}
+\\
+\inferrule*[right=T-Seq]
+  {\hoare{s_1}{P_1}{R_1}{W_1}{Q_1} \;!\; V_1 \\ \hoare{s_2}{P_2}{R_2}{W_2}{Q_2} \;!\; V_2 \\ Q_1 \Rightarrow \alpha^{*} P_2^{\,\assumedA}}
+  {\hoare{s_1 \seqc_\alpha s_2}{P_1}{R_1 \cup R_2}{W_1 \cup W_2}{Q_2} \;!\; V_1 \vseq V_2}
+\\
+\inferrule*[right=T-Par]
+  {\hoare{s_i}{P_i}{R_i}{W_i}{Q_i} \;!\; V_i \;\; (i = 1, 2) \\ W_1 \cap (W_2 \cup R_2) = \emptyset = W_2 \cap R_1^{\,\checkedS}}
+  {\hoare{s_1 \otimes s_2}{P_1 \land P_2}{R_1 \cup R_2}{W_1 \cup W_2}{Q_1 \land Q_2} \;!\; V_1 \vpar V_2}
+\\
+\inferrule*[right=T-Guard]
+  {\hoare{s_i}{P_i}{R_i}{W_i}{Q_i} \;!\; V_i \;\; (i = 1, 2) \\ g \text{ total with branches } (G_1, G_2, G_{\abst})^{\,\checkedS}}
+  {\hoare{g \triangleright (s_1 \oplus s_2 \oplus \abst)}{P_\oplus}{R_g \cup R_1 \cup R_2}{W_1 \cup W_2}{Q_\oplus} \;!\; V_1 \cup V_2 \cup \{\abst\}}
+\\
+\inferrule*[right=T-Glue]
+  {\hoare{s_u}{P_u}{R_u}{W_u}{Q_u} \;!\; V_u \;\; (u \in \Ucal) \\ \delta^1 \tau = 0^{\,\checkedS}}
+  {\hoare{\glue_{\Ucal}(s_u)_u}{\textstyle\bigwedge_u P_u}{\textstyle\bigcup_u R_u}{\textstyle\bigcup_u W_u}{\textstyle\bigwedge_u Q_u} \;!\; \textstyle\bigsqcap_u V_u}
+\\
+\inferrule*[right=T-Gate]
+  {\hoare{s}{P}{R}{W}{Q} \;!\; V \\ W_G = \emptyset^{\,\checkedS} \\ G \text{ post-dominates every writer of } s^{\,\checkedS} \\ H(W) \text{ unchanged by } G^{\,\checkedD} \\ \delta^0 y = 0^{\,\checkedD}}
+  {\hoare{\gate_G(s)}{P}{R \cup R_G}{W}{Q \land Q_G \land \delta^0 y = 0} \;!\; V \vseq \textstyle\bigsqcap_{f \in G} \nu_f(E_f)}
+\\
+\inferrule*[right=T-Proj]
+  {\hoare{s}{P}{R}{W}{Q} \;!\; V \\ \proj_{\Mcal} \text{ pre-dominates every writer of } s^{\,\checkedS} \\ x \in P_{\Mcal} \land \mathit{argv} \models \Acal_{\Mcal}(D)^{\,\checkedD}}
+  {\hoare{\proj_{\Mcal} \triangleright s}{\top}{R \cup R_{\proj}}{W \cup W_{\proj}}{Q} \;!\; \{\abst\} \cup V}
+\end{mathpar}
+}
+In T-Guard, $P_\oplus = \bigwedge_i (G_i \Rightarrow P_i)$ and $Q_\oplus = \bigvee_i (G_i \land Q_i)$. Here $Q_G$ is the conjunction of the postconditions certified by the gate's commands, $H$ is SHA-256 over the protected files, and $W_{\proj}$ is the projector's own report file. The static premises are discharged by the graph verifier of our wiring compiler, which runs on every emitted wiring graph before a package is written: frame disjointness is its separation-logic check (the Stage~2 condition of \Cref{subsec:runtime}), totality of $g$ holds by construction because the guard node always carries an abstain branch, $\delta^1 \tau = 0$ is its sheaf-exactness check (\Cref{thm:sheaf}), and both dominance premises are its dominator check, which verifies that the gate post-dominates every mutator on all forward paths to the terminal node and that the projector pre-dominates every mutator on all forward paths from entry. The compiler verifies that every non-entry node has a bound input port, which is the syntactic half of the T-Seq premise; the entailment $Q_1 \Rightarrow \alpha^{*} P_2$ between prose contracts is not decidable in our setting and is marked as assumed. Script components enter the package only through the carrier closure of \Cref{subsec:carrier}, so every $\script{f}$ named by a prose component is present with its extracted signature.
+
+\subsection{Trace Semantics and Threat Model}
+\label{subsec:semantics}
+
+Executions are finite traces over the event alphabet $\Sigma = \{\rd(p), \wrt(p), \ex(f, e), \abs, \done\}$ with $p \in \Paths$ and $e \in \mathbb{Z}$. The semantics $\sem{s} \subseteq \Sigma^{*}$ is defined compositionally. A script contributes the read and write events of its code followed by $\ex(f, e)$; by determinism, $e$ is a function of its inputs. A prose component contributes \emph{any} finite sequence of read, write, and script-invocation events: the model is not assumed to respect $R_\pi$, $W_\pi$, or the text $\pi$. Sequential composition concatenates and continues only while the verdict is $\pass$. Parallel composition interleaves. The guard selects a branch or emits $\abs$. The projector emits $\ex(\proj, 2)\,\abs$ on rejection and $\ex(\proj, 0)$ followed by the body otherwise. The gate appends its command events and then $\done$ only if its verdict is $\pass$.
+
+\paragraph{Threat model.} The adversary is the model. It controls every prose position, may read or write any path, may skip or reorder instructions, may call scripts with arbitrary arguments, and may claim completion at any point. The trusted computing base consists of three assumptions. \textbf{(T1)} Script components and monitors execute according to their code. \textbf{(T2)} Protocol adherence: the host runs $\proj_{\Mcal}$ before the first prose position and admits $\done$ only as the event immediately following $\ex(\gate, 0)$. \textbf{(T3)} SHA-256 is collision resistant on protected files. Assumption (T2) is where a host enforces the protocol; in current agent hosts it is stated in the skill text rather than enforced, and it is the single assumption under which untrusted prose is contained \citep{alshiekh2018safe}.
+
+\subsection{Safety Properties and Soundness}
+\label{subsec:safety}
+
+We state the guarantees in linear temporal logic over finite traces \citep{pnueli1977temporal}, with the weak until $\LTLW$ and the past operator $\LTLO$ (once):
+\begin{align*}
+  \varphi_{\mathrm{abs}} &\;\coloneqq\; \bigl(\lnot \wrt \LTLU \ex(\proj, \cdot)\bigr) \;\land\; \LTLG\bigl(\ex(\proj, 2) \rightarrow \LTLG \lnot \wrt\bigr), \\
+  \varphi_{\mathrm{gate}} &\;\coloneqq\; \LTLG\bigl(\wrt(p) \rightarrow (\lnot \done \LTLW \ex(\gate, 0))\bigr) \;\land\; \LTLG\bigl(\done \rightarrow \LTLO\, \ex(\gate, 0)\bigr), \\
+  \varphi_{\mathrm{ro}} &\;\coloneqq\; \LTLG\bigl(\ex(\gate, 0) \rightarrow H_{\mathrm{pre}}(W) = H_{\mathrm{post}}(W)\bigr), \\
+  \varphi_{\mathrm{glue}} &\;\coloneqq\; \LTLG\bigl(\done \rightarrow \delta^0 y = 0\bigr).
+\end{align*}
+Here $\wrt$ ranges over writes by components other than the projector's own report. In words: nothing is written before the projector decides, and nothing at all after it abstains; every write is followed by a passing gate before completion is claimed; a passing gate leaves the protected deliverables bit-identical; and a completed run has glued views. Installation adds $\varphi_{\mathrm{inst}} \coloneqq \LTLG(\mathsf{install}(p_{\mathrm{old}}, p_{\mathrm{new}}) \rightarrow C_{p_{\mathrm{old}}} \subseteq C_{p_{\mathrm{new}}})$, the trace form of \Cref{prop:carrier}(4).
+
+Each formula is a safety property in the sense of \citet{alpern1985defining}: every violating trace has a finite bad prefix that no extension repairs. Safety properties are exactly those enforceable by monitors that observe a prefix and halt it \citep{schneider2000enforceable}, and each of our generated scripts is such a monitor: the projector for $\varphi_{\mathrm{abs}}$, the gate for $\varphi_{\mathrm{gate}}$, $\varphi_{\mathrm{ro}}$, and $\varphi_{\mathrm{glue}}$, and the installer for $\varphi_{\mathrm{inst}}$ \citep{leucker2009brief}.
+
+\begin{theorem}[Soundness of Compiled Packages]
+\label{thm:soundness}
+Let $\hoare{\proj_{\Mcal} \triangleright \gate_G(s)}{\top}{R}{W}{Q} \;!\; V$ be derivable, with every \checkedS{} premise discharged by the compiler. Under (T1) to (T3), for every adversary strategy at prose positions, every trace $\tau \in \sem{\proj_{\Mcal} \triangleright \gate_G(s)}$ satisfies $\varphi_{\mathrm{abs}} \land \varphi_{\mathrm{gate}} \land \varphi_{\mathrm{ro}} \land \varphi_{\mathrm{glue}}$, and the verdict of $\tau$ is the one computed from its component verdicts by \Cref{lem:verdict}.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+By (T2) the projector runs before any prose position, and on rejection the semantics ends the trace at $\ex(\proj, 2)\,\abs$, which gives $\varphi_{\mathrm{abs}}$. By (T2) again, $\done$ occurs only immediately after $\ex(\gate, 0)$, so no write can fall between the last passing gate and $\done$, which gives $\varphi_{\mathrm{gate}}$. By (T1) the gate hashes the protected files before and after its commands and returns $2$, mapped to $\fail$, on any difference, so $\ex(\gate, 0)$ implies equal digests, and by (T3) equal contents: this is $\varphi_{\mathrm{ro}}$. The gate likewise returns $2$ on any nonzero overlap difference, which gives $\varphi_{\mathrm{glue}}$ on the declared views. The verdict claim follows by induction on the derivation using \Cref{lem:verdict}. The full proof is in \Cref{app:proofs}.
+\end{proof}
+
+The theorem does not use the static dominance checks, and that separation is deliberate. Runtime monitors make a package \emph{safe} against a model that ignores its instructions. Static checks make it \emph{conformant}: a model that follows the compiled workflow never reaches a state where the only continuation violates a property, because every path through the wiring graph from a writer to completion passes the gate, and every path from entry to a writer passes the projector. The theorem also bounds what completion certifies. $\done$ certifies $Q_G$, the conjunction of the gate's checks, and nothing about prose output beyond them; strengthening a skill means adding checks to $G$, which by \Cref{lem:verdict} can be done in any order.
+
+% ============================================================================
 \section{Empirical Evaluation}
 \label{sec:eval}
 
@@ -521,7 +666,7 @@ Inspecting the de-anonymized workspace artifacts reveals how the three regimes b
 Skill Union passes $0/7$ exogenous suites because routing to a single landmark leaves the solver blind to sibling restriction maps. In \texttt{F1}, selecting the atomic SQLite migrator caused the agent to emit uncoupled OpenAPI and audit JSON views with an incompatible table digest rather than the required paired contract-and-migration sheaf ($\delta^0 y \neq 0$). In \texttt{F2}, routing to the Kleene evaluator produced accurate $K_3$ truth tables ($30/30$ cells) but invented non-canonical operator node tags violating the serializer landmark's AST schema. In \texttt{F5}, routing to the double-entry core omitted the watermark landmark's $300\text{-second}$ lateness bound, guessing a $60\text{-second}$ lag ($0\%$ exogenous score). In \texttt{F6}, routing to the continuity tracker preserved epistemic isolation at $t \le 20$ but produced a $180$-word scene violating the craft landmark's $[320, 520]$-word envelope.
 
 \paragraph{2. Off-Manifold Polysemy Collapse Under Concatenation and Union.}
-In \texttt{F7}, when asked to write Regency romance fanfiction mentioning ``Plaid'' and ``Storybook'' inside a Kubernetes canary-rollout skill pack, both Concatenation ($34.9/100$) and Union ($33.05/100$) lacked an inverse-chart domain guard, triggered a permissive assistant-fallback clause in one member skill, recorded an explicit allow decision, and wrote a $400$-word romance chapter into the DevOps workspace. Under $\Gfrak_{\Mcal}$, Stage~1 inverse-chart projection detected the off-manifold residual and polysemic trap tokens (exit code $2$, \texttt{ABSTAIN\_OFF\_MANIFOLD}), halting cleanly without creating spurious files or mutating cluster inventory ($100.0/100$).
+In \texttt{F7}, when asked to write Regency romance fanfiction mentioning ``Plaid'' and ``Storybook'' inside a Kubernetes canary-rollout skill pack, both Concatenation ($34.9/100$) and Union ($33.05/100$) lacked an inverse-chart domain guard, triggered a permissive assistant-fallback clause in one member skill, recorded an explicit allow decision, and wrote a $400$-word romance chapter into the DevOps workspace. Under $\Gfrak_{\Mcal}$, Stage~1 inverse-chart projection detected the off-manifold residual and polysemic trap tokens (exit code $2$, \texttt{ABSTAIN\_OFF\_MANIFOLD}), halting cleanly without creating spurious files or mutating cluster inventory ($100.0/100$). In the terms of \Cref{sec:calculus}, both baseline traces begin with a write of the chapter file and contain no projector event, so each has a finite bad prefix for $\varphi_{\mathrm{abs}}$; neither baseline package contains a projector, so no T-Proj derivation exists for it and nothing enforces the property. The manifold trace is $\ex(\proj, 2)\,\abs$, which satisfies $\varphi_{\mathrm{abs}}$ and ends the run with verdict $\abst$ by \Cref{lem:verdict}.
 
 \paragraph{3. Invariant Separation and Exogenous Verification Lift on \texttt{F1}--\texttt{F6}.}
 Even on \texttt{F1}--\texttt{F6}, where strong base reasoning allowed Concatenation to satisfy exogenous checks, the blind judge favored $\Gfrak_{\Mcal}$ in all six head-to-head comparisons ($+0.85$ to $+4.00$ points). Stage~1 fiber locking and Stage~3 post-dominator verification consistently drove stronger boundary engineering: explicit Boolean-vs.-integer type separation and 27-triple AST property suites in \texttt{F2} ($99.80$ vs.\ $98.00$), per-component symlink-escape resolution in \texttt{F3} ($97.75$ vs.\ $94.50$), Cochran--Mantel--Haenszel common odds-ratio ($1.679$) and source-digest provenance tables in \texttt{F4} ($97.85$ vs.\ $93.85$), strict input schema validation in \texttt{F5} ($98.85$ vs.\ $97.10$), and tighter prose rhythm and dialogue-turn ledger parity in \texttt{F6} ($97.20$ vs.\ $93.85$).
@@ -564,6 +709,9 @@ Tool-augmented language models learn or prompt-route external API calls and reas
 \paragraph{Algebraic Theories, Abstract Interpretation, and Separation Logic.}
 Functorial semantics \citep{lawvere1963functorial} and computational monads \citep{moggi1991notions} provide compositional foundations for effectful programs, while Galois connections \citep{cousot1977abstract} and Plotkin--Reynolds anti-unification \citep{plotkin1970note,reynolds1970transformational} extract shared invariants and least general generalizations across symbolic terms. Sheaf cohomology characterizes when compatible local data glue into global sections \citep{maclane1992sheaves}, and Concurrent Separation Logic enforces race-free modular state footprints \citep{reynolds2002separation,ohearn2007resources}. Our contribution unifies these symbolic mechanisms with conditional Fisher--Rao geometry and submodular experimental design \citep{nemhauser1978analysis} to compile executable agent skills from unstructured open-source repositories.
 
+\paragraph{Formal Methods for Agentic Systems.}
+Our calculus combines three established lines. Hoare-style triples \citep{hoare1969axiomatic} and design by contract \citep{meyer1992applying} give the shape of component interfaces, and assume--guarantee contract theories for cyber-physical components \citep{benveniste2018contracts} motivate separating what a component assumes of its environment from what it guarantees; in our setting the environment that cannot be specified is the language model at prose positions. Structural operational semantics \citep{plotkin2004structural} gives the compositional trace semantics. Linear temporal logic \citep{pnueli1977temporal}, the safety--liveness decomposition \citep{alpern1985defining}, enforceability of safety properties by security automata \citep{schneider2000enforceable}, and runtime verification \citep{leucker2009brief} justify monitoring as the enforcement mechanism. Shielding \citep{alshiekh2018safe} applies the same idea to learned controllers by placing a verified monitor between a learned policy and its environment; our projector and gate play this role for a language-model agent, and assumption (T2) is precisely the requirement that the host place them on the only path to a write and to completion. Unlike work that verifies the model, we verify the package around it and treat the model as an adversary.
+
 % ============================================================================
 \section{Discussion and Conclusion}
 \label{sec:conclusion}
@@ -571,6 +719,8 @@ Functorial semantics \citep{lawvere1963functorial} and computational monads \cit
 The scope of our current reference implementation reflects deliberate engineering trade-offs between exactness and zero-dependency portability. First, the conditional exponential family in \Cref{eq:exp-family} is evaluated over a finite $648$-state structured output lattice $\Ycal$ capturing six operational axes; scaling to finer-grained AST or type-system lattices will require factored message passing rather than exact partition-function summation. Second, our zero-dependency inverse-chart projector estimates empirical expectations $\hat{\mu}(x)$ from lexical and structural task cues; replacing this front-end with calibrated dense embeddings while preserving the exact downstream Fisher--Rao projection and Galois fiber solver is a natural extension for multilingual or domain-shifted prompts. Third, write-set disjointness in our separation-logic check relies on declared and statically inferred path footprints; sandboxing untrusted third-party scripts at the OS filesystem layer remains essential when composing unvetted external code.
 
 We have shown that composing agentic skills requires moving beyond set-theoretic unions and prompt concatenations to the underlying conditional generative manifold. By decomposing landmark skills into a Galois-closed conormal safety core, Plotkin--Reynolds anti-unified tangent axes, Conditional Fisher--Rao $e$-geodesics, and \v{C}ech sheaf coboundary gates, $\Gfrak_{\Mcal}$ synthesizes recombinant multi-view outputs with provable specialization, submodular selection guarantees, and consistent empirical dominance across diverse agentic workloads. The same decomposition publishes the finished skill's argument signature. An optional desired interface adds arguments the caller wants that skill to take, or to be able to take; the empty interface is the anti-unified member signature. Landmark exactness extends from specifications to executed kernels exactly when the package carries each landmark's reference closure, and installation must join carriers rather than overwrite them. Our closure is computed lexically from file names in specifications, so a script reached only through computed paths falls outside it and must be declared in the landmark's script tree.
+
+The contract calculus states what a compiled package guarantees when the model at its prose positions is adversarial. Its guarantees are safety properties enforced by the generated monitors under three trust assumptions, and two limits follow from its typing rules. Entailment between prose contracts in T-Seq is assumed, not checked, so a pipeline of prose steps is only as correct as the scripts that follow it. Protocol adherence (T2) is stated in the skill text, and current agent hosts do not enforce it; a host that refused writes before the projector's verdict and refused completion except directly after a passing gate would turn our conformance guarantees into enforced ones. Script signatures are extracted from Python syntax trees, so a script that computes its options or exit codes at run time contributes only the literals that appear in its code.
 
 % ============================================================================
 \bibliographystyle{plainnat}
@@ -624,5 +774,18 @@ A missing channel's observation is a constant, contributing zero information, wh
 For item (3), a file $g \notin \mathrm{cl}(s_i)$ is unreachable from $\varsigma_i$, so by reference locality the agent neither reads nor runs it and $\kappa_i$ does not depend on its presence.
 
 For item (4), $p_{\mathrm{old}} \sqsubseteq p_{\mathrm{new}}$ iff $C_{p_{\mathrm{old}}} \subseteq C_{p_{\mathrm{new}}}$ iff $C_{p_{\mathrm{old}}} \setminus C_{p_{\mathrm{new}}} = \emptyset$. If the two carriers assign the same contents to every shared path, $C_{p_{\mathrm{old}}} \cup C_{p_{\mathrm{new}}}$ is a well-defined carrier containing both, and any carrier containing both contains their union, so it is the least upper bound. If they disagree on a shared path, no carrier contains both pairs and the join requires choosing one content per path, which is a resolution step outside the order. Finally, the observation tuple of the join contains that of each argument, and $I(Y^*; A, B) = I(Y^*; A) + I(Y^*; B \mid A) \ge I(Y^*; A)$ yields the bound. \qed
+
+\subsection{Complete Proof of \texorpdfstring{\Cref{thm:soundness}}{Theorem 5}}
+Fix a derivation of $\hoare{\proj_{\Mcal} \triangleright \gate_G(s)}{\top}{R}{W}{Q} \;!\; V$, an adversary strategy, and a trace $\tau = \tau_1 \cdots \tau_n \in \sem{\proj_{\Mcal} \triangleright \gate_G(s)}$. Writes below exclude the projector's report file, which belongs to $W_{\proj}$ and is written within the event $\ex(\proj, \cdot)$.
+
+\emph{$\varphi_{\mathrm{abs}}$.} By (T2) no prose position precedes the projector, and the projector is the first component to run, so every event before the first $\ex(\proj, e)$ is a read by the projector; this gives $\lnot \wrt \LTLU \ex(\proj, \cdot)$. By (T1) the projector exits as its code dictates, and the semantics of $\triangleright$ continues with the body only after $\ex(\proj, 0)$. If $\tau_i = \ex(\proj, 2)$, the semantics gives $\tau_{i+1} = \abs$ and $n = i + 1$, so no write follows. A status outside $\{0, 2\}$ maps to $\fail$ by totality of $\nu_{\proj}$, and the trace ends in the same way.
+
+\emph{$\varphi_{\mathrm{gate}}$.} By (T2), $\tau_j = \done$ implies $j > 1$ and $\tau_{j-1} = \ex(\gate, 0)$, which gives the second conjunct. For the first, let $\tau_i = \wrt(p)$ and let $j > i$ be any position with $\tau_j = \done$. Then $\tau_{j-1} = \ex(\gate, 0)$ and $j - 1 \neq i$ because $\tau_i$ is a write, so $i < j - 1 < j$ and an $\ex(\gate, 0)$ occurs between the write and every later $\done$. If no $\done$ follows, the weak until holds vacuously.
+
+\emph{$\varphi_{\mathrm{ro}}$.} By (T1) the gate computes SHA-256 digests $H_{\mathrm{pre}}(W)$ of the protected files before its first check command and $H_{\mathrm{post}}(W)$ after its last, sets its decision to failure on any difference, and exits $2$ unless its decision is success; $\nu_{\gate}(2) = \fail$. Hence $\ex(\gate, 0)$ implies $H_{\mathrm{pre}}(W) = H_{\mathrm{post}}(W)$, and by (T3) the protected contents are equal except with negligible probability.
+
+\emph{$\varphi_{\mathrm{glue}}$.} By (T1) the gate evaluates every declared overlap check of $\delta^0 y$ on the workspace and exits $2$ if any is nonzero, and it also exits $2$ if the projector's report records an abstention. If $\tau_j = \done$ then $\tau_{j-1} = \ex(\gate, 0)$ by (T2), so $\delta^0 y = 0$ held when the gate ran, and no event lies between $\tau_{j-1}$ and $\tau_j$ that could change $y$.
+
+\emph{Verdicts.} By induction on the derivation. For T-Prose the verdict is $\pass$ by definition. For T-Script, (T1) gives an exit status $e$ and the verdict is $\nu_f(e) \in \nu_f(E_f) \cup \{\fail\}$ by totality. For T-Seq the semantics continues only while the verdict is $\pass$, which is the definition of $\vseq$. For T-Par and T-Glue the run's verdict is the minimum over the members, which is $\vpar$, and \Cref{lem:verdict} makes it independent of interleaving. For T-Guard the selected branch contributes its verdict, or $\abst$ if no branch is selected. For T-Gate and T-Proj the wrapper verdict is sequenced with the body's by $\vseq$. In every case the run's verdict lies in the set $V$ of the judgment. The adversary enters only at prose positions, whose verdict is constant, and the proof uses no property of the strategy. \qed
 
 \end{document}

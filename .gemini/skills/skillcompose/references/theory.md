@@ -205,6 +205,27 @@ Each module inside the manifold-parameterized workflow remains an **Open Effectf
 5. **Sheaf Equalizer / Pullback Join ($\Gamma(\mathcal{U}, \mathcal{F}) = \ker \delta^0$):** Enforces $\delta^1 = 0$ statically and $\pi_K(O_u) = \pi_K(O_v)$ dynamically across overlapping artifact views.
 6. **Post-Dominator Orthogonal Feedback Loop ($\mu X.\; \text{Gate}_Q \circ (S_{\text{act}} \leftrightarrows S_{\text{crit}})$):** Every mutator node $m \in V_{\text{mut}}$ is post-dominated on all paths to `DONE` by a read-only exogenous gate ($\mathcal{W}(g) = \emptyset$, SHA-256 verified) governed by a DAG-ordered **Lyapunov potential** $\Phi(x_t)$ and **Conditional Lempel–Ziv MDL** anti-padding (`info_density >= 0.10`).
 
+### 4.1 A contract calculus over prose and script components
+
+The six operators form a typed term language whose components are of two kinds: prose $\langle\pi\rangle$, interpreted by the model, and scripts $\llbracket f\rrbracket$, run by the host.
+
+$$c ::= \langle\pi\rangle \mid \llbracket f\rrbracket \qquad s ::= c \mid s\,;_\alpha s \mid s \otimes s \mid g \triangleright (s \oplus s \oplus \texttt{ABSTAIN}) \mid \text{glue}_{\mathcal{U}}(s_u) \mid \text{gate}_G(s) \mid \text{proj}_{\mathcal{M}} \triangleright s$$
+
+Every component has an interface $\iota(c) = (\mathcal{A}_c, R_c, W_c, E_c, \nu_c)$: argument signature, read and write footprints, exit statuses, and a **total** verdict map $\nu_c : \mathbb{Z} \to \{\text{pass}, \text{abstain}, \text{fail}\}$ with $\nu_c(e) = \text{fail}$ outside $E_c$. For scripts, $\mathcal{A}_f$ and $E_f$ come from `script_signature` (argument-parser declarations and exit literals in the Python AST, including the `SystemExit(main())` idiom) and are recorded under `script_interfaces` in `manifold_atlas.json`. Verdict maps are per component: the projector reads exit 2 as abstain, the gate reads exit 2 as fail, and a foreign member script reads every nonzero status as fail, since 2 is argparse's usage error. Prose has $E = \{0\}$ and never reports a verdict, so its correctness must be discharged by a later script.
+
+Sequential verdicts short-circuit ($v_1 \triangleright v_2 = v_1$ unless $v_1 = \text{pass}$), a monoid with abstain and fail as left zeros; parallel verdicts take the meet in $\text{fail} < \text{abstain} < \text{pass}$. Typing rules (T-Prose, T-Script, T-Seq, T-Par, T-Guard, T-Glue, T-Gate, T-Proj) mark each premise as static (wiring verifier), dynamic (generated monitor), or assumed (prose entailment $Q_1 \Rightarrow \alpha^* P_2$, which is undecidable here).
+
+**Threat model.** The model is an adversary at prose positions. The trusted base is: (T1) scripts and monitors run as coded; (T2) the host runs the projector before any prose step and admits `DONE` only immediately after a passing gate; (T3) SHA-256 collision resistance. Today's hosts state T2 in the skill text but do not enforce it.
+
+**Soundness.** Under T1 to T3, every trace of $\text{proj}_{\mathcal{M}} \triangleright \text{gate}_G(s)$ satisfies the LTL safety properties
+
+- $\varphi_{\text{abs}} = (\neg\text{wr}\ \mathbf{U}\ \text{ex(proj)}) \land \mathbf{G}(\text{ex(proj},2) \to \mathbf{G}\neg\text{wr})$ (the projector's own `--out` report is its declared write),
+- $\varphi_{\text{gate}} = \mathbf{G}(\text{wr} \to \neg\text{done}\ \mathbf{W}\ \text{ex(gate},0))$,
+- $\varphi_{\text{ro}} = \mathbf{G}(\text{ex(gate},0) \to H_{\text{pre}}(W) = H_{\text{post}}(W))$,
+- $\varphi_{\text{glue}} = \mathbf{G}(\text{done} \to \delta^0 y = 0)$,
+
+whatever the model does. Each is an Alpern–Schneider safety property, so a monitor can enforce it (Schneider's security automata); the projector, gate, and installer are those monitors. The static dominance checks (gate post-dominates every mutator, and projector pre-dominates every mutator, both in `dominator_orthogonality`) give conformance: an agent that follows the compiled graph cannot reach a state whose only continuation violates a property. `DONE` certifies only the gate's checks.
+
 ---
 
 ## 5. Mapping Theory to Executable `/skillcompose` Scripts & Proof Suites
@@ -215,6 +236,7 @@ Each module inside the manifold-parameterized workflow remains an **Open Effectf
 | Query-conditioned submodular Noisy-OR $p(u \mid s, Q)$ + Log-Det Fisher volume $V_{\text{Fisher}}(S)$ + JSD/NCD anti-redundancy + exemplar conflict penalty + Nemhauser–Wolsey certificate | `scripts/submodular_select.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
 | 6-operator Kleisli + Sheaf wiring compiler & 6-theorem static verifier (`type_safety`, `separation_logic`, `dpi_exogenous_grounding`, `dominator_orthogonality`, `parnas_encapsulation`, `manifold_sheaf_exactness`) | `scripts/wiring_compiler.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
 | Composed argument interface $\mathcal{A}_{\mathcal{M}}(D)$: arguments the final skill takes ($T_\cap \cup D_{\text{take}}$) and is able to take ($B_\cup \cup D_{\text{able}}$); empty $D$ is anti-unification of member signatures | `scripts/parse_args.py` (`--args` → `desired_interface`) | Corollary 3.1; `/skillcompose … --args "--author-persona, take:--premise"` |
+| Hybrid contract calculus: script signatures $\operatorname{sig}(f)$, per-component verdict maps, projector pre-dominance, LTL safety under T1–T3 (§4.1) | `scripts/compose_skills.py` (`script_interfaces`), `scripts/wiring_compiler.py` (`dominator_orthogonality`) | `metrics/carrier-closure/measure.py` (`check_signatures`), `paper/main.tex` Theorem 5 |
 | Carrier closure $\operatorname{cl}(s_i)$ of member channels and modules (kernel-exact pullback) and installation as join in $\sqsubseteq$ (Proposition 3.2) | `scripts/compose_skills.py` (`carrier` in `manifold_atlas.json`), `scripts/install_skill_dual.sh` (`install_would_lose_files`) | `metrics/carrier-closure/measure.py` |
 | End-to-end composite manifold compiler emitting `MANIFOLD_ATLAS.md`, standalone `project_manifold.py`, & sheaf/SHA-256 `verify_dominator_gate.py` (+ 4-platform manifests) | `scripts/compose_skills.py`, `scripts/export_platform_targets.py` | `metrics/manifold-lift/measure.py`, `metrics/principled-lift/measure.py` |
 | Conditional DEFLATE/LZ novelty, Attention Channel SNR, & Lyapunov debt $\Phi$ | `scripts/information_gain.py` | `metrics/principled-lift/measure.py` |

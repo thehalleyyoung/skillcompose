@@ -535,6 +535,69 @@ def carrier_dest(src: Path, ldir: Path, root: Path, slug: str) -> str:
     return (Path(top) / "members" / slug / rel).as_posix()
 
 
+def script_signature(path: Path) -> dict[str, Any]:
+    """Static interface of a script component: interpreter, argv schema, and literal exit codes.
+
+    Python is parsed with ast (argparse add_argument calls, sys.exit/SystemExit literals);
+    other scripts get the shebang interpreter and literal `exit N` codes only.
+    """
+    import ast
+
+    text = path.read_text(encoding="utf-8", errors="replace")
+    first = text.splitlines()[0] if text else ""
+    sig: dict[str, Any] = {
+        "interpreter": first[2:].strip() if first.startswith("#!") else ("python3" if path.suffix == ".py" else path.suffix.lstrip(".")),
+        "options": [],
+        "positionals": [],
+        "required_options": [],
+        "exit_codes": [],
+        "extraction": "none",
+    }
+    codes: set[int] = set()
+    exit_fns: set[str] = set()
+    if path.suffix == ".py":
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            sig["extraction"] = "syntax_error"
+            return sig
+        sig["extraction"] = "python_ast"
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                fn = node.func
+                name = fn.attr if isinstance(fn, ast.Attribute) else getattr(fn, "id", "")
+                if name == "add_argument":
+                    strs = [a.value for a in node.args if isinstance(a, ast.Constant) and isinstance(a.value, str)]
+                    req = any(k.arg == "required" and isinstance(k.value, ast.Constant) and k.value.value is True for k in node.keywords)
+                    for s in strs:
+                        if s.startswith("-"):
+                            sig["options"].append(s)
+                            if req:
+                                sig["required_options"].append(s)
+                        else:
+                            sig["positionals"].append(s)
+                elif name in {"exit", "SystemExit"} and node.args:
+                    a = node.args[0]
+                    if isinstance(a, ast.Constant) and isinstance(a.value, int) and not isinstance(a.value, bool):
+                        codes.add(a.value)
+                    elif isinstance(a, ast.Call) and isinstance(a.func, ast.Name):
+                        exit_fns.add(a.func.id)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.name in exit_fns:
+                for r in ast.walk(node):
+                    if not isinstance(r, ast.Return) or r.value is None:
+                        continue
+                    vals = [r.value.body, r.value.orelse] if isinstance(r.value, ast.IfExp) else [r.value]
+                    for v in vals:
+                        if isinstance(v, ast.Constant) and isinstance(v.value, int) and not isinstance(v.value, bool):
+                            codes.add(v.value)
+    else:
+        sig["extraction"] = "exit_literals"
+        codes.update(int(m) for m in re.findall(r"\bexit\s+(\d+)\b", text))
+    sig["exit_codes"] = sorted(codes)
+    return sig
+
+
 def argument_interface(desired: dict[str, list[str]] | None) -> dict[str, list[str]]:
     """A_M(D) = (T_cap | D_take, B_cup | D_able), theory.md §3.5.
 
@@ -781,6 +844,11 @@ Manifold atlas & chart equations: [MANIFOLD_ATLAS.md](./references/MANIFOLD_ATLA
     (out_dir / "SKILL.md").write_text(skill_md, encoding="utf-8")
 
     manifold_atlas["carrier"] = carrier_manifest
+    manifold_atlas["script_interfaces"] = {
+        f.relative_to(out_dir).as_posix(): script_signature(f)
+        for f in sorted((out_dir / "scripts").rglob("*"))
+        if f.is_file() and f.suffix in CARRIER_EXEC
+    }
     # Write references metadata AFTER SKILL.md so verify_graph measures exact Parnas encapsulation ratio!
     (out_dir / "references" / "MANIFOLD_ATLAS.md").write_text(render_manifold_md(manifold_atlas), encoding="utf-8")
     (out_dir / "references" / "manifold_atlas.json").write_text(
