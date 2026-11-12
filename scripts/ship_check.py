@@ -141,6 +141,7 @@ def check(fork: Path, rounds: int = FORGE_ROUNDS, min_chars: int = MIN_CHARS_PER
                 min_chars=min_chars,
                 strict_phases=True,
                 require_unify_fraction=None,
+                fork=str(fork),
             )
         )
         if forge_out["decision"] != "PASS":
@@ -212,6 +213,7 @@ def check(fork: Path, rounds: int = FORGE_ROUNDS, min_chars: int = MIN_CHARS_PER
             "rounds": rounds,
             "min_chars_per_round": min_chars,
             "phases": "P1-unify 1-10 | P2-enhance 11-20 | P3-metrics 21-44 | P4-awesome 45-50",
+            "outcome": "from round 11: before/after output per round; <=20% self-measurement rounds; >=50% better",
         },
     }
 

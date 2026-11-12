@@ -96,11 +96,13 @@ On refusal JSON, trust `error` + exit **2**, not a piped `tee|head` status.
 | Rounds | Kind | Job |
 |---|---|---|
 | **1–10** | `unify` | Unified whole **strictly more than the sum of its parts** |
-| **11–20** | `enhance` | Focused, enhanced abilities |
-| **21–44** | `metrics` | Undeniable, reproducible, non-falsified best-in-some-way metrics; reflect + **fix** when not best |
+| **11–20** | `enhance` | Make the skill's **output** better: fix the worst flaw in what it produces |
+| **21–44** | `metrics` | Undeniable, reproducible, non-falsified best-in-some-way metrics **of the output** against a baseline; reflect + **fix** when not best |
 | **45–50** | `awesome` | Actually build something awesome (e.g. a novel) **or** find a ≥99%-confident real bug in someone else's public repo that needed this tool |
 
-Details: `references/forge_phases.md`.
+**Outcome contract (rounds 11–50).** The forge improves what the composed skill produces, not the package's measurement of itself. Every round runs the skill on a real domain task, keeps its output before and after the round's change in `forge/outcomes/rNN/`, and names the output's worst flaw with a verbatim quote (`scripts/outcome_round.py`). `forge_round.sh` refuses a round without this evidence. `forge_log.py validate` and `ship_check.py` fail a forge where more than 20% of rounds spend most of their change on evals, metrics or tests, or where the output improved in fewer than half the rounds. A new checker counts only when it changes what gets written.
+
+Details: `references/forge_phases.md`, `references/round_protocol.md`.
 
 ## Adoption floor (no popularity ceiling)
 
@@ -384,9 +386,12 @@ KIND="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("kind") or "
 THEME="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("theme") or "")' <<<"$NEXT")"
 # 0) Mark busy so an overlapping timer wake will NOT double-start:
 python3 "$SCRIPTS/agent_busy.py" acquire --wip "$WIP_DIR" --round "$R" --json
-# 1) Answer usefulness question into USEFULNESS_FORGE.md (this phase only)
-# 2) Implement multi-surface leap for THIS round only (≥1000 chars)
-# 3) Commit + log (forge_round.sh also releases agent_busy.lock):
+# 1) Rounds 11+: run the skill on a real task and keep its output (outcome contract)
+python3 "$SCRIPTS/outcome_round.py" init --fork "$FORK_DIR" --round "$R" --task "<a real user's request>"
+#    save forge/outcomes/rNN/before.<ext>; name the worst flaw in that output, quoted, in verdict.json
+# 2) Change the skill so the flaw stops happening (≥1000 chars, multi-surface), THIS round only;
+#    rerun the same task, save after.<ext>, fill verdict.json honestly (same/worse = logged miss)
+# 3) Commit + log (forge_round.sh checks the outcome evidence and releases agent_busy.lock):
 git -C "$FORK_DIR" add -A
 git -C "$FORK_DIR" commit -m "forge(${R}/${ROUNDS}): ${THEME} — ${GAP}"
 bash "$SCRIPTS/forge_round.sh" "$R" "$ROUNDS" "$THEME" "$GAP" "$ADDITION" \
@@ -407,7 +412,9 @@ Validate (must PASS — else keep looping):
 
 ```bash
 python3 "$SCRIPTS/forge_log.py" validate --log "$WIP_DIR/forge/usefulness_forge.jsonl" \
-  --rounds "$ROUNDS" --min-chars 1000 --strict-phases --json
+  --rounds "$ROUNDS" --min-chars 1000 --strict-phases --fork "$FORK_DIR" --json
+# where did the forge's effort go? (skill vs evals/metrics vs output, per round)
+python3 "$SCRIPTS/outcome_round.py" audit --fork "$FORK_DIR" --log "$WIP_DIR/forge/usefulness_forge.jsonl" --json
 python3 "$SCRIPTS/check_phases.py" --phases "$WIP_DIR/forge/forge_phases.json" \
   --log "$WIP_DIR/forge/usefulness_forge.jsonl" --rounds "$ROUNDS" --json
 # remix — strict sum-of-parts (blocking):
@@ -485,7 +492,8 @@ bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/randomupgrade" --name randomu
 | `forge_phases.py` | Canonical 1–10/11–20/21–44/45–50 phase model + per-round prompts |
 | `schedule_forge_loop.sh` | Legacy Cursor/CLI 90s wake helper (in Antigravity, use native `schedule` tool instead) |
 | `agent_busy.py` | acquire/release/check mid-round lock so timer wakes do not double-start a round |
-| `forge_log.py` / `forge_round.sh` | Round log append; refuses <1000 chars; enforces phase kinds |
+| `forge_log.py` / `forge_round.sh` | Round log append; refuses <1000 chars; enforces phase kinds and, from round 11, the outcome contract |
+| `outcome_round.py` | Outcome contract: `init`/`check` the before/after output of one round; `audit` a forge for self-measurement drift |
 | `measure_chars.py` | Product-char churn for HEAD commit |
 | `unify_wholeness.py` | Strict sum-of-parts / unification gate |
 | `check_phases.py` | All 4 phases correctly tagged in log |

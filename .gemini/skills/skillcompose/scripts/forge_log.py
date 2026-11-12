@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Append / validate /skillcompose forge round log (strict 50×≥1000-char phase rounds)."""
+"""Append / validate /skillcompose forge round log (strict 50×≥1000-char phase rounds).
+
+From round 11 each round also carries outcome evidence (outcome_round.py): the skill's output on a
+real domain task before and after the change. Validation fails when rounds lack it, when more than
+20% of them are mostly self-measurement (evals/metrics/tests), or when the output improved in fewer
+than half of them.
+"""
 from __future__ import annotations
 
 import argparse
@@ -7,10 +13,19 @@ import json
 import os
 import sys
 from datetime import datetime, timezone
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from outcome_round import (  # noqa: E402
+    MAX_SELF_MEASURE_FRACTION,
+    MIN_BETTER_FRACTION,
+    OUTCOME_FROM_ROUND,
+    focus,
+)
 
 QUESTION = (
-    "How can I make this fundamentally better/more useful/more likely to be used "
-    "(looking at what's available/what it would be compared to)?"
+    "What is the worst thing about what this skill produces for its user right now, next to what they "
+    "could get elsewhere, and what change to the skill makes the next output better?"
 )
 ALLOWED_SURFACES = {"procedure", "code", "proof", "docs", "ux"}
 DEFAULT_MIN_CHARS = 1000
@@ -71,6 +86,16 @@ def append_row(args: argparse.Namespace) -> dict:
         "commit": args.commit,
         "paths": paths,
     }
+    if args.outcome:
+        oc = json.loads(args.outcome)
+        row["outcome"] = oc.get("outcome", oc)
+        if "focus" in oc:
+            row["focus"] = oc["focus"]
+    if rnd >= OUTCOME_FROM_ROUND and not args.outcome:
+        raise SystemExit(
+            f"refuse append: round {rnd} has no outcome evidence (before/after output of the skill); "
+            "run outcome_round.py check and pass its JSON as --outcome"
+        )
     if chars < int(args.min_chars):
         raise SystemExit(
             f"refuse append: chars_changed={chars} < min_chars={args.min_chars} "
@@ -105,7 +130,27 @@ def validate(args: argparse.Namespace) -> dict:
     total_chars = 0
     unify_missing = []
     phase_mismatches = []
+    no_outcome: list[int] = []
+    self_measure: list[int] = []
+    better: list[int] = []
+    scoped: list[int] = []
     for i, r in by_round.items():
+        if i >= OUTCOME_FROM_ROUND:
+            scoped.append(i)
+            oc = r.get("outcome") if isinstance(r.get("outcome"), dict) else {}
+            if not (oc.get("before") and oc.get("after") and oc.get("verdict")):
+                no_outcome.append(i)
+            elif oc.get("verdict") == "better":
+                better.append(i)
+            fo = r.get("focus") if isinstance(r.get("focus"), dict) else {}
+            fork = getattr(args, "fork", None)
+            if not fo and fork and r.get("commit"):
+                try:
+                    fo = focus(Path(fork), str(r["commit"]))
+                except SystemExit:
+                    fo = {}
+            if fo.get("self_measurement") is True:
+                self_measure.append(i)
         surfaces = r.get("surfaces") or []
         if not isinstance(surfaces, list):
             surfaces = []
@@ -172,6 +217,23 @@ def validate(args: argparse.Namespace) -> dict:
         )
     if phase_mismatches and getattr(args, "strict_phases", True):
         reasons.append(f"phase kind mismatches: {phase_mismatches[:8]}")
+    if no_outcome:
+        reasons.append(
+            f"rounds without before/after output evidence: {sorted(no_outcome)[:10]}"
+            f"{'…' if len(no_outcome) > 10 else ''} (from round {OUTCOME_FROM_ROUND}, each round must show "
+            "what the skill produced before and after its change: outcome_round.py)"
+        )
+    if scoped and len(self_measure) > MAX_SELF_MEASURE_FRACTION * len(scoped):
+        reasons.append(
+            f"self-measurement drift: {len(self_measure)} of {len(scoped)} rounds spent most of their change "
+            f"on evals/metrics/tests (max {MAX_SELF_MEASURE_FRACTION:.0%}): {sorted(self_measure)[:10]}"
+        )
+    with_outcome = len(scoped) - len(no_outcome)
+    if with_outcome and len(better) < MIN_BETTER_FRACTION * with_outcome:
+        reasons.append(
+            f"the output got better in only {len(better)} of {with_outcome} rounds "
+            f"(need {MIN_BETTER_FRACTION:.0%}): the forge is not improving what users get"
+        )
 
     decision = "PASS" if not reasons else "FAIL"
     return {
@@ -187,6 +249,12 @@ def validate(args: argparse.Namespace) -> dict:
         "missing": missing,
         "thin": thin,
         "thin_chars": thin_chars,
+        "outcome": {
+            "from_round": OUTCOME_FROM_ROUND,
+            "without_evidence": sorted(no_outcome),
+            "better": sorted(better),
+            "self_measurement": sorted(self_measure),
+        },
     }
 
 
@@ -213,6 +281,7 @@ def main() -> int:
         help="unify|enhance|metrics|awesome (or legacy buff|subskill|superskill)",
     )
     a.add_argument("--unify", action="store_true", help="Mark round as unification work")
+    a.add_argument("--outcome", default="", help="JSON from outcome_round.py check (required from round 11)")
     a.add_argument("--radical", action="store_true", default=True)
     a.add_argument("--json", action="store_true")
 
@@ -220,6 +289,7 @@ def main() -> int:
     v.add_argument("--log", required=True)
     v.add_argument("--rounds", type=int, default=DEFAULT_ROUNDS)
     v.add_argument("--min-chars", type=int, default=DEFAULT_MIN_CHARS)
+    v.add_argument("--fork", default=None, help="package repo: measure focus for rounds logged without it")
     v.add_argument(
         "--require-unify-fraction",
         type=float,

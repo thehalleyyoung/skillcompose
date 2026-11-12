@@ -3,8 +3,8 @@
 **T1–T5 theme IDs are retired.** Use the fixed **50-round phase plan** in [`forge_phases.md`](forge_phases.md):
 
 1. **1–10 unify** — more than the sum of its parts  
-2. **11–20 enhance** — focused enhanced abilities  
-3. **21–44 metrics** — undeniable reproducible best-in-some-way metrics (+ fix when not)  
+2. **11–20 enhance** — make the skill's output better (outcome contract: before/after output per round)  
+3. **21–44 metrics** — undeniable reproducible best-in-some-way metrics of the output vs a baseline (+ fix when not)  
 4. **45–50 awesome** — real novel / artifact, or ≥99%-confident third-party bug find  
 
 ## Still reject as “upgrades”

@@ -20,6 +20,8 @@ from pathlib import Path
 EXCLUDE_SUFFIXES = (
     "/usefulness_forge.jsonl",
     "/USEFULNESS_FORGE.md",
+    # before/after outputs are evidence about the skill, not changes to it (outcome_round.py)
+    "/forge/outcomes/",
 )
 
 
@@ -64,6 +66,7 @@ def measure(repo: Path, commit: str | None, since: str | None) -> dict:
     # Character churn from patch lines that are +/- content (not headers)
     added = 0
     deleted = 0
+    per_file: dict[str, int] = {}
     current_file = None
     skip = False
     for line in show.splitlines():
@@ -79,8 +82,10 @@ def measure(repo: Path, commit: str | None, since: str | None) -> dict:
             continue
         if line.startswith("+"):
             added += len(line[1:])
+            per_file[current_file or ""] = per_file.get(current_file or "", 0) + len(line[1:])
         elif line.startswith("-"):
             deleted += len(line[1:])
+            per_file[current_file or ""] = per_file.get(current_file or "", 0) + len(line[1:])
 
     total = added + deleted
     return {
@@ -90,6 +95,7 @@ def measure(repo: Path, commit: str | None, since: str | None) -> dict:
         "chars_changed": total,
         "files": sorted(set(files)),
         "n_files": len(set(files)),
+        "per_file": per_file,
     }
 
 

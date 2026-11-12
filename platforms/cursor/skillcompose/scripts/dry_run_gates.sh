@@ -57,6 +57,7 @@ if [[ "${SKILLREMIX_IN_DRY_RUN_PROTECT:-0}" -eq 0 ]]; then
   run_metric principled-lift
   run_metric manifold-lift
   run_metric dry-run-protect
+  run_metric outcome-contract
   if [[ "$FAST" -eq 0 ]]; then
     run_metric smoke-refusal-suite
   else

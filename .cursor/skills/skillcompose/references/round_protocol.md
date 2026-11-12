@@ -7,9 +7,21 @@ Nominal chat summaries do **not** count. Ship fails unless the forge log proves 
 | Rounds | `kind` | Focus |
 |---|---|---|
 | 1–10 | `unify` | Unified whole **more than the sum of its parts** |
-| 11–20 | `enhance` | Focused enhanced abilities |
-| 21–44 | `metrics` | Undeniable reproducible metrics; reflect + fix when not best |
+| 11–20 | `enhance` | Make the skill's output better (outcome contract) |
+| 21–44 | `metrics` | Undeniable reproducible metrics of the output vs a baseline; reflect + fix when not best |
 | 45–50 | `awesome` | Real awesome proof (novel / artifact) or ≥99%-confident third-party bug |
+
+## Outcome contract (rounds 11–50, mandatory)
+
+A forge drifts when each round improves the package's view of itself: a checker, an eval for the checker, a metric about the eval. The user's output never changes. From round 11 every round is anchored in output:
+
+1. `outcome_round.py init --fork "$FORK_DIR" --round R --task "<a request a real user of the domain would make>"`.
+2. Run the skill on the task as that user would. Save the output as `forge/outcomes/rNN/before.<ext>`.
+3. Read it as a demanding reader of the domain. In `verdict.json`, name its single worst flaw and quote it verbatim (`before_excerpt`). The flaw is in the output, not in the package's checkers, evals or metrics.
+4. Change the skill so the flaw stops happening: procedure, member guidance, references, templates, or the scripts the skill runs while producing output.
+5. Rerun the same task. Save `after.<ext>`, quote where the flaw is fixed (`after_excerpt`), and set `verdict` to `better`, `same` or `worse`. Same and worse are logged as misses.
+
+`forge_round.sh` runs `outcome_round.py check` and refuses the round if the files are missing, the output did not change, or an excerpt is not in its file. Each round's changed characters are split into skill, instrumentation (evals/, tests/, metrics/, METRICS.md, WHOLENESS.md, gold labels, forge logs) and output. Validation fails when more than 20% of rounds are mostly instrumentation, or when fewer than half the rounds made the output better. The outputs themselves do not count toward the 1000 product characters.
 
 ## One prompt per round (mandatory)
 
@@ -30,7 +42,9 @@ Nominal chat summaries do **not** count. Ship fails unless the forge log proves 
 r = resume_forge.py next
 agent_busy.acquire(r)
 # THIS TURN: only r
-implement → commit forge(r/50) → forge_round.sh  # releases busy
+if r >= 11: outcome_round.py init; run skill → before; name worst flaw in the output
+implement (change the skill) → if r >= 11: rerun → after, verdict
+commit forge(r/50) → forge_round.sh  # checks outcome, releases busy
 if r < 50:
   prompt = forge_phases.py --prompt-round (r+1)
   schedule(DurationSeconds=90, Prompt=prompt)
@@ -41,7 +55,8 @@ else: ship_check
 ## Validate before ship
 
 ```bash
-python3 scripts/forge_log.py validate --log …/usefulness_forge.jsonl --rounds 50 --min-chars 1000 --strict-phases --json
+python3 scripts/forge_log.py validate --log …/usefulness_forge.jsonl --rounds 50 --min-chars 1000 --strict-phases --fork "$PKG_DIR" --json
+python3 scripts/outcome_round.py audit --fork "$PKG_DIR" --log …/usefulness_forge.jsonl --json
 python3 scripts/check_phases.py --log …/usefulness_forge.jsonl --rounds 50 --json
 python3 scripts/unify_wholeness.py --package "$PKG_DIR" --rounds 50 --min-chars 1000 --json
 python3 scripts/ship_check.py --fork "$PKG_DIR" --rounds 50 --min-chars 1000 --json
