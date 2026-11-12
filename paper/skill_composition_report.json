@@ -1,0 +1,125 @@
+{
+  "ok": true,
+  "skill_dir": "paper/composed_skill/ml-paper-manifold",
+  "skill_md_bytes": 4857,
+  "chosen_ids": [
+    "Calix-L/awesome-latex-skills@latex-fmt",
+    "Boom5426/Nature-Paper-Skills@citation-verifier",
+    "K-Dense-AI/scientific-agent-skills@citation-management",
+    "Boom5426/Nature-Paper-Skills@anti-defensive-writing",
+    "Boom5426/Nature-Paper-Skills@conference-paper-writing",
+    "Master-cai/Research-Paper-Writing-Skills@research-paper-writing",
+    "SNL-UCSB/paper-writing-skill@paper-writing-skill",
+    "K-Dense-AI/scientific-agent-skills@peer-review"
+  ],
+  "oracle_scripts": [
+    "project_manifold.py",
+    "verify_dominator_gate.py"
+  ],
+  "nemhauser_wolsey_certificate": {
+    "achieved_coverage": 3.3619,
+    "opt_upper_bound": 4.1381,
+    "optimality_ratio_lower_bound": 0.8124,
+    "nemhauser_wolsey_worst_case_floor": 0.6321
+  },
+  "lift_over_popularity_top_n": {
+    "objective_delta": 1.8476,
+    "coverage_delta": 0.0509,
+    "fisher_volume_delta": 0.5654,
+    "synergy_delta": 0.0,
+    "redundancy_reduction": 0.0997,
+    "entropy_bits_delta": 0.0136
+  },
+  "counterfactual_popularity_top_n": {
+    "chosen_ids": [
+      "K-Dense-AI/scientific-agent-skills@citation-management",
+      "K-Dense-AI/scientific-agent-skills@peer-review",
+      "K-Dense-AI/scientific-agent-skills@scientific-visualization",
+      "K-Dense-AI/scientific-agent-skills@scientific-writing",
+      "K-Dense-AI/scientific-agent-skills@venue-templates",
+      "Master-cai/Research-Paper-Writing-Skills@research-paper-writing",
+      "Haojae/scipilot-figure-skill@scipilot-figure-skill",
+      "Boom5426/Nature-Paper-Skills@anti-defensive-writing"
+    ],
+    "metrics": {
+      "objective": 1.4304,
+      "submodular_coverage": 1.5769,
+      "fisher_logdet_volume": 5.9861,
+      "manifold_submodular_potential": 2.8939,
+      "normalized_coverage": 0.2336,
+      "chain_synergy": 0.0686,
+      "mean_redundancy": 0.2266,
+      "mean_jsd": 0.9113,
+      "mean_ncd": 0.9269,
+      "off_domain_penalty": 1.2949,
+      "role_coverage": {
+        "spec_grounding": 0.0,
+        "synthesis": 0.7164,
+        "static_contract": 0.343,
+        "exec_observation": 0.0,
+        "adversarial_verify": 0.343,
+        "state_recovery": 0.0
+      },
+      "role_entropy_bits": 1.4888,
+      "has_exogenous_grounding": false,
+      "has_orthogonal_verify": false
+    }
+  },
+  "manifold_telemetry": {
+    "tangent_rank": 6,
+    "intrinsic_dimension": 4.4743,
+    "fisher_logdet_volume": 6.5515,
+    "amari_e_vs_m_bregman_gap_bits": 0.07344,
+    "union_fiber_size": 32,
+    "manifold_total_fiber_size": 72,
+    "recombinant_novel_states": 40,
+    "specialization_exact": true
+  },
+  "generalization_over_union": {
+    "recombinant_request": {
+      "spec_modality": "formal_grammar_adr",
+      "execution_regime": "transactional_staged"
+    },
+    "target_fiber_cardinality": 12,
+    "concatenation_admissible_outputs": 0,
+    "union_probability_mass_on_target_fiber": 0.125,
+    "manifold_probability_mass_on_target_fiber": 1.0,
+    "kl_target_to_union_bits": "inf",
+    "kl_target_to_best_single_bits": "inf",
+    "kl_target_to_manifold_bits": 0.2051,
+    "manifold_strictly_dominates_union": true
+  },
+  "verification": {
+    "decision": "PASS",
+    "checks": {
+      "type_safety": true,
+      "separation_logic": true,
+      "dpi_exogenous_grounding": true,
+      "dominator_orthogonality": true,
+      "parnas_encapsulation": true,
+      "manifold_sheaf_exactness": true
+    },
+    "reasons": [],
+    "n_nodes": 14,
+    "n_edges": 17,
+    "exogenous_nodes": [
+      "subskill:manifold-chart-projector",
+      "subskill:pullback-claim-provenance-table",
+      "oracle:exogenous-env-runner",
+      "subskill:verify-gate"
+    ],
+    "readonly_gates": [
+      "subskill:verify-gate"
+    ],
+    "parnas": {
+      "skill_md_bytes": 4857,
+      "encapsulated_bytes": 233114,
+      "encapsulation_ratio": 0.9796
+    },
+    "sheaf_cocycle": {
+      "cocycle_exact": true,
+      "triangles_checked": 1,
+      "holonomy_defects": []
+    }
+  }
+}

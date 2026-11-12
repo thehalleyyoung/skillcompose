@@ -4,7 +4,7 @@
 
 `skillcompose` does strictly more than compile a *"best-of-GitHub concatenation"* ($\bigwedge_i s_i$) or wire a *"union/router of remixed skills"* ($\bigcup_i s_i$). Modeling each skill rigorously as a **Guarded Conditional Markov Kernel over Structured Outputs** ($s : x \mapsto K_{\eta_s, Q_s}(\cdot \mid x)$ supported on admissible fiber $\mathcal{Y}_s(x) \subseteq \mathcal{Y}$), `skillcompose` treats $N$ marketplace skills as landmark observations on a **Conditional Statistical–Logical Manifold** $\mathfrak{G}_{\mathcal{M}}$—synthesizing a single parameterized generative process via **Galois Conormal Closure**, **Plotkin–Reynolds Anti-Unification**, **Amari Conditional Fisher–Rao Geometry**, **Čech Sheaf Gluing**, and **Post-Dominator Orthogonal Verification**.
 
-Full formal monograph: [`references/theory.md`](references/theory.md) · Offline verification card: [`PROOF.md`](PROOF.md).
+Research paper (LaTeX + PDF): [`paper/main.pdf`](paper/main.pdf) ([`paper/main.tex`](paper/main.tex)) · 7-family benchmark: [`evals/manifold_7family/RESULTS.md`](evals/manifold_7family/RESULTS.md) · Self-hosted ML paper skill: [`paper/composed_skill/ml-paper-manifold/SKILL.md`](paper/composed_skill/ml-paper-manifold/SKILL.md) · Formal monograph: [`references/theory.md`](references/theory.md) · Verification card: [`PROOF.md`](PROOF.md).
 
 ---
 

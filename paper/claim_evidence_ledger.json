@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0.0",
+  "view_id": "U_claim_protocol_and_peer_audit",
+  "claim_ids": [
+    "C1_IMPOSSIBILITY_OBSTRUCTION",
+    "C2_E_GEODESIC_FACTORIZATION_AND_ANTIUNIFY",
+    "C3_CECH_SHEAF_COCYCLE_EXACTNESS",
+    "C4_SUBMODULAR_FISHER_SELECTION_BOUND",
+    "C5_ISOLATED_7FAMILY_BENCHMARK_DOMINANCE",
+    "C6_SELF_HOSTED_ML_PAPER_MANIFOLD"
+  ],
+  "denominators": {
+    "benchmark_task_families": 7,
+    "benchmark_regimes": 3,
+    "isolated_solver_runs": 21,
+    "double_blind_judge_bundles": 7,
+    "upstream_skills_per_family": 4,
+    "ml_paper_candidate_pool": 15,
+    "ml_paper_selected_landmarks": 8,
+    "ml_paper_distinct_repos": 5,
+    "canonical_bibliography_entries": 22
+  },
+  "source_hashes": {
+    "vm_live_report_sha256": "3690c1cbe44bff6f3994b2c9312e578136ae67455a91274891bda6b84aa8141b",
+    "skill_composition_report_sha256": "cbea73465cd4fe1e66e849d136d81a27d6916757679a9aa517b5e1e8097179d7",
+    "references_bib_sha256": "1210ee486cb9756eebd29fc3db58a99d3f1f34b107924390842bae2ed3589620",
+    "main_tex_sha256": "edd7a7fa8a1f91d635dd245b8f8506845385fe4e385eeeb908afff4972cbdc19"
+  },
+  "claims": [
+    {
+      "claim_id": "C1_IMPOSSIBILITY_OBSTRUCTION",
+      "manuscript_anchor": "Proposition 1 (sec:problem)",
+      "statement": "Raw conjunction collapses to empty fiber under conflicting standalone defaults while skill-union mixtures incur +infinity forward KL on recombinant fibers.",
+      "verification_type": "formal_proof"
+    },
+    {
+      "claim_id": "C2_E_GEODESIC_FACTORIZATION_AND_ANTIUNIFY",
+      "manuscript_anchor": "Theorems 1-2 & Appendix A.1 (sec:manifold)",
+      "statement": "Conditional Fisher-Rao e-geodesics factor as weighted products of experts with strict Bregman gap Delta_{e,m} > 0, while Plotkin-Reynolds anti-unification preserves exact landmark pullbacks and expands admissible fibers across all 7 families.",
+      "verification_type": "formal_proof_and_compiler_certificate"
+    },
+    {
+      "claim_id": "C3_CECH_SHEAF_COCYCLE_EXACTNESS",
+      "manuscript_anchor": "Theorem 3 & Appendix A.2 (subsec:sheaf)",
+      "statement": "Multi-view skill deliverables glue into a global section iff 0-coboundary vanishes (ker delta^0), with compile-time 1-cocycle holonomy check (delta^1 = 0).",
+      "verification_type": "formal_proof_and_runtime_gate"
+    },
+    {
+      "claim_id": "C4_SUBMODULAR_FISHER_SELECTION_BOUND",
+      "manuscript_anchor": "Theorem 4 & Proposition 2 (sec:selection)",
+      "statement": "Noisy-OR role coverage plus log-det Fisher spanning volume is monotone submodular via Gaussian mutual information, yielding online Nemhauser-Wolsey bounds >= 0.8124; SHA-256 read-only gates strictly increase ground-truth mutual information.",
+      "verification_type": "formal_proof_and_empirical_table"
+    },
+    {
+      "claim_id": "C5_ISOLATED_7FAMILY_BENCHMARK_DOMINANCE",
+      "manuscript_anchor": "Tables 1-2 & Figure 2 (sec:eval)",
+      "statement": "Across 21 isolated single-call runs (7 families x 3 regimes), Manifold achieves 98.71/100 blind judge score, 100.00% (7/7) exogenous oracle pass rate, and 7/7 blind first-place wins vs Concatenation (87.27, 6/7) and Union (53.66, 0/7).",
+      "evidence_artifact": "evals/manifold_7family/results/vm_live_report.json",
+      "verification_type": "exogenous_oracle_and_double_blind_judge"
+    },
+    {
+      "claim_id": "C6_SELF_HOSTED_ML_PAPER_MANIFOLD",
+      "manuscript_anchor": "Table 3 & Section 5.4 (subsec:self-hosted)",
+      "statement": "Self-hosted composition over 15 MIT-licensed post-research GitHub ML paper skills selects 8 landmarks across 5 repositories with NW bound 0.8124, Fisher volume 6.5515, and 97.96% Parnas encapsulation.",
+      "evidence_artifact": "paper/skill_composition_report.json",
+      "verification_type": "compiler_certificate_and_stage3_sheaf_gate"
+    }
+  ],
+  "resolved_landmark_conflicts": [
+    {
+      "conflict_id": "K1_INTERACTIVE_BRAINSTORM_VS_END_TO_END_DRAFT",
+      "landmarks": [
+        "SNL-UCSB/paper-writing-skill@paper-writing-skill",
+        "Boom5426/Nature-Paper-Skills@conference-paper-writing"
+      ],
+      "manifold_resolution": "Locked Stage 1 fiber to autonomous end-to-end synthesis over completed repository evidence while retaining SNL-UCSB's two-pass Introduction and explicit gap-to-mechanism transition rules."
+    },
+    {
+      "conflict_id": "K2_SELF_REVIEW_AUDIT_VS_ANTI_DEFENSIVE_PROSE",
+      "landmarks": [
+        "Master-cai/Research-Paper-Writing-Skills@research-paper-writing",
+        "Boom5426/Nature-Paper-Skills@anti-defensive-writing"
+      ],
+      "manifold_resolution": "Enforced 100% clean reader-facing scientific prose in paper/main.tex while externalizing the 5-dimension adversarial self-review and claim-provenance audit into coupled sheaf JSON artifacts."
+    }
+  ],
+  "five_dimension_adversarial_review": {
+    "novelty_and_positioning": "PASS (Formalizes dual Fisher-Rao e-geodesic + Galois/Plotkin-Reynolds fibered Lawvere manifold; distinct from embedding retrieval and mixture routing)",
+    "mathematical_rigor": "PASS (2 Definitions, 2 Propositions, 4 Theorems with complete proofs in main text and Appendix A)",
+    "experimental_isolation": "PASS (Identical 4 member skills per family, 1 isolated solver call per cell, exogenous oracle + shuffled double-blind judge)",
+    "clarity_and_visuals": "PASS (Vector TikZ geometry figure, vector PGFPlots 7-family chart, 3 booktabs tables, zero Overfull hboxes)",
+    "reproducibility_and_citations": "PASS (22/22 verified BibTeX keys cited, deterministic Python 3 stdlib compiler and benchmark runner)"
+  }
+}

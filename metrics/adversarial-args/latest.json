@@ -1,8 +1,8 @@
 {
   "metric_id": "adversarial-args",
   "title": "Adversarial args / empty-WIP refusal rate",
-  "at": "2026-11-11T23:50:26.961864+00:00",
-  "ts": 1794441026.961888,
+  "at": "2026-11-12T00:38:12.877938+00:00",
+  "ts": 1794443892.8779624,
   "values": {
     "skill_root": "/home/antigravity/thehalleyyoung/skillcompose",
     "cases": [

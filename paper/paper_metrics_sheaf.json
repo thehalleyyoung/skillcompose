@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0.0",
+  "view_id": "U_stat_computation_and_evidence_table",
+  "claim_ids": [
+    "C1_IMPOSSIBILITY_OBSTRUCTION",
+    "C2_E_GEODESIC_FACTORIZATION_AND_ANTIUNIFY",
+    "C3_CECH_SHEAF_COCYCLE_EXACTNESS",
+    "C4_SUBMODULAR_FISHER_SELECTION_BOUND",
+    "C5_ISOLATED_7FAMILY_BENCHMARK_DOMINANCE",
+    "C6_SELF_HOSTED_ML_PAPER_MANIFOLD"
+  ],
+  "denominators": {
+    "benchmark_task_families": 7,
+    "benchmark_regimes": 3,
+    "isolated_solver_runs": 21,
+    "double_blind_judge_bundles": 7,
+    "upstream_skills_per_family": 4,
+    "ml_paper_candidate_pool": 15,
+    "ml_paper_selected_landmarks": 8,
+    "ml_paper_distinct_repos": 5,
+    "canonical_bibliography_entries": 22
+  },
+  "source_hashes": {
+    "vm_live_report_sha256": "3690c1cbe44bff6f3994b2c9312e578136ae67455a91274891bda6b84aa8141b",
+    "skill_composition_report_sha256": "cbea73465cd4fe1e66e849d136d81a27d6916757679a9aa517b5e1e8097179d7",
+    "references_bib_sha256": "1210ee486cb9756eebd29fc3db58a99d3f1f34b107924390842bae2ed3589620",
+    "main_tex_sha256": "edd7a7fa8a1f91d635dd245b8f8506845385fe4e385eeeb908afff4972cbdc19"
+  },
+  "aggregate_benchmark": {
+    "union": {
+      "mean_blind_judge_score": 53.66,
+      "exogenous_pass_rate": 39.35,
+      "exogenous_full_pass_families": "0/7",
+      "blind_judge_1st_place_wins": 0,
+      "mean_rubric_breakdown": {
+        "functional_correctness": 51.57,
+        "conflict_and_invariant_resolution": 63.29,
+        "recombinant_completeness": 52.14,
+        "sheaf_cross_file_consistency": 37.57,
+        "code_and_artifact_craft": 63.29
+      }
+    },
+    "concat": {
+      "mean_blind_judge_score": 87.27,
+      "exogenous_pass_rate": 90.48,
+      "exogenous_full_pass_families": "6/7",
+      "blind_judge_1st_place_wins": 0,
+      "mean_rubric_breakdown": {
+        "functional_correctness": 87.57,
+        "conflict_and_invariant_resolution": 85.71,
+        "recombinant_completeness": 86.14,
+        "sheaf_cross_file_consistency": 91.14,
+        "code_and_artifact_craft": 86.0
+      }
+    },
+    "manifold": {
+      "mean_blind_judge_score": 98.71,
+      "exogenous_pass_rate": 100.0,
+      "exogenous_full_pass_families": "7/7",
+      "blind_judge_1st_place_wins": 7,
+      "mean_rubric_breakdown": {
+        "functional_correctness": 99.0,
+        "conflict_and_invariant_resolution": 98.71,
+        "recombinant_completeness": 98.86,
+        "sheaf_cross_file_consistency": 99.14,
+        "code_and_artifact_craft": 96.86
+      }
+    }
+  },
+  "ml_paper_manifold_certificates": {
+    "nemhauser_wolsey_ratio_bound": 0.8124,
+    "submodular_objective": 3.278,
+    "star_top_n_objective": 1.4304,
+    "objective_lift_over_stars": 1.8476,
+    "fisher_log_det_volume": 6.5515,
+    "star_top_n_fisher_volume": 5.9861,
+    "tangent_rank": 6,
+    "intrinsic_dimension_d_eff": 4.4743,
+    "recombinant_novel_states": 40,
+    "parnas_encapsulation_ratio": 0.9796
+  }
+}
