@@ -1,8 +1,8 @@
 {
   "metric_id": "principled-lift",
   "title": "Principled submodular + Kleisli wiring + MDL gates",
-  "at": "2026-11-12T03:08:01.576146+00:00",
-  "ts": 1794452881.5761557,
+  "at": "2026-11-12T03:16:56.535777+00:00",
+  "ts": 1794453416.5357862,
   "values": {
     "skill_root": "/tmp/skillcompose-src/skillcompose",
     "cases": [

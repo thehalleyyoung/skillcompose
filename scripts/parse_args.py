@@ -10,8 +10,51 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
 import shlex
 import sys
+from pathlib import Path
+
+SKILL_NAME_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$")
+RESERVED_SKILL_NAMES = {"skillcompose", "skillremix", "randomupgrade"}
+
+
+def skill_host_dirs() -> list[Path]:
+    home = Path.home()
+    codex = Path(os.environ.get("CODEX_HOME") or home / ".codex")
+    return [
+        home / ".gemini" / "config" / "skills",
+        home / ".gemini" / "skills",
+        home / ".claude" / "skills",
+        home / ".cursor" / "skills",
+        codex / "skills",
+    ]
+
+
+def installed_skill_paths(name: str) -> list[str]:
+    return [str(d / name) for d in skill_host_dirs() if (d / name).exists()]
+
+
+def check_new_skill_name(name: str | None, legacy_name: str | None, resuming: bool) -> dict | None:
+    """Return a refusal dict, or None when the name is usable for a new skill."""
+    if name is None:
+        return None
+    if not SKILL_NAME_RE.match(name):
+        return {"error": "invalid_new_skill_name", "message": "use lowercase kebab-case, 1-64 chars", "new_skill_name": name}
+    if name in RESERVED_SKILL_NAMES:
+        return {"error": "reserved_new_skill_name", "message": "that is the meta-skill's own name", "new_skill_name": name}
+    if legacy_name and legacy_name != name:
+        return {"error": "conflicting_skill_names", "message": "--name and --new-skill-name disagree", "name": legacy_name, "new_skill_name": name}
+    taken = [] if resuming else installed_skill_paths(name)
+    if taken:
+        return {
+            "error": "new_skill_name_taken",
+            "message": "a skill with this name is already installed; pick another --new-skill-name, or --resume that run",
+            "new_skill_name": name,
+            "installed_at": taken,
+        }
+    return None
 
 
 def split_composed_args(raw: str | None) -> list[str]:
@@ -65,6 +108,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("query", nargs="*", help="Search words (optional)")
     p.add_argument("--pin", default=None, help="owner/repo@skill (single-upgrade mode)")
     p.add_argument("--name", default=None, help="Fork / superskill name")
+    p.add_argument(
+        "--new-skill-name",
+        default=None,
+        help=(
+            "Name of the skill this run creates (kebab-case). Must not already be "
+            "installed on any host, so a new composition never lands on an old skill."
+        ),
+    )
     p.add_argument("--seed", default=None, help="PRNG seed for eligible pick")
     p.add_argument("--min-installs", type=int, default=80)
     p.add_argument(
@@ -151,11 +202,16 @@ def main() -> int:
     if args.n is not None and args.pin:
         print("error: --n remix mode cannot combine with --pin (pin is single-skill)", file=sys.stderr)
         return 2
+    refusal = check_new_skill_name(args.new_skill_name, args.name, args.resume or args.status)
+    if refusal:
+        print(json.dumps({"ok": False, **refusal}, indent=2))
+        return 2
     mode = "remix" if args.n else "upgrade"
     out = {
         "query": " ".join(args.query).strip(),
         "pin": args.pin,
-        "name": args.name,
+        "name": args.new_skill_name or args.name,
+        "new_skill_name": args.new_skill_name,
         "seed": args.seed,
         "min_installs": args.min_installs,
         "max_installs": args.max_installs,

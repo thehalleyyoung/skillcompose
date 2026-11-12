@@ -190,6 +190,8 @@ Packages are ordered by carrier inclusion: $p \sqsubseteq p'$ iff $C_p \subseteq
 
 **Implementation.** `compose_skills.py` computes $\operatorname{cl}(s_i)$ by scanning each member `SKILL.md` and the files it reaches, within the member's repository and to bounded depth. It copies the closure to `scripts/members/<slug>/` and `references/members/<slug>/`, with out-of-folder files placed under `_repo/`, and records source path, destination, and SHA-256 under `carrier` in `manifold_atlas.json`. `install_skill_dual.sh` checks part 4 before it touches any destination. When $C_{\text{old}} \setminus C_{\text{new}} \neq \emptyset$, it exits 2 with `install_would_lose_files` and the lost paths, so the caller forms the join. `--allow-loss` is an explicit opt-out.
 
+A package's install name is its identity: part 4 joins packages that share one. `--new-skill-name` asks for a fresh identity instead, so $p_{\text{old}}$ is the empty package and the join is $p_{\text{new}}$ itself, with no earlier skill touched. `parse_args.py` refuses a name already installed on any host, and the installer's `--new` mode re-checks at install time, so a composition meant to be new cannot silently become an update of an older skill.
+
 ---
 
 ## 4. Software Engineering Kleisli Composition & Agentic Control Laws

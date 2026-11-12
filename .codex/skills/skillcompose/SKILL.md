@@ -39,7 +39,7 @@ When candidate skills are already discovered/materialized, compile a complete Pa
 python3 "${HOME}/.gemini/config/skills/skillcompose/scripts/compose_skills.py" \
   --candidates "$WIP/discovery/candidates.jsonl" \
   --n "$N" --domain "$DOMAIN" --query "$QUERY" \
-  --out-dir "$DEST_SKILL_DIR" --skill-name "$SKILL_NAME"
+  --out-dir "$DEST_SKILL_DIR" --skill-name "${NAME:-$SKILL_NAME}"   # NAME = --new-skill-name when given
 ```
 
 ## When NOT to use
@@ -72,7 +72,7 @@ python3 "$SCRIPTS/parse_args.py" $ARGS > /tmp/sr_args.json
 # mode: upgrade (default) | remix (--n N, N>=2)
 ```
 
-Modes: default single-upgrade · **`--n N` remix** · **`--args "<D>"`** (optional desired interface of the final skill: arguments it should be able to take; prefix `take:` for arguments it should take; not folded into the discovery query) · `--discover-only` · `--audit-only` · `--remix-plan-only` · `--resume --wip PATH` · `--status --wip PATH` · `--local-only` · `--ask-phases` / `--ask-themes` · `--private` · `--domain <pack>`.
+Modes: default single-upgrade · **`--n N` remix** · **`--new-skill-name NAME`** (name of the skill this run creates; kebab-case; refused with exit 2 if a skill by that name is already installed on any host, unless `--resume`) · **`--args "<D>"`** (optional desired interface of the final skill: arguments it should be able to take; prefix `take:` for arguments it should take; not folded into the discovery query) · `--discover-only` · `--audit-only` · `--remix-plan-only` · `--resume --wip PATH` · `--status --wip PATH` · `--local-only` · `--ask-phases` / `--ask-themes` · `--private` · `--domain <pack>`.
 
 `desired_interface` in `/tmp/sr_args.json` is $D = (D_{\text{take}}, D_{\text{able}})$ from `references/theory.md` §3.5. Empty $D$ leaves the anti-unified member signature. These tokens are the arity of the skill being composed. They are not `/skillcompose` control flags.
 
@@ -132,6 +132,10 @@ WIP_ARG="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json")).g
 DISCOVER_ONLY="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json"))["discover_only"])')"
 AUDIT_ONLY="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json"))["audit_only"])')"
 REMIX_PLAN_ONLY="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json"))["remix_plan_only"])')"
+NAME="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json")).get("name") or "")')"
+NEW_SKILL_NAME="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json")).get("new_skill_name") or "")')"
+# With --new-skill-name, NAME is that value and every later step (propose_remix --name,
+# compose_skills --skill-name, PKG_NAME/FORK_NAME, install) uses it.
 
 if [[ "$STATUS" == "True" ]]; then
   python3 "$SCRIPTS/resume_forge.py" status --wip "$WIP_ARG" --json
@@ -437,8 +441,10 @@ Optional: `mv "$FORK_DIR" "$CALLER_CWD/$FORK_NAME"`.
 ## Phase 6 — Multi-host install (mandatory)
 
 ```bash
-bash "$SCRIPTS/install_skill_dual.sh" "$FORK_DIR" --name "$FORK_NAME"
+bash "$SCRIPTS/install_skill_dual.sh" "$FORK_DIR" --name "$FORK_NAME" ${NEW_SKILL_NAME:+--new}
 ```
+
+With `--new-skill-name`, the install passes `--new`, which exits 2 with `skill_name_taken` rather than touching any existing skill of that name; ask the user for another name instead of dropping the flag.
 
 Installation is a join in the carrier order, never an overwrite (`references/theory.md` §3.6). If it exits 2 with `install_would_lose_files`, an installed copy holds files `$FORK_DIR` lacks (usually forged scripts from an earlier run): copy them into `$FORK_DIR`, re-run its evals, and install again. Pass `--allow-loss` only when the user asks to discard them.
 

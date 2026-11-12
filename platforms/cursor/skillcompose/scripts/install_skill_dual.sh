@@ -8,7 +8,7 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: $0 <skill-dir> [--name NAME] [--repo-root DIR] [--gemini-only] [--dry-run] [--allow-loss]" >&2
+  echo "usage: $0 <skill-dir> [--name NAME] [--repo-root DIR] [--gemini-only] [--dry-run] [--allow-loss] [--new]" >&2
   exit 1
 }
 
@@ -19,6 +19,7 @@ REPO_ROOT=""
 GEMINI_ONLY=0
 DRY=0
 ALLOW_LOSS=0
+NEW_ONLY=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -27,6 +28,7 @@ while [ $# -gt 0 ]; do
     --gemini-only) GEMINI_ONLY=1; shift ;;
     --dry-run) DRY=1; shift ;;
     --allow-loss) ALLOW_LOSS=1; shift ;;
+    --new) NEW_ONLY=1; shift ;;
     -h|--help) usage ;;
     *)
       if [ -z "$SKILL_DIR" ]; then SKILL_DIR="$1"; shift
@@ -171,7 +173,20 @@ if losses:
 PY
 }
 
+preflight_new_only() {
+  [ "$NEW_ONLY" -eq 1 ] || return 0
+  local taken=()
+  local d
+  for d in "$GEMINI_AGY_DEST" "$GEMINI_CLI_DEST" "$CLAUDE_DEST" "$CURSOR_DEST" "$CODEX_DEST"; do
+    [ -e "$d" ] && taken+=("$d")
+  done
+  [ "${#taken[@]}" -eq 0 ] && return 0
+  python3 -c 'import json,sys; print(json.dumps({"ok": False, "error": "skill_name_taken", "message": "--new install refuses to touch an existing skill; choose another --name", "name": sys.argv[1], "installed_at": sys.argv[2:]}, indent=2))' "$NAME" "${taken[@]}"
+  return 2
+}
+
 if [ "$DRY" -eq 0 ]; then
+  preflight_new_only || exit 2
   preflight_no_loss || exit 2
 fi
 
