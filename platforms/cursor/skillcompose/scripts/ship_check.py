@@ -129,6 +129,12 @@ def check(fork: Path, rounds: int = FORGE_ROUNDS, min_chars: int = MIN_CHARS_PER
     need(bool(re.search(r"(?m)^## Use \(after install\)", readme)), "README missing ## Use (after install)")
     need(bool(re.search(r"```(?:text|bash|shell)?\n\s*/[\w-]+", readme)), "README missing fenced /skill args example")
 
+    from concrete_term import check as contract_check
+
+    contract = contract_check(fork, require_artifact=True)
+    for o in contract["obligations"]:
+        reasons.append(f"contract: {o}")
+
     log = fork / "forge" / "usefulness_forge.jsonl"
     forge_out = None
     if not log.exists():
@@ -141,6 +147,7 @@ def check(fork: Path, rounds: int = FORGE_ROUNDS, min_chars: int = MIN_CHARS_PER
                 min_chars=min_chars,
                 strict_phases=True,
                 require_unify_fraction=None,
+                fork=str(fork),
             )
         )
         if forge_out["decision"] != "PASS":
@@ -151,6 +158,25 @@ def check(fork: Path, rounds: int = FORGE_ROUNDS, min_chars: int = MIN_CHARS_PER
 
     reasons.extend(check_metrics_doc(fork))
     reasons.extend(check_awesome_doc(fork))
+
+    # Task-space formal forge (all rounds): atlas + coverage audit
+    from task_space import coverage as task_coverage
+    from task_space import atlas_path
+
+    if not atlas_path(fork).is_file():
+        reasons.append(
+            "missing forge/task_space/atlas.json — init with task_space.py init-atlas "
+            "(forge_formal_methods.md)"
+        )
+    else:
+        cov = task_coverage(fork)
+        if cov.get("decision") != "PASS":
+            reasons.extend([f"task_space: {r}" for r in cov.get("reasons") or ["coverage FAIL"]])
+        if int(cov.get("rounds_registered") or 0) < min(rounds, 11):
+            warnings.append(
+                f"task_space: only {cov.get('rounds_registered')} rounds registered "
+                f"(expected registrations across the forge)"
+            )
 
     # dry_run_gates --fast is not enough for publish (stamp from scripts/dry_run_gates.sh)
     stamp = fork / "review" / "last_dry_run.json"
@@ -207,11 +233,15 @@ def check(fork: Path, rounds: int = FORGE_ROUNDS, min_chars: int = MIN_CHARS_PER
         "fork": str(fork),
         "remix": is_remix(fork),
         "forge_validate": forge_out,
+        "concrete_contract": {"phi": contract["phi"], "roles": contract["roles"],
+                              "dead_carrier": contract["dead_carrier"]},
         "unify_wholeness": unify_out,
         "thresholds": {
             "rounds": rounds,
             "min_chars_per_round": min_chars,
             "phases": "P1-unify 1-10 | P2-enhance 11-20 | P3-metrics 21-44 | P4-awesome 45-50",
+            "contract": "every round: Φ_c and each Lyapunov debt non-increasing; Φ_c = 0 from round 11",
+            "outcome": "from round 11: before/after output per round; <=20% self-measurement rounds; >=50% better",
         },
     }
 

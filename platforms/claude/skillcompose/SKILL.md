@@ -1,16 +1,26 @@
 ---
 name: skillcompose
 description: >-
-  Principled Kleisli, information-theoretic, and control-theoretic skill composition & upgrade meta-skill via /skillcompose [query|--pin owner/repo@skill] [--domain writing|devops|data|research|automation] [--n N] [--discover-only|--resume|--status|--local-only|--remix-plan-only]. Replaces naive "best-of-GitHub" concatenation with monotone submodular + JSD/NCD Kolmogorov skill selection (with Nemhauser-Wolsey optimality certificate), typed Kleisli transducer wiring (sequential sufficient-statistic adapters, separation-logic parallel tensors, pullback invariant joins, guarded ABSTAIN coproducts), Parnas progressive-disclosure compilation (compose_skills.py), read-only post-dominator verification gates (verify_dominator_gate.py), and 50 MDL/Lyapunov-ratcheted forge rounds. Use when the user invokes /skillcompose or $skillcompose, or asks for principled/algebraic/information-theoretic skill composition or remixing.
-argument-hint: "<task or flags>"
-user-invocable: true
+  Principled Kleisli, information-theoretic, and control-theoretic skill composition & upgrade
+  meta-skill (repo thehalleyyoung/skillcompose) via /skillcompose [query|--pin owner/repo@skill]
+  [--domain writing|devops|data|research|automation] [--n N]
+  [--args "<exogenous fiber tokens>"] [--premise "<text>"] [--author-persona "<text>"|--persona "<text>"]
+  [--additional-property "<text>"]...
+  [--discover-only|--resume|--status|--local-only|--remix-plan-only]. Replaces naive "best-of-GitHub"
+  concatenation with monotone submodular + JSD/NCD Kolmogorov skill selection (with Nemhauser-Wolsey
+  optimality certificate), typed Kleisli transducer wiring (sequential sufficient-statistic adapters,
+  separation-logic parallel tensors, pullback invariant joins, guarded ABSTAIN coproducts), Parnas
+  progressive-disclosure compilation (compose_skills.py), read-only post-dominator verification gates
+  (verify_dominator_gate.py), and 50 MDL/Lyapunov-ratcheted forge rounds. Use when the user invokes
+  /skillcompose or $skillcompose, or asks for principled/algebraic/information-theoretic skill
+  composition or remixing.
 ---
 
 # `/skillcompose`
 
 **Principled Marketplace Skill Composition: Submodular JSD+NCD Selection (Nemhauser–Wolsey Certified) → Kleisli Transducer & Separation-Logic Wiring (`compose_skills.py` / `wiring_compiler.py`) → Parnas Module Encapsulation + Auto-Generated Read-Only Post-Dominator Gate (`verify_dominator_gate.py`) → 50 MDL & Lyapunov-Ratcheted Forge Rounds → Multi-Host Install.**
 
-Baseline predecessor: `/skillremix` (heuristic diversity + prose plan). Prefer **`/skillcompose`** whenever combining $N \ge 2$ skills or requiring mathematical coverage, type-safe Kleisli handoffs, and exogenous anti-DPI verification.
+Identity: **thehalleyyoung/skillcompose** (`/skillcompose`). The CLI is not `/skillremix`. Prefer **`/skillcompose`** whenever combining $N \ge 2$ skills or requiring mathematical coverage, type-safe Kleisli handoffs, and exogenous anti-DPI verification.
 
 Proof / offline gates: [PROOF.md](PROOF.md).  
 Formal foundations (Information Theory, Software Engineering Kleisli Composition, Agentic Control): [references/theory.md](references/theory.md).
@@ -20,7 +30,7 @@ Formal foundations (Information Theory, Software Engineering Kleisli Composition
 1. **Submodular + Kolmogorov/NCD Selection (`submodular_select.py`) vs Popularity Top-N:** Ranking by stars/installs collapses onto redundant entry-stage generators ($I(s_i; s_j) \gg 0$) while leaving specification, static contracts, execution observation, and adversarial verification uncovered—and naive name-Jaccard admits polysemic traps (`plaid`, `storybook`). `submodular_select.py` maximizes monotone noisy-OR stage coverage minus blended Jensen-Shannon + Normalized Compression Distance ($d_{\text{NCD}}$) redundancy and off-domain divergence, emitting an instance-specific **Nemhauser–Wolsey optimality ratio certificate**.
 2. **Mechanical Kleisli & Separation-Logic Compilation (`compose_skills.py`, `wiring_compiler.py`):** Models each skill as an open effectful Kleisli transducer $\mathcal{S} = \langle I, O, P, Q, \mathcal{F}, \mathcal{E}, \mathcal{B}\rangle$ and compiles them via five operators: **Sequential Pipe with Sufficient-Statistic Adapter** ($S_2 \circ_\alpha S_1$, $Q_1 \implies P_2$), **Parallel Tensor** under Concurrent Separation Logic ($\mathcal{W}_1 \cap (\mathcal{W}_2 \cup \mathcal{R}_2) = \emptyset$), **Pullback Join** ($\pi_K(O_1) = \pi_K(O_2)$), **Guarded Coproduct** (`ABSTAIN`), and **Orthogonal Feedback Loop** ($\mathcal{W}(S_{\text{gate}}) = \emptyset$).
 3. **Breaking the Data Processing Inequality (DPI):** Pure-prompt chains ($X \to M_1 \to \dots \to M_k$) monotonically lose ground-truth mutual information ($I(Y^*; M_k) \le I(Y^*; M_1)$). `compose_skills.py` injects exogenous script channels and auto-generates `scripts/verify_dominator_gate.py`, which SHA-256-snapshots deliverables before running exogenous checks and fails with exit `2` if any critic mutates a protected target.
-4. **Parnas Information Hiding & MDL Anti-Padding (`information_gain.py`):** Encapsulates member bodies in `references/members/<slug>.md` so root `SKILL.md` stays $O(N)$ lines (high Attention Channel SNR), and gates every forge round on conditional Lempel–Ziv novelty (`info_density >= 0.10`) and Lyapunov debt descent ($\Delta \Phi \le 0$).
+4. **Parnas Information Hiding & MDL Anti-Padding (`information_gain.py`):** Encapsulates member bodies in `references/members/<slug>.md` so root `SKILL.md` stays $O(N)$ lines (high Attention Channel SNR), and gates every forge round on conditional Lempel–Ziv novelty (`info_density >= 0.10`) and componentwise Lyapunov debt descent ($d(P_r) \le d(P_{r-1})$; the scalar sum can fall while an upstream debt rises).
 
 ## Fast One-Command Mechanical Composition (`compose_skills.py`)
 
@@ -30,7 +40,7 @@ When candidate skills are already discovered/materialized, compile a complete Pa
 python3 "${HOME}/.gemini/config/skills/skillcompose/scripts/compose_skills.py" \
   --candidates "$WIP/discovery/candidates.jsonl" \
   --n "$N" --domain "$DOMAIN" --query "$QUERY" \
-  --out-dir "$DEST_SKILL_DIR" --skill-name "$SKILL_NAME"
+  --out-dir "$DEST_SKILL_DIR" --skill-name "${NAME:-$SKILL_NAME}"   # NAME = --new-skill-name when given
 ```
 
 ## When NOT to use
@@ -63,7 +73,9 @@ python3 "$SCRIPTS/parse_args.py" $ARGS > /tmp/sr_args.json
 # mode: upgrade (default) | remix (--n N, N>=2)
 ```
 
-Modes: default single-upgrade · **`--n N` remix** · `--discover-only` · `--audit-only` · `--remix-plan-only` · `--resume --wip PATH` · `--status --wip PATH` · `--local-only` · `--ask-phases` / `--ask-themes` · `--private` · `--domain <pack>`.
+Modes: default single-upgrade · **`--n N` remix** · **`--new-skill-name NAME`** (name of the skill this run creates; kebab-case; refused with exit 2 if a skill by that name is already installed on any host, unless `--resume`) · **`--args "<D>"`** (optional desired interface of the final skill: arguments it should be able to take; prefix `take:` for arguments it should take; not folded into the discovery query) · **`--premise "<text>"`** / **`--author-persona "<text>"`** / **`--persona "<text>"`** (optional values bound for this compose run and for the skill being composed; recorded as `premise` / `author_persona`; ensure the final skill is able to take those arguments; not folded into the discovery query) · **`--additional-property "<text>"`** (repeatable exogenous behavioral requirements for the skill being composed — length gates, export formats, anti-commonality loops, etc.; recorded as `additional_properties`; not folded into the discovery query) · `--discover-only` · `--audit-only` · `--remix-plan-only` · `--resume --wip PATH` · `--status --wip PATH` · `--local-only` · `--ask-phases` / `--ask-themes` · `--private` · `--domain <pack>`.
+
+`desired_interface` in `/tmp/sr_args.json` is $D = (D_{\text{take}}, D_{\text{able}})$ from `references/theory.md` §3.5. Empty $D$ leaves the anti-unified member signature. `--args` tokens are the arity of the skill being composed; they are not discovery-query words. `--premise`, `--author-persona` / `--persona`, and `--additional-property` are `/skillcompose` value flags: they bind content for the run and enlarge $D_{\text{able}}$ (for premise/persona), without becoming $Q$. Bake every `additional_properties` entry into the fork's procedure during unify (and keep them honest in COMPARISON.md / the superskill).
 
 Refusal / FAIL exits are **2** across parse_args, license_gate, propose_remix, forge_log, check_phases, unify_wholeness, and ship_check (PASS = 0).
 
@@ -84,12 +96,18 @@ On refusal JSON, trust `error` + exit **2**, not a piped `tee|head` status.
 
 | Rounds | Kind | Job |
 |---|---|---|
-| **1–10** | `unify` | Unified whole **strictly more than the sum of its parts** |
-| **11–20** | `enhance` | Focused, enhanced abilities |
-| **21–44** | `metrics` | Undeniable, reproducible, non-falsified best-in-some-way metrics; reflect + **fix** when not best |
+| **1–10** | `unify` | Unified whole **strictly more than the sum of its parts**, ending with contract potential $\Phi_c = 0$ |
+| **11–20** | `enhance` | Make the skill's **output** better: fix the worst flaw in what it produces |
+| **21–44** | `metrics` | Undeniable, reproducible, non-falsified best-in-some-way metrics **of the output** against a baseline; reflect + **fix** when not best |
 | **45–50** | `awesome` | Actually build something awesome (e.g. a novel) **or** find a ≥99%-confident real bug in someone else's public repo that needed this tool |
 
-Details: `references/forge_phases.md`.
+**Formal forge (all 50 rounds).** Each round is a step in a methods problem (`references/forge_formal_methods.md`): improve a named desired-output property $\varphi$ on a concrete task **and** expand coverage of a discrete task chart $\theta(\mathcal{X})$. Register novel coordinates + $\varphi$ with `scripts/task_space.py` every round (unify rounds use `obligation=` cells). `forge_round.sh` refuses non-novel cells unless the chart is saturated and $\varphi$ is new. `ship_check.py` requires atlas + coverage audit PASS.
+
+**Outcome contract (rounds 11–50).** The forge improves what the composed skill produces, not the package's measurement of itself. Every round runs the skill on a real domain task, keeps its output before and after the round's change in `forge/outcomes/rNN/` (including `task_coords.json`), and names the output's worst flaw against $\varphi$ with a verbatim quote (`scripts/outcome_round.py`). `forge_round.sh` refuses a round without this evidence. `forge_log.py validate` and `ship_check.py` fail a forge where more than 20% of rounds spend most of their change on evals, metrics or tests, or where the output improved in fewer than half the rounds. A new checker counts only when it changes what gets written.
+
+**Contract ratchet (every round).** The theory's guarantees (§4.1: nothing writes before the projector, a read-only gate after the last mutator, scripts called with the flags they declare, carried member scripts and composed arguments kept) are checked on the term the package actually runs, not only on the wiring graph composition emitted. `scripts/concrete_term.py` reads the scripts `SKILL.md` invokes, the scripts they call, and their writes and exit codes, and counts failed obligations as $\Phi_c$ (`references/theory.md` §4.2). `forge_round.sh` refuses a round that raises $\Phi_c$ or any component of the Lyapunov debt vector, and from round 11 one that leaves $\Phi_c > 0$ or `references/concrete_term.json` stale. `forge_log.py validate --fork` recomputes this for every logged round; `ship_check.py` requires $\Phi_c = 0$ at the end.
+
+Details: `references/forge_formal_methods.md`, `references/forge_phases.md`, `references/round_protocol.md`.
 
 ## Adoption floor (no popularity ceiling)
 
@@ -109,7 +127,7 @@ Optional per-run caps: `--max-installs` / `--max-stars`. Details: `references/mi
 ```bash
 python3 "$SCRIPTS/parse_args.py" $ARGS > /tmp/sr_args.json || exit 2
 # parse_args runs args_preflight: --status/--resume REQUIRE a real
-# skillremix-wip-* (or randomupgrade-wip-*) --wip; empty/cwd rejected (exit 2).
+# skillcompose-wip-* --wip (skillremix-wip-* / randomupgrade-wip-* still resume); empty/cwd rejected (exit 2).
 
 # False-done guard (transfer): refuse forge/clone when early-stop flags set
 python3 "$SCRIPTS/mode_guards.py" --args-json /tmp/sr_args.json --action forge --json || true
@@ -121,6 +139,10 @@ WIP_ARG="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json")).g
 DISCOVER_ONLY="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json"))["discover_only"])')"
 AUDIT_ONLY="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json"))["audit_only"])')"
 REMIX_PLAN_ONLY="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json"))["remix_plan_only"])')"
+NAME="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json")).get("name") or "")')"
+NEW_SKILL_NAME="$(python3 -c 'import json; print(json.load(open("/tmp/sr_args.json")).get("new_skill_name") or "")')"
+# With --new-skill-name, NAME is that value and every later step (propose_remix --name,
+# compose_skills --skill-name, PKG_NAME/FORK_NAME, install) uses it.
 
 if [[ "$STATUS" == "True" ]]; then
   python3 "$SCRIPTS/resume_forge.py" status --wip "$WIP_ARG" --json
@@ -131,7 +153,7 @@ if [[ "$RESUME" == "True" ]]; then
   WIP_DIR="$WIP_ARG"
 else
   RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
-  WIP_DIR="$CALLER_CWD/skillremix-wip-$RUN_ID"
+  WIP_DIR="$CALLER_CWD/skillcompose-wip-$RUN_ID"
   mkdir -p "$WIP_DIR"/{discovery,forge,upstream}
 fi
 ```
@@ -263,7 +285,7 @@ python3 "$SCRIPTS/discover_skills.py" \
   --out "$WIP_DIR/discovery/candidates.jsonl" \
   --domain "${DOMAIN:-general}" \
   --extra "$QUERY" --json
-# Auto-stores into ~/.cache/skillremix/discover (opt out: --no-cache-store).
+# Auto-stores into ~/.cache/skillcompose/discover (opt out: --no-cache-store).
 # Offline: add --local-only to reuse cache only (exit 2 on miss; no skills find).
 # Optional pre-check: python3 "$SCRIPTS/discover_cache.py" --domain … --extra … --lookup
 # After discover: python3 "$SCRIPTS/discover_cache.py" --domain … --extra … --store …  # redundant if auto-store on
@@ -369,14 +391,21 @@ KIND="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("kind") or "
 THEME="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("theme") or "")' <<<"$NEXT")"
 # 0) Mark busy so an overlapping timer wake will NOT double-start:
 python3 "$SCRIPTS/agent_busy.py" acquire --wip "$WIP_DIR" --round "$R" --json
-# 1) Answer usefulness question into USEFULNESS_FORGE.md (this phase only)
-# 2) Implement multi-surface leap for THIS round only (≥1000 chars)
-# 3) Commit + log (forge_round.sh also releases agent_busy.lock):
+# 1) Rounds 11+: run the skill on a real task and keep its output (outcome contract)
+python3 "$SCRIPTS/outcome_round.py" init --fork "$FORK_DIR" --round "$R" --task "<a real user's request>"
+#    save forge/outcomes/rNN/before.<ext>; name the worst flaw in that output, quoted, in verdict.json
+# 2) Change the skill so the flaw stops happening (≥1000 chars, multi-surface), THIS round only;
+#    rerun the same task, save after.<ext>, fill verdict.json honestly (same/worse = logged miss)
+# 3) Keep the concrete term sound: fix any obligation this round introduced, refresh the artifact
+python3 "$SCRIPTS/concrete_term.py" write --package "$FORK_DIR"
+python3 "$SCRIPTS/concrete_term.py" check --package "$FORK_DIR" --require-artifact --json
+# 4) Commit + log (forge_round.sh runs the contract ratchet, checks the outcome evidence, and
+#    releases agent_busy.lock):
 git -C "$FORK_DIR" add -A
 git -C "$FORK_DIR" commit -m "forge(${R}/${ROUNDS}): ${THEME} — ${GAP}"
 bash "$SCRIPTS/forge_round.sh" "$R" "$ROUNDS" "$THEME" "$GAP" "$ADDITION" \
   '["procedure","code","docs"]' '["SKILL.md"]' "[\"$INCUMBENT_ID\"]" "$KIND"
-# 4) Build the standalone prompt for round R+1:
+# 5) Build the standalone prompt for round R+1:
 if [[ "$R" -lt "$ROUNDS" ]]; then
   python3 "$SCRIPTS/forge_phases.py" --prompt-round $((R+1)) --wip "$WIP_DIR" --fork "$FORK_DIR" --json
 fi
@@ -392,7 +421,9 @@ Validate (must PASS — else keep looping):
 
 ```bash
 python3 "$SCRIPTS/forge_log.py" validate --log "$WIP_DIR/forge/usefulness_forge.jsonl" \
-  --rounds "$ROUNDS" --min-chars 1000 --strict-phases --json
+  --rounds "$ROUNDS" --min-chars 1000 --strict-phases --fork "$FORK_DIR" --json
+# where did the forge's effort go? (skill vs evals/metrics vs output, per round)
+python3 "$SCRIPTS/outcome_round.py" audit --fork "$FORK_DIR" --log "$WIP_DIR/forge/usefulness_forge.jsonl" --json
 python3 "$SCRIPTS/check_phases.py" --phases "$WIP_DIR/forge/forge_phases.json" \
   --log "$WIP_DIR/forge/usefulness_forge.jsonl" --rounds "$ROUNDS" --json
 # remix — strict sum-of-parts (blocking):
@@ -426,8 +457,12 @@ Optional: `mv "$FORK_DIR" "$CALLER_CWD/$FORK_NAME"`.
 ## Phase 6 — Multi-host install (mandatory)
 
 ```bash
-bash "$SCRIPTS/install_skill_dual.sh" "$FORK_DIR" --name "$FORK_NAME"
+bash "$SCRIPTS/install_skill_dual.sh" "$FORK_DIR" --name "$FORK_NAME" ${NEW_SKILL_NAME:+--new}
 ```
+
+With `--new-skill-name`, the install passes `--new`, which exits 2 with `skill_name_taken` rather than touching any existing skill of that name; ask the user for another name instead of dropping the flag.
+
+Installation is a join in the carrier order, never an overwrite (`references/theory.md` §3.6). If it exits 2 with `install_would_lose_files`, an installed copy holds files `$FORK_DIR` lacks (usually forged scripts from an earlier run): copy them into `$FORK_DIR`, re-run its evals, and install again. Pass `--allow-loss` only when the user asks to discard them.
 
 Verify `~/.gemini/config/skills/$FORK_NAME/SKILL.md`, `~/.claude/skills/$FORK_NAME/SKILL.md`, `~/.cursor/skills/$FORK_NAME/SKILL.md`, and `~/.codex/skills/$FORK_NAME/SKILL.md`.
 
@@ -436,7 +471,7 @@ Verify `~/.gemini/config/skills/$FORK_NAME/SKILL.md`, `~/.claude/skills/$FORK_NA
 Refresh this meta-skill after editing it:
 
 ```bash
-bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/skillremix" --name skillremix
+bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/skillcompose" --name skillcompose
 # keep legacy alias installed:
 bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/randomupgrade" --name randomupgrade
 ```
@@ -466,7 +501,9 @@ bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/randomupgrade" --name randomu
 | `forge_phases.py` | Canonical 1–10/11–20/21–44/45–50 phase model + per-round prompts |
 | `schedule_forge_loop.sh` | Legacy Cursor/CLI 90s wake helper (in Antigravity, use native `schedule` tool instead) |
 | `agent_busy.py` | acquire/release/check mid-round lock so timer wakes do not double-start a round |
-| `forge_log.py` / `forge_round.sh` | Round log append; refuses <1000 chars; enforces phase kinds |
+| `forge_log.py` / `forge_round.sh` | Round log append; refuses <1000 chars; enforces phase kinds, the contract ratchet every round, and from round 11 the outcome contract |
+| `concrete_term.py` | The term the package actually runs (scripts `SKILL.md` invokes, their callees, writes, exits); `check` the §4.1 obligations as $\Phi_c$, `write` `references/concrete_term.json`, `ratchet` two commits (refuses a rise in $\Phi_c$ or any Lyapunov debt) |
+| `outcome_round.py` | Outcome contract: `init`/`check` the before/after output of one round; `audit` a forge for self-measurement drift |
 | `measure_chars.py` | Product-char churn for HEAD commit |
 | `unify_wholeness.py` | Strict sum-of-parts / unification gate |
 | `check_phases.py` | All 4 phases correctly tagged in log |
