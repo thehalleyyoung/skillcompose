@@ -8,7 +8,7 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: $0 <skill-dir> [--name NAME] [--repo-root DIR] [--gemini-only] [--dry-run]" >&2
+  echo "usage: $0 <skill-dir> [--name NAME] [--repo-root DIR] [--gemini-only] [--dry-run] [--allow-loss] [--new]" >&2
   exit 1
 }
 
@@ -18,6 +18,8 @@ NAME=""
 REPO_ROOT=""
 GEMINI_ONLY=0
 DRY=0
+ALLOW_LOSS=0
+NEW_ONLY=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -25,6 +27,8 @@ while [ $# -gt 0 ]; do
     --repo-root) REPO_ROOT="${2:-}"; shift 2 ;;
     --gemini-only) GEMINI_ONLY=1; shift ;;
     --dry-run) DRY=1; shift ;;
+    --allow-loss) ALLOW_LOSS=1; shift ;;
+    --new) NEW_ONLY=1; shift ;;
     -h|--help) usage ;;
     *)
       if [ -z "$SKILL_DIR" ]; then SKILL_DIR="$1"; shift
@@ -104,6 +108,87 @@ stamp_manifests() {
     python3 "$exporter" --skill-dir "$dest" --name "$NAME" --in-place >/dev/null 2>&1 || true
   fi
 }
+
+preflight_no_loss() {
+  # An install must be monotone in the carrier: refuse to delete files that exist
+  # only in an installed copy (e.g. forged scripts) unless --allow-loss.
+  [ "$ALLOW_LOSS" -eq 1 ] && return 0
+  local dests=("$GEMINI_AGY_DEST" "$GEMINI_CLI_DEST")
+  if [ "$GEMINI_ONLY" -eq 0 ]; then dests+=("$CLAUDE_DEST" "$CURSOR_DEST" "$CODEX_DEST"); fi
+  if [ -n "$REPO_ROOT" ]; then
+    local rr; rr="$(cd "$REPO_ROOT" && pwd)"
+    dests+=("$rr/.gemini/skills/$NAME" "$rr/.agents/skills/$NAME")
+    if [ "$GEMINI_ONLY" -eq 0 ]; then dests+=("$rr/.claude/skills/$NAME" "$rr/.cursor/skills/$NAME" "$rr/.codex/skills/$NAME"); fi
+  fi
+  python3 - "$SKILL_DIR" "$NAME" "${dests[@]}" <<'PY'
+import json, os, sys
+from pathlib import Path
+
+src, name, dests = Path(sys.argv[1]), sys.argv[2], [Path(d) for d in sys.argv[3:]]
+excl = {
+    ".git", ".gemini", ".agents", ".agent", ".claude", ".claude-plugin",
+    ".cursor", ".codex", "platforms", "paper", "evals", "__pycache__", "node_modules",
+}
+regenerated = {
+    "agents/openai.yaml", ".claude-plugin/plugin.json", "gemini-extension.json", "GEMINI.md",
+    f"commands/{name}.md", f"rules/{name}.mdc",
+}
+
+def produced(root: Path) -> set[str]:
+    out = set()
+    for r, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d not in excl and not d.startswith(("randomupgrade-wip-", "skillremix-wip-", "skillcompose-wip-"))]
+        for f in files:
+            if f.endswith((".pyc", ".pyo")) or f == ".DS_Store":
+                continue
+            out.add((Path(r) / f).relative_to(root).as_posix())
+    return out
+
+def existing(root: Path) -> set[str]:
+    out = set()
+    for r, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d != "__pycache__"]
+        for f in files:
+            if not f.endswith((".pyc", ".pyo")) and f != ".DS_Store":
+                out.add((Path(r) / f).relative_to(root).as_posix())
+    return out
+
+new = produced(src)
+losses = {}
+for d in dests:
+    if d.resolve() == src.resolve() or not d.is_dir():
+        continue
+    lost = sorted(existing(d) - new - regenerated)
+    if lost:
+        losses[str(d)] = lost
+if losses:
+    print(json.dumps({
+        "ok": False,
+        "error": "install_would_lose_files",
+        "message": "installed copy has files the new source lacks; merge them into the source or pass --allow-loss",
+        "lost": {k: v[:25] for k, v in losses.items()},
+        "lost_counts": {k: len(v) for k, v in losses.items()},
+    }, indent=2))
+    sys.exit(2)
+PY
+}
+
+preflight_new_only() {
+  [ "$NEW_ONLY" -eq 1 ] || return 0
+  local taken=()
+  local d
+  for d in "$GEMINI_AGY_DEST" "$GEMINI_CLI_DEST" "$CLAUDE_DEST" "$CURSOR_DEST" "$CODEX_DEST"; do
+    [ -e "$d" ] && taken+=("$d")
+  done
+  [ "${#taken[@]}" -eq 0 ] && return 0
+  python3 -c 'import json,sys; print(json.dumps({"ok": False, "error": "skill_name_taken", "message": "--new install refuses to touch an existing skill; choose another --name", "name": sys.argv[1], "installed_at": sys.argv[2:]}, indent=2))' "$NAME" "${taken[@]}"
+  return 2
+}
+
+if [ "$DRY" -eq 0 ]; then
+  preflight_new_only || exit 2
+  preflight_no_loss || exit 2
+fi
 
 copy_one "$GEMINI_AGY_DEST"
 stamp_manifests "$GEMINI_AGY_DEST"

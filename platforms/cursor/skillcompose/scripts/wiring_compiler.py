@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Algebraic Skill Wiring Compiler & Static Contract Verifier for /skillremix.
+"""Algebraic Skill Wiring Compiler & Static Contract Verifier for /skillcompose.
 
 Models each skill as an Open Effectful Kleisli Module:
     S = <inputs, outputs, preconditions, postconditions, frame(reads, writes), operator_class>
@@ -484,7 +484,7 @@ def compile_wiring(
     )
 
     graph = {
-        "schema": "skillremix.wiring_graph.v3",
+        "schema": "skillcompose.wiring_graph.v3",
         "package_name": package_name,
         "domain": dom,
         "nodes": nodes,
@@ -535,6 +535,32 @@ def _post_dominates(nodes_by_id: dict[str, dict], edges: list[dict], start: str,
             if nxt == gate:
                 continue
             if nxt not in seen:
+                seen.add(nxt)
+                q.append(nxt)
+    return True
+
+
+def _pre_dominates(nodes_by_id: dict[str, dict], edges: list[dict], dom: str, target: str) -> bool:
+    """True iff every forward path from an entry node to `target` passes through `dom`."""
+    if target == dom:
+        return True
+    adj: dict[str, list[str]] = {nid: [] for nid in nodes_by_id}
+    has_in: set[str] = set()
+    for e in edges:
+        if e.get("op") == "lyapunov_feedback_retry":
+            continue
+        if e["from"] in adj:
+            adj[e["from"]].append(e["to"])
+            has_in.add(e["to"])
+    entries = [nid for nid in nodes_by_id if nid not in has_in and nid != dom]
+    q = deque(entries)
+    seen = set(entries)
+    while q:
+        cur = q.popleft()
+        if cur == target:
+            return False
+        for nxt in adj.get(cur, []):
+            if nxt != dom and nxt not in seen:
                 seen.add(nxt)
                 q.append(nxt)
     return True
@@ -605,6 +631,12 @@ def verify_graph(graph: dict[str, Any], pkg_dir: Path | None = None) -> dict[str
         if not any(_post_dominates(by_id, edges, m, g, "DONE") for g in gates):
             dom_ok = False
             reasons.append(f"dominator_orthogonality FAIL: mutator {m} can reach DONE bypassing read-only gate")
+    # Dually, the chart projector (which abstains with no writes) must run before any mutator.
+    projectors = [nid for nid, n in by_id.items() if n.get("operator_class") == "manifold_projector"]
+    for m in mutators:
+        if projectors and not any(_pre_dominates(by_id, edges, p, m) for p in projectors):
+            dom_ok = False
+            reasons.append(f"dominator_orthogonality FAIL: mutator {m} is reachable without passing the chart projector")
     checks["dominator_orthogonality"] = dom_ok
 
     # 5. Parnas Progressive Disclosure / Context Encapsulation (when package dir provided)

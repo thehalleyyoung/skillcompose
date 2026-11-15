@@ -30,9 +30,13 @@ def main() -> int:
         "| Rounds | Phase | Job |",
         "|---|---|---|",
         "| 1–10 | **unify** | Unified whole strictly more than the sum of its parts |",
-        "| 11–20 | **enhance** | Focused, enhanced abilities |",
-        "| 21–44 | **metrics** | Undeniable reproducible best-in-some-way metrics; fix when not |",
+        "| 11–20 | **enhance** | Make the skill's output better: fix the worst flaw in what it produces |",
+        "| 21–44 | **metrics** | Undeniable reproducible best-in-some-way metrics of the output vs a baseline; fix when not |",
         "| 45–50 | **awesome** | Real artifact (e.g. a novel) or ≥99%-confident third-party bug find |",
+        "",
+        "From round 11 every round keeps the skill's output for a real task before and after its change "
+        "(`forge/outcomes/rNN/`, `scripts/outcome_round.py`). At most 20% of rounds may be mostly "
+        "evals/metrics/tests, and the output must improve in at least half of them.",
         "",
     ]
     for t in phases:

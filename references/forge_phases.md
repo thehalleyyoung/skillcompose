@@ -1,13 +1,19 @@
 # Forge phases (50 rounds) — replaces T1–T5
 
-Every `/skillremix` run uses this fixed phase plan. **Each round is its own agent prompt**, scheduled **90 seconds** after the previous round completes (never batch 50 rounds in one turn).
+Every `/skillcompose` run uses this fixed phase plan. **Each round is its own agent prompt**, scheduled **90 seconds** after the previous round completes (never batch 50 rounds in one turn).
 
 | Rounds | Kind | Job |
 |---|---|---|
 | **1–10** | `unify` | Build a unified whole that is **strictly more than the sum of its parts**. |
-| **11–20** | `enhance` | Add **focused, enhanced abilities** the unified whole enables. |
-| **21–44** | `metrics` | **Undeniable, reproducible, non-falsified** best-in-some-way metrics; if not best, reflect and **fix** (user window “21–45”; round **45** starts awesome). |
+| **11–20** | `enhance` | Make the skill's **output** better: each round fixes the worst flaw in what the skill produces for a real task. |
+| **21–44** | `metrics` | **Undeniable, reproducible, non-falsified** best-in-some-way metrics **of the output**, scored against a baseline on held-out domain tasks; if not best, reflect and **fix** (user window “21–45”; round **45** starts awesome). |
 | **45–50** | `awesome` | **Actually build something awesome** (e.g. a novel) **or** find a ≥99%-confident real bug in someone else's public repo that needed this tool. |
+
+## Outcome contract (rounds 11–50)
+
+The forge is for the skill's user. From round 11, each round keeps the skill's output for one real domain task before and after its change (`forge/outcomes/rNN/`), names the worst flaw in the before output with a verbatim quote, and says honestly whether the after output is better. `scripts/outcome_round.py` scaffolds and checks this, `forge_round.sh` refuses a round without it, and `forge_log.py validate` fails a forge where more than 20% of rounds are mostly evals/metrics/tests or fewer than half improved the output. Work on the package's own checkers is instrumentation: it counts only when it changes what the skill writes. Full rules: [`round_protocol.md`](round_protocol.md).
+
+Every round, including rounds 1–10, also passes the contract ratchet (`scripts/concrete_term.py`, `theory.md` §4.2). The theory's obligations are checked on the scripts the package actually runs. No round may raise the contract potential $\Phi_c$ or any component of the Lyapunov debt vector. Unification must end with $\Phi_c = 0$, and every later round keeps it there, so the composition guarantees hold for the package at every round, not only for the graph emitted at round 0.
 
 ## Scheduling (mandatory)
 
@@ -45,7 +51,7 @@ In Antigravity, arm ONE next-round wake using the native **`schedule` tool** (`D
 
 ```json
 {
-  "schema": "skillremix.forge_phases.v2",
+  "schema": "skillcompose.forge_phases.v2",
   "forge_rounds": 50,
   "round_interval_sec": 90,
   "phases": [

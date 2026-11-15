@@ -56,8 +56,9 @@ Installs both `skillcompose` and `ml-paper-manifold` cleanly into:
 ```text
 /skillcompose --n 4 --domain data "sqlite zero downtime schema migration rollback"
 /skillcompose --n 4 --domain devops "webhook security audit patch exploit regression"
+/skillcompose --n 4 --domain writing "end-to-end fantasy novel writing" --args "--author-persona, --premise"
 /skillcompose --n 4 --domain automation --remix-plan-only
-/skillcompose --status --wip ./skillremix-wip-20261111T000000Z
+/skillcompose --status --wip ./skillcompose-wip-20261111T000000Z
 ```
 
 ### Direct Mechanical Manifold & Kleisli Compilation (`compose_skills.py`)

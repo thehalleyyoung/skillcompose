@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure adversarial CLI / empty-WIP refusal rate for skillremix.
+"""Measure adversarial CLI / empty-WIP refusal rate for skillcompose.
 
 Runs fixture cases against parse_args.py + resume_forge.py and records
 pass_rate (fraction that correctly refuse or accept).

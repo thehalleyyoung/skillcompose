@@ -16,8 +16,8 @@ NAME="${1:-%NAME%}"
 # Prefer bundled multi-host installer
 if [ -f "$ROOT/scripts/install_skill_dual.sh" ]; then
   bash "$ROOT/scripts/install_skill_dual.sh" "$ROOT" --name "$NAME"
-elif [ -f "$ROOT/../skillremix/scripts/install_skill_dual.sh" ]; then
-  bash "$ROOT/../skillremix/scripts/install_skill_dual.sh" "$ROOT" --name "$NAME"
+elif [ -f "$ROOT/../skillcompose/scripts/install_skill_dual.sh" ]; then
+  bash "$ROOT/../skillcompose/scripts/install_skill_dual.sh" "$ROOT" --name "$NAME"
 elif [ -f "$ROOT/../randomupgrade/scripts/install_skill_dual.sh" ]; then
   bash "$ROOT/../randomupgrade/scripts/install_skill_dual.sh" "$ROOT" --name "$NAME"
 else

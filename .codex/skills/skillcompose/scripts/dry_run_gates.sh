@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fixture dry-run for skillremix refusal/PASS oracles (transfer: gate dry-run before Done).
+# Fixture dry-run for skillcompose refusal/PASS oracles (transfer: gate dry-run before Done).
 # Note: includes smoke-refusal-suite — may take ~30–45s offline.
 # --fast skips smoke (dev loop only). Publish / Done requires a full run (no --fast).
 set -euo pipefail
@@ -57,6 +57,8 @@ if [[ "${SKILLREMIX_IN_DRY_RUN_PROTECT:-0}" -eq 0 ]]; then
   run_metric principled-lift
   run_metric manifold-lift
   run_metric dry-run-protect
+  run_metric outcome-contract
+  run_metric contract-ratchet
   if [[ "$FAST" -eq 0 ]]; then
     run_metric smoke-refusal-suite
   else

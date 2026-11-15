@@ -8,7 +8,7 @@ alwaysApply: false
 
 **Principled Marketplace Skill Composition: Submodular JSD+NCD Selection (Nemhauser–Wolsey Certified) → Kleisli Transducer & Separation-Logic Wiring (`compose_skills.py` / `wiring_compiler.py`) → Parnas Module Encapsulation + Auto-Generated Read-Only Post-Dominator Gate (`verify_dominator_gate.py`) → 50 MDL & Lyapunov-Ratcheted Forge Rounds → Multi-Host Install.**
 
-Baseline predecessor: `/skillremix` (heuristic diversity + prose plan). Prefer **`/skillcompose`** whenever combining $N \ge 2$ skills or requiring mathematical coverage, type-safe Kleisli handoffs, and exogenous anti-DPI verification.
+Baseline predecessor: `/skillcompose` (heuristic diversity + prose plan). Prefer **`/skillcompose`** whenever combining $N \ge 2$ skills or requiring mathematical coverage, type-safe Kleisli handoffs, and exogenous anti-DPI verification.
 
 Proof / offline gates: [PROOF.md](PROOF.md).  
 Formal foundations (Information Theory, Software Engineering Kleisli Composition, Agentic Control): [references/theory.md](references/theory.md).
@@ -83,9 +83,13 @@ On refusal JSON, trust `error` + exit **2**, not a piped `tee|head` status.
 | Rounds | Kind | Job |
 |---|---|---|
 | **1–10** | `unify` | Unified whole **strictly more than the sum of its parts** |
-| **11–20** | `enhance` | Focused, enhanced abilities |
-| **21–44** | `metrics` | Undeniable, reproducible, non-falsified best-in-some-way metrics; reflect + **fix** when not best |
+| **11–20** | `enhance` | Make the skill's **output** better: fix the worst flaw in what it produces |
+| **21–44** | `metrics` | Undeniable, reproducible, non-falsified best-in-some-way metrics **of the output** against a baseline; reflect + **fix** when not best |
 | **45–50** | `awesome` | Actually build something awesome (e.g. a novel) **or** find a ≥99%-confident real bug in someone else's public repo that needed this tool |
+
+**Outcome contract (rounds 11–50).** The forge improves what the composed skill produces, not the package's measurement of itself. Every round runs the skill on a real domain task, keeps its output before and after the change in `forge/outcomes/rNN/`, and names the output's worst flaw with a verbatim quote (`scripts/outcome_round.py`). `forge_round.sh` refuses a round without it; `forge_log.py validate` and `ship_check.py` fail a forge where more than 20% of rounds are mostly evals/metrics/tests or the output improved in fewer than half. See `references/round_protocol.md`.
+
+**Contract ratchet (every round).** The theory's guarantees are checked on the scripts the package actually runs (`scripts/concrete_term.py`, `references/theory.md` §4.2), not only on the wiring graph composition emitted. `forge_round.sh` refuses a round that raises the contract potential $\Phi_c$ or any Lyapunov debt component, and from round 11 one that leaves $\Phi_c > 0$; `ship_check.py` requires $\Phi_c = 0$.
 
 Details: `references/forge_phases.md`.
 
@@ -261,7 +265,7 @@ python3 "$SCRIPTS/discover_skills.py" \
   --out "$WIP_DIR/discovery/candidates.jsonl" \
   --domain "${DOMAIN:-general}" \
   --extra "$QUERY" --json
-# Auto-stores into ~/.cache/skillremix/discover (opt out: --no-cache-store).
+# Auto-stores into ~/.cache/skillcompose/discover (opt out: --no-cache-store).
 # Offline: add --local-only to reuse cache only (exit 2 on miss; no skills find).
 # Optional pre-check: python3 "$SCRIPTS/discover_cache.py" --domain … --extra … --lookup
 # After discover: python3 "$SCRIPTS/discover_cache.py" --domain … --extra … --store …  # redundant if auto-store on
@@ -434,7 +438,7 @@ Verify `~/.gemini/config/skills/$FORK_NAME/SKILL.md`, `~/.claude/skills/$FORK_NA
 Refresh this meta-skill after editing it:
 
 ```bash
-bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/skillremix" --name skillremix
+bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/skillcompose" --name skillcompose
 # keep legacy alias installed:
 bash "$SCRIPTS/install_skill_dual.sh" "$CALLER_CWD/randomupgrade" --name randomupgrade
 ```

@@ -1,6 +1,6 @@
 # Remix mode (`--n N`)
 
-When the user passes **`--n N`** (N ≥ 2), `/skillremix` does **not** upgrade a single skill in isolation. It builds an **end-to-end skill system**, then forges on the **fixed 50-round phase plan** (T1–T5 retired):
+When the user passes **`--n N`** (N ≥ 2), `/skillcompose` does **not** upgrade a single skill in isolation. It builds an **end-to-end skill system**, then forges on the **fixed 50-round phase plan** (T1–T5 retired):
 
 1. Discover an eligible pool (adoption floor; highly popular allowed).
    - Domain-exact queries for `--domain`.
@@ -11,8 +11,9 @@ When the user passes **`--n N`** (N ≥ 2), `/skillremix` does **not** upgrade a
 5. Propose **subskills** + one **superskill**.
 6. Execute **50 real forge rounds** (one prompt each, **90s** apart) (≥1000 chars + own commit each):
    - **1–10 unify** — more than the sum of parts → `unify_wholeness` PASS
-   - **11–20 enhance** — focused enhanced abilities
-   - **21–44 metrics** — undeniable reproducible metrics; fix when not best
+   - **11–20 enhance** — make the skill's output better (before/after output each round)
+   - **21–44 metrics** — undeniable reproducible metrics of the output; fix when not best
+   - from round 11, `outcome_round.py` evidence per round; ≤20% of rounds may be mostly evals/metrics/tests
    - **45–50 awesome** — real novel/artifact **or** ≥99%-confident third-party bug find
 7. `ship_check` PASS → dual-install.
 
@@ -23,9 +24,9 @@ Marketplace skills are often **phase-local**. Users want a **pipeline** that is 
 ## CLI
 
 ```text
-/skillremix --n 3 --domain writing
-/skillremix --n 4 --remix-plan-only
-/skillremix --n 2 research verification
+/skillcompose --n 3 --domain writing
+/skillcompose --n 4 --remix-plan-only
+/skillcompose --n 2 research verification
 ```
 
 Incompatible with `--pin` (pin is single-skill upgrade mode).

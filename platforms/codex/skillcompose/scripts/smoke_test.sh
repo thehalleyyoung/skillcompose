@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Offline smoke for skillremix scripts (no skills.sh network required).
+# Offline smoke for skillcompose scripts (no skills.sh network required).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 S="$ROOT/scripts"
@@ -127,10 +127,10 @@ test "$thin_ec" -ne 0
 # Valid mini-log: 2 enhance rounds at rounds 11-12 would need full 50 for strict; use --no-strict-phases for unit smoke
 python3 "$S/forge_log.py" append --log "$TMP/ok.jsonl" --round 1 --total 2 --theme P1-unify \
   --kind unify --unify --gap g --addition a --commit aaa111 --compared-to '["x"]' \
-  --surfaces '["procedure","code","docs"]' --chars-changed 1500 --min-chars 1000 --json >/dev/null
+  --surfaces '["procedure","code","docs"]' --chars-changed 1500 --min-chars 1000 --contract '{"decision":"PASS","phi_before":0,"phi":0}' --json >/dev/null
 python3 "$S/forge_log.py" append --log "$TMP/ok.jsonl" --round 2 --total 2 --theme P1-unify \
   --kind unify --unify --gap g --addition a --commit bbb222 --compared-to '["x"]' \
-  --surfaces '["procedure","code","proof"]' --chars-changed 1500 --min-chars 1000 --json >/dev/null
+  --surfaces '["procedure","code","proof"]' --chars-changed 1500 --min-chars 1000 --contract '{"decision":"PASS","phi_before":0,"phi":0}' --json >/dev/null
 python3 "$S/forge_log.py" validate --log "$TMP/ok.jsonl" --rounds 2 --min-chars 1000 \
   --no-strict-phases --json \
   | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['decision']=='PASS'"

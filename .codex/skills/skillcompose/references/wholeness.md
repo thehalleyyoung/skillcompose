@@ -1,6 +1,6 @@
 # Strict wholeness (more than the sum of parts)
 
-`/skillremix` remix packages **must not ship** as a folder of upgraded skills glued by a thin router. `unify_wholeness.py` + `ship_check.py` FAIL until every predicate below is true.
+`/skillcompose` remix packages **must not ship** as a folder of upgraded skills glued by a thin router. `unify_wholeness.py` + `ship_check.py` FAIL until every predicate below is true.
 
 P1 (rounds **1–10**) is dedicated to making this true. Later phases assume it holds.
 

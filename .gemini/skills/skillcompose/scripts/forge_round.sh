@@ -50,6 +50,43 @@ if [[ "$ANTI_PAD" != "True" ]]; then
   exit 2
 fi
 
+# Contract ratchet (theory.md §4.2): the term the package runs must keep the theory's obligations.
+# Every round: neither the contract potential Φ_c nor any component of the vector Lyapunov debt may rise.
+# From round 11 (after P1-unify): Φ_c = 0 and references/concrete_term.json describes the package.
+RATCHET_ARGS=(--repo "$FORK_DIR" --base HEAD~1 --head HEAD --json)
+if (( ROUND > 10 )); then
+  RATCHET_ARGS+=(--zero --require-artifact)
+fi
+set +e
+CONTRACT_JSON="$(python3 "$ROOT/scripts/concrete_term.py" ratchet "${RATCHET_ARGS[@]}")"
+CONTRACT_RC=$?
+set -e
+if [[ "$CONTRACT_RC" -ne 0 ]]; then
+  echo "REFUSE round $ROUND (contract ratchet): the change breaks the theory on the package's concrete term." >&2
+  echo "$CONTRACT_JSON" >&2
+  echo "Fix the obligations, refresh with: python3 $ROOT/scripts/concrete_term.py write --package \"$FORK_DIR\", re-commit." >&2
+  exit 2
+fi
+
+# Outcome contract: from round 11 the round must show the skill's output before and after the change.
+OUTCOME_ARGS=()
+if (( ROUND >= 11 )); then
+  set +e
+  OUTCOME_JSON="$(python3 "$ROOT/scripts/outcome_round.py" check --fork "$FORK_DIR" --round "$ROUND" --commit HEAD --json)"
+  OUTCOME_RC=$?
+  set -e
+  if [[ "$OUTCOME_RC" -ne 0 ]]; then
+    echo "REFUSE round $ROUND (outcome contract): the round must change what the skill produces, with evidence." >&2
+    echo "$OUTCOME_JSON" >&2
+    echo "Scaffold: python3 $ROOT/scripts/outcome_round.py init --fork \"$FORK_DIR\" --round $ROUND --task \"<a real user's request>\"" >&2
+    exit 2
+  fi
+  OUTCOME_ARGS=(--outcome "$OUTCOME_JSON")
+  if python3 -c 'import json,sys; sys.exit(0 if json.load(sys.stdin)["focus"]["self_measurement"] else 1)' <<<"$OUTCOME_JSON"; then
+    echo "WARN round $ROUND: most of this change is evals/metrics/tests; at most 20% of rounds may be (forge_log validate)." >&2
+  fi
+fi
+
 APPEND_ARGS=(
   --log "$LOG"
   --round "$ROUND" --total "$TOTAL"
@@ -64,10 +101,14 @@ APPEND_ARGS=(
   --chars-changed "$CHARS"
   --min-chars "$MIN_CHARS"
   --radical --json
+  --contract "$CONTRACT_JSON"
 )
 # Under `set -u`, empty arrays must not be expanded via "${arr[@]}"
 if ((${#UNIFY_FLAG[@]})); then
   APPEND_ARGS+=("${UNIFY_FLAG[@]}")
+fi
+if ((${#OUTCOME_ARGS[@]})); then
+  APPEND_ARGS+=("${OUTCOME_ARGS[@]}")
 fi
 python3 "$ROOT/scripts/forge_log.py" append "${APPEND_ARGS[@]}" >/dev/null
 
@@ -83,6 +124,9 @@ cp "$LOG" "$WIP_DIR/forge/usefulness_forge.jsonl.bak" 2>/dev/null || true
   echo ""
   echo "**Addition:** $ADDITION"
   echo ""
+  if ((${#OUTCOME_ARGS[@]})); then
+    python3 -c 'import json,sys; o=json.load(sys.stdin)["outcome"]; print("**Outcome:** " + o.get("verdict","") + " — " + o.get("flaw","") + " (`" + o.get("before","") + "` → `" + o.get("after","") + "`)\n")' <<<"$OUTCOME_JSON"
+  fi
   echo "**Chars changed:** $CHARS (min $MIN_CHARS)"
   echo ""
   echo "**Commit:** \`${SHA:0:7}\`"

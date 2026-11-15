@@ -1,9 +1,23 @@
-\begin{thebibliography}{22}
+\begin{thebibliography}{31}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Alpern and Schneider(1985)]{alpern1985defining}
+Bowen Alpern and Fred~B. Schneider.
+\newblock Defining liveness.
+\newblock \emph{Information Processing Letters}, 21\penalty0 (4):\penalty0
+  181--185, 1985.
+
+\bibitem[Alshiekh et~al.(2018)Alshiekh, Bloem, Ehlers, K{\"o}nighofer, Niekum,
+  and Topcu]{alshiekh2018safe}
+Mohammed Alshiekh, Roderick Bloem, R{\"u}diger Ehlers, Bettina K{\"o}nighofer,
+  Scott Niekum, and Ufuk Topcu.
+\newblock Safe reinforcement learning via shielding.
+\newblock In \emph{Proceedings of the AAAI Conference on Artificial
+  Intelligence}, volume~32, pages 2669--2678, 2018.
 
 \bibitem[Amari(1985)]{amari1985differential}
 Shun-ichi Amari.
@@ -18,6 +32,16 @@ Shun-ichi Amari.
   \emph{Applied Mathematical Sciences}.
 \newblock Springer, Tokyo, 2016.
 \newblock \doi{10.1007/978-4-431-55978-8}.
+
+\bibitem[Benveniste et~al.(2018)Benveniste, Caillaud, Nickovic, Passerone,
+  Raclet, Reinkemeier, Sangiovanni-Vincentelli, Damm, Henzinger, and
+  Larsen]{benveniste2018contracts}
+Albert Benveniste, Beno{\^\i}t Caillaud, Dejan Nickovic, Roberto Passerone,
+  Jean-Baptiste Raclet, Philipp Reinkemeier, Alberto Sangiovanni-Vincentelli,
+  Werner Damm, Thomas~A. Henzinger, and Kim~G. Larsen.
+\newblock Contracts for system design.
+\newblock \emph{Foundations and Trends in Electronic Design Automation},
+  12\penalty0 (2--3):\penalty0 124--400, 2018.
 
 \bibitem[Cilibrasi and Vit{\'a}nyi(2005)]{cilibrasi2005clustering}
 Rudi Cilibrasi and Paul M.~B. Vit{\'a}nyi.
@@ -46,6 +70,12 @@ Geoffrey~E. Hinton.
   2002.
 \newblock \doi{10.1162/089976602760128018}.
 
+\bibitem[Hoare(1969)]{hoare1969axiomatic}
+C.~A.~R. Hoare.
+\newblock An axiomatic basis for computer programming.
+\newblock \emph{Communications of the ACM}, 12\penalty0 (10):\penalty0
+  576--580, 1969.
+
 \bibitem[Kleene(1952)]{kleene1952introduction}
 Stephen~Cole Kleene.
 \newblock \emph{Introduction to Metamathematics}.
@@ -58,12 +88,23 @@ F.~William Lawvere.
 \newblock Summarized in \emph{Proceedings of the National Academy of Sciences},
   50(5):869--872, 1963.
 
+\bibitem[Leucker and Schallhart(2009)]{leucker2009brief}
+Martin Leucker and Christian Schallhart.
+\newblock A brief account of runtime verification.
+\newblock \emph{Journal of Logic and Algebraic Programming}, 78\penalty0
+  (5):\penalty0 293--303, 2009.
+
 \bibitem[Mac~Lane and Moerdijk(1992)]{maclane1992sheaves}
 Saunders Mac~Lane and Ieke Moerdijk.
 \newblock \emph{Sheaves in Geometry and Logic: A First Introduction to Topos
   Theory}.
 \newblock Springer-Verlag, New York, 1992.
 \newblock \doi{10.1007/978-1-4612-0927-0}.
+
+\bibitem[Meyer(1992)]{meyer1992applying}
+Bertrand Meyer.
+\newblock Applying ``design by contract''.
+\newblock \emph{Computer}, 25\penalty0 (10):\penalty0 40--51, 1992.
 
 \bibitem[Moggi(1991)]{moggi1991notions}
 Eugenio Moggi.
@@ -101,6 +142,18 @@ Gordon~D. Plotkin.
 \newblock In Bernard Meltzer and Donald Michie, editors, \emph{Machine
   Intelligence 5}, pages 153--163. Edinburgh University Press, 1970.
 
+\bibitem[Plotkin(2004)]{plotkin2004structural}
+Gordon~D. Plotkin.
+\newblock A structural approach to operational semantics.
+\newblock \emph{Journal of Logic and Algebraic Programming}, 60--61:\penalty0
+  17--139, 2004.
+
+\bibitem[Pnueli(1977)]{pnueli1977temporal}
+Amir Pnueli.
+\newblock The temporal logic of programs.
+\newblock In \emph{Proceedings of the 18th Annual Symposium on Foundations of
+  Computer Science}, pages 46--57. IEEE, 1977.
+
 \bibitem[Reynolds(1970)]{reynolds1970transformational}
 John~C. Reynolds.
 \newblock Transformational systems and the algebraic structure of atomic
@@ -128,6 +181,12 @@ Timo Schick, Jane Dwivedi-Yu, Roberto Dess{\`i}, Roberta Raileanu, Maria
 \newblock Toolformer: Language models can teach themselves to use tools.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, volume~36, pages 68539--68551, 2023.
+
+\bibitem[Schneider(2000)]{schneider2000enforceable}
+Fred~B. Schneider.
+\newblock Enforceable security policies.
+\newblock \emph{ACM Transactions on Information and System Security},
+  3\penalty0 (1):\penalty0 30--50, 2000.
 
 \bibitem[Simpson(1951)]{simpson1951interpretation}
 Edward~H. Simpson.

@@ -52,7 +52,7 @@ def skills_sh_installs(owner: str, repo: str, skill: str) -> int | None:
     """Best-effort installs scrape from skills.sh card; None if unavailable."""
     url = f"https://skills.sh/{owner}/{repo}/{skill}"
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "skillremix-pin-fastpath"})
+        req = urllib.request.Request(url, headers={"User-Agent": "skillcompose-pin-fastpath"})
         with urllib.request.urlopen(req, timeout=20) as resp:
             html = resp.read().decode("utf-8", errors="replace")
     except (urllib.error.URLError, TimeoutError, OSError):

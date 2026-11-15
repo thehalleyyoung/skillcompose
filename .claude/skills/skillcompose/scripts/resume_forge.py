@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resume / status helpers for skillremix WIP forge runs (50-round phase model)."""
+"""Resume / status helpers for skillcompose WIP forge runs (50-round phase model)."""
 from __future__ import annotations
 
 import argparse
@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from args_preflight import validate_wip_path  # noqa: E402
 from forge_phases import FORGE_ROUNDS, phase_for_round  # noqa: E402
+from outcome_round import OUTCOME_FROM_ROUND  # noqa: E402
 
 
 def load_jsonl(path: Path) -> list[dict]:
@@ -240,7 +241,18 @@ def main() -> int:
             "done": st["done"],
             "chosen_ids": st.get("chosen_ids"),
             "progress": st.get("progress"),
+            "outcome_required": bool(st["next_round"]) and st["next_round"] >= OUTCOME_FROM_ROUND,
         }
+        if st["fork_dir"]:
+            out["contract_check"] = (
+                f"python3 scripts/concrete_term.py check --package {st['fork_dir']}"
+                + (" --require-artifact" if (st["next_round"] or 0) > 10 else "")
+            )
+        if out["outcome_required"] and st["fork_dir"]:
+            out["outcome_init"] = (
+                f"python3 scripts/outcome_round.py init --fork {st['fork_dir']} --round {st['next_round']} "
+                "--task \"<a real user's request>\"; save before.<ext>, change the skill, save after.<ext>"
+            )
         print(json.dumps(out, indent=2) if args.json else out)
         return 0 if not st["done"] else 1
     print(json.dumps(st, indent=2) if args.json else st)

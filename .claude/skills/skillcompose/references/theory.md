@@ -76,7 +76,8 @@ Dumping raw member prompts inflates denominator context $|C|_{\text{tokens}}$ (v
 ## 3. Lawvere–Amari Generative Skill Manifolds: Unifying Geometry and Logic
 
 To synthesize a single generative skill $\mathfrak{G}_{\mathcal{M}}$ from sampled skills $S = \{s_1, \dots, s_N\}$ that **encompasses the underlying manifold** while **acting as a rigorous input-to-structured-output transducer**, `/skillcompose` constructs a **Lawvere–Amari Generative Bundle**:
-$$\mathfrak{G}_{\mathcal{M}} \;=\; \big\langle \Theta,\; \mathcal{T}_{\mathcal{M}},\; (\bar{\eta}_0, G_F, V),\; \mathcal{N}(\mathcal{U}),\; \sigma^* \big\rangle.$$
+$$\mathfrak{G}_{\mathcal{M}}(D) \;=\; \big\langle \Theta,\; \mathcal{T}_{\mathcal{M}},\; (\bar{\eta}_0, G_F, V),\; \mathcal{N}(\mathcal{U}),\; \sigma^*,\; \mathcal{A}_{\mathcal{M}}(D) \big\rangle,$$
+where the optional desired argument theory $D$ (empty by default) is defined in §3.5. It is part of the composed object, not a side channel around it.
 
 ### 3.1 Exact Normal–Tangent Duality Between Differential Geometry and Categorical Logic
 
@@ -127,6 +128,70 @@ Structured outputs $y \in \mathcal{Y}$ form sections of a presheaf $\mathcal{F}_
 - **Static 1-Cocycle Exactness ($\delta^1 = 0$):** On every 2-simplex triangle $(U_a, U_b, U_c)$ in $\mathcal{N}(\mathcal{U})$, `wiring_compiler.py` verifies loop holonomy $g_{ca} \circ g_{bc} \circ g_{ab} = \mathrm{id}$ (`manifold_sheaf_exactness`).
 - **Runtime 0-Coboundary Enforcement ($\Gamma(\mathcal{U}, \mathcal{F}_x) = \ker \delta^0$):** `verify_dominator_gate.py --glue` checks $(\delta^0 y)_{uv} = \rho_{u \to uv}(y_u) \ominus \rho_{v \to uv}(y_v) = 0$ across materialized JSON/artifact views, rejecting drifted multi-file outputs with exit `2`.
 
+### 3.5 What the final skill takes, and what it is able to take
+
+The object produced by composition is itself a skill, so it has an input signature. Each landmark $s_i$ already has one. Write $T_i$ for the arguments $s_i$ **takes** (the precondition $P_i$ fails until they are instantiated) and $B_i \supseteq T_i$ for the arguments $s_i$ is **able to take** (supplying one stays inside $P_i$; omitting an argument in $B_i \setminus T_i$ is still a legal input).
+
+Member signatures compose by the same normal/tangent split as output clauses (§3.1):
+
+- **Conormal input core.** $T_\cap = \bigcap_{i=1}^N T_i$ is the set of arguments every landmark takes. The final skill takes them. Dropping one would delete a precondition the whole family shares.
+- **Tangent input axes.** $B_\cup = \bigcup_{i=1}^N B_i$ is the set of arguments some landmark is able to take. Plotkin–Reynolds anti-unification $\sqcup_{\text{lgg}}$ lifts the ones that landmarks disagree on (required here, hard-coded there, absent elsewhere) into chart variables. That is what it means for the final skill to be *able* to take them: each landmark pullback $\sigma_i$ puts back the constant that landmark had specialized.
+
+A caller often knows the interface they want back before the landmarks are fused. That knowledge is an **optional desired argument theory**
+$$D \;=\; (D_{\text{take}},\, D_{\text{able}}), \qquad D_{\text{take}} \subseteq D_{\text{able}},$$
+with either component allowed to be empty.
+
+- $D_{\text{take}}$: arguments the final skill should **take**.
+- $D_{\text{able}}$: arguments the final skill should **be able to take**.
+
+$D$ is not the discovery query $Q$ and not a meta-control flag (`--n`, `--domain`, `--pin`, …). $Q$ selects landmarks. $D$ fixes the arity of the skill those landmarks must become. Folding $D$ into $Q$ would turn a typed signature into bag-of-words context and would let an interface constraint masquerade as a control flag. The reference parser therefore keeps them apart: `--args` is recorded as `composed_args` and classified into `desired_interface`. An unmarked name lands in $D_{\text{able}}$. A name marked `take:` also lands in $D_{\text{take}}$ (and therefore in $D_{\text{able}}$, since taking implies being able to take).
+
+**Definition 3.3 (Composed argument interface).**
+$$\mathcal{A}_{\mathcal{M}}(D) \;=\; \big( T_\cap \cup D_{\text{take}},\; B_\cup \cup D_{\text{able}} \big).$$
+The final skill is the Kleisli morphism whose precondition requires the first component and accepts the second. An argument in the second component but not the first may be absent; that absence is an optional chart point, not an off-manifold input.
+
+**Corollary 3.1 (Empty desire, required interface, fresh axes).** *Let $\mathcal{A}_{\mathcal{M}}(D)$ be as above, and assume no demanded value contradicts $\Phi_{\text{core}}$. Then:*
+1. **Empty desire is anti-unification.** *$D = (\emptyset, \emptyset)$ yields $\mathcal{A}_{\mathcal{M}}(D) = (T_\cap, B_\cup)$, the signature already latent in the landmarks.*
+2. **Taking implies being able to take.** *$T_\cap \cup D_{\text{take}} \subseteq B_\cup \cup D_{\text{able}}$.*
+3. **Landmark recovery.** *Pulling $\mathcal{A}_{\mathcal{M}}(D)$ back along $\sigma_i$ instantiates every newly required argument at the constant $s_i$ had hard-coded, and forgets every optional argument $s_i$ did not mention, recovering $P_i$. This is the input half of Theorem 3.1.*
+4. **A new able-argument is a new chart coordinate.** *A name in $D_{\text{able}} \setminus B_\cup$ extends $\Theta$ by a free input axis, and $\mathcal{T}_{\mathcal{M}}$ may depend on it. If a demanded value together with $\Phi_{\text{core}}$ derives $\bot$, the conormal guard fails and composition abstains (`ABSTAIN_OFF_MANIFOLD`, exit 2): the requested interface does not lie on $\mathcal{M}$.*
+
+Example. For an end-to-end fantasy-novel skill the caller may pass $D_{\text{able}} = \{\texttt{author-persona}, \texttt{premise}\}$ and $D_{\text{take}} = \emptyset$. The finished skill is able to take both, and it still runs when they are omitted. Marking premise as taken ($D_{\text{take}} = \{\texttt{premise}\}$) puts premise in the precondition: a later invocation without a premise is outside $P_{\mathcal{M}}$.
+
+### 3.6 What a skill carries: specification, channels, and modules
+
+Definition 1.1 describes a skill by its kernel. A packaged skill realizes that kernel from more than its `SKILL.md`. It also realizes it from the files that text sends the agent to. Theorem 3.1 is exact about the theory $Q_i$. Without the files below it says nothing about the kernel $K_i$ an agent actually runs, and that gap shows up in practice: a recomposition that keeps every member's specification but drops the scripts they invoke passes every static check and still runs a different skill.
+
+**Definition 3.4 (Carrier and reference closure).** A package is a pair $p = (\varsigma_p, C_p)$. Here $\varsigma_p$ is the specification text and $C_p$ is a finite set of files $(\text{path}, \text{bytes})$, split into
+- **executable channels** $E_p \subseteq C_p$ (scripts the text tells the agent to run; each one is an exogenous observation $\mathcal{O}_f$ in the sense of Failure 7), and
+- **reference modules** $R_p = C_p \setminus E_p$ (documents the text defers to by progressive disclosure).
+
+Write $\varsigma \to f$ when the text names file $f$ and $f$ exists in the member's repository, and extend $\to$ to files that name other files. The **reference closure** $\operatorname{cl}(s)$ is the smallest set that contains the member's `scripts/` and `references/` trees and is closed under $\to$. It may include files outside the member's folder, for example a script under the repository root.
+
+*Reference locality hypothesis.* An agent running $p$ reads and executes only files reachable from $\varsigma_p$ by $\to$, so $K_p = K[\varsigma_p, \operatorname{cl}(p)]$.
+
+Packages are ordered by carrier inclusion: $p \sqsubseteq p'$ iff $C_p \subseteq C_{p'}$ as sets of $(\text{path}, \text{bytes})$ pairs, ignoring paths the installer regenerates from the specification (host manifests).
+
+**Proposition 3.2 (Carrier closure, channel loss, and installation as join).** *Assume reference locality. Let $\mathfrak{G}_{\mathcal{M}}$ be composed from $S = \{s_1, \dots, s_N\}$, and let $\iota_i$ relocate member $i$'s files injectively into the package, rewriting the references among them.*
+1. **Kernel-exact pullback.** *$\sigma_i^* \mathfrak{G}_{\mathcal{M}}$ realizes $K_i$, and not only $Q_i \land \Phi_{\text{core}}$, if $\iota_i(\operatorname{cl}(s_i)) \subseteq C_{\mathcal{M}}$ byte for byte.*
+2. **Dropping a channel loses information.** *If an executable channel $f \in \operatorname{cl}(s_i)$ is missing from $C_{\mathcal{M}}$, its observation becomes constant, and the information a run can reach falls by*
+   $$I(Y^*;\, M, E_{C}) - I(Y^*;\, M, E_{C \setminus \{f\}}) \;=\; I(Y^*;\, E_f \mid M, E_{C \setminus \{f\}}) \;\ge\; 0,$$
+   *with strict inequality whenever $f$ is informative given the rest. That is the DPI decay of Failure 7, reintroduced by packaging.*
+3. **Files outside the closure are free to omit.** *A file not in $\operatorname{cl}(s_i)$ never enters $K_i$. Omitting it is lossless, and carrying it only inflates context (Failure 8).*
+4. **Installation is a join, not an overwrite.** *Let $p_{\text{old}}$ be an installed package, for example one that has accumulated forged scripts, and let $p_{\text{new}}$ be a recomposition. Overwriting is an upgrade in $\sqsubseteq$ iff $C_{p_{\text{old}}} \setminus C_{p_{\text{new}}} = \emptyset$. Otherwise the least package that dominates both is the join $p_{\text{old}} \sqcup p_{\text{new}}$, whose carrier is $C_{p_{\text{old}}} \cup C_{p_{\text{new}}}$ when they agree on shared paths. It satisfies $I(Y^*; M, E_{\sqcup}) \ge \max\big(I(Y^*; M, E_{\text{old}}),\, I(Y^*; M, E_{\text{new}})\big)$.*
+
+*Proof.* (1) Under reference locality, $K_i$ depends on its carrier only through $\operatorname{cl}(s_i)$. A byte-identical relocation with rewritten references gives the agent the same reachable files and the same execution results, so the kernels agree. Theorem 3.1 supplies the theory half.
+
+(2) This is the chain rule for mutual information applied to the observation tuple $(M, E_C)$: removing $E_f$ subtracts exactly the conditional term, and conditional mutual information is non-negative.
+
+(3) Immediate from reference locality.
+
+(4) $\sqsubseteq$ is inclusion of finite sets, so $p_{\text{new}}$ dominates $p_{\text{old}}$ iff nothing in $C_{p_{\text{old}}}$ is absent from $C_{p_{\text{new}}}$. The least upper bound of two sets that agree on shared paths is their union. The information bound follows from $I(Y^*; A, B) \ge I(Y^*; A)$. $\square$
+
+**Implementation.** `compose_skills.py` computes $\operatorname{cl}(s_i)$ by scanning each member `SKILL.md` and the files it reaches, within the member's repository and to bounded depth. It copies the closure to `scripts/members/<slug>/` and `references/members/<slug>/`, with out-of-folder files placed under `_repo/`, and records source path, destination, and SHA-256 under `carrier` in `manifold_atlas.json`. `install_skill_dual.sh` checks part 4 before it touches any destination. When $C_{\text{old}} \setminus C_{\text{new}} \neq \emptyset$, it exits 2 with `install_would_lose_files` and the lost paths, so the caller forms the join. `--allow-loss` is an explicit opt-out.
+
+A package's install name is its identity: part 4 joins packages that share one. `--new-skill-name` asks for a fresh identity instead, so $p_{\text{old}}$ is the empty package and the join is $p_{\text{new}}$ itself, with no earlier skill touched. `parse_args.py` refuses a name already installed on any host, and the installer's `--new` mode re-checks at install time, so a composition meant to be new cannot silently become an update of an older skill.
+
 ---
 
 ## 4. Software Engineering Kleisli Composition & Agentic Control Laws
@@ -140,6 +205,66 @@ Each module inside the manifold-parameterized workflow remains an **Open Effectf
 5. **Sheaf Equalizer / Pullback Join ($\Gamma(\mathcal{U}, \mathcal{F}) = \ker \delta^0$):** Enforces $\delta^1 = 0$ statically and $\pi_K(O_u) = \pi_K(O_v)$ dynamically across overlapping artifact views.
 6. **Post-Dominator Orthogonal Feedback Loop ($\mu X.\; \text{Gate}_Q \circ (S_{\text{act}} \leftrightarrows S_{\text{crit}})$):** Every mutator node $m \in V_{\text{mut}}$ is post-dominated on all paths to `DONE` by a read-only exogenous gate ($\mathcal{W}(g) = \emptyset$, SHA-256 verified) governed by a DAG-ordered **Lyapunov potential** $\Phi(x_t)$ and **Conditional Lempel–Ziv MDL** anti-padding (`info_density >= 0.10`).
 
+### 4.1 A contract calculus over prose and script components
+
+The six operators form a typed term language whose components are of two kinds: prose $\langle\pi\rangle$, interpreted by the model, and scripts $\llbracket f\rrbracket$, run by the host.
+
+$$c ::= \langle\pi\rangle \mid \llbracket f\rrbracket \qquad s ::= c \mid s\,;_\alpha s \mid s \otimes s \mid g \triangleright (s \oplus s \oplus \texttt{ABSTAIN}) \mid \text{glue}_{\mathcal{U}}(s_u) \mid \text{gate}_G(s) \mid \text{proj}_{\mathcal{M}} \triangleright s$$
+
+Every component has an interface $\iota(c) = (\mathcal{A}_c, R_c, W_c, E_c, \nu_c)$: argument signature, read and write footprints, exit statuses, and a **total** verdict map $\nu_c : \mathbb{Z} \to \{\text{pass}, \text{abstain}, \text{fail}\}$ with $\nu_c(e) = \text{fail}$ outside $E_c$. For scripts, $\mathcal{A}_f$ and $E_f$ come from `script_signature` (argument-parser declarations and exit literals in the Python AST, including the `SystemExit(main())` idiom) and are recorded under `script_interfaces` in `manifold_atlas.json`. Verdict maps are per component: the projector reads exit 2 as abstain, the gate reads exit 2 as fail, and a foreign member script reads every nonzero status as fail, since 2 is argparse's usage error. Prose has $E = \{0\}$ and never reports a verdict, so its correctness must be discharged by a later script.
+
+Sequential verdicts short-circuit ($v_1 \triangleright v_2 = v_1$ unless $v_1 = \text{pass}$), a monoid with abstain and fail as left zeros; parallel verdicts take the meet in $\text{fail} < \text{abstain} < \text{pass}$. Typing rules (T-Prose, T-Script, T-Seq, T-Par, T-Guard, T-Glue, T-Gate, T-Proj) mark each premise as static (wiring verifier), dynamic (generated monitor), or assumed (prose entailment $Q_1 \Rightarrow \alpha^* P_2$, which is undecidable here).
+
+**Threat model.** The model is an adversary at prose positions. The trusted base is: (T1) scripts and monitors run as coded; (T2) the host runs the projector before any prose step and admits `DONE` only immediately after a passing gate; (T3) SHA-256 collision resistance. Today's hosts state T2 in the skill text but do not enforce it.
+
+**Soundness.** Under T1 to T3, every trace of $\text{proj}_{\mathcal{M}} \triangleright \text{gate}_G(s)$ satisfies the LTL safety properties
+
+- $\varphi_{\text{abs}} = (\neg\text{wr}\ \mathbf{U}\ \text{ex(proj)}) \land \mathbf{G}(\text{ex(proj},2) \to \mathbf{G}\neg\text{wr})$ (the projector's own `--out` report is its declared write),
+- $\varphi_{\text{gate}} = \mathbf{G}(\text{wr} \to \neg\text{done}\ \mathbf{W}\ \text{ex(gate},0))$,
+- $\varphi_{\text{ro}} = \mathbf{G}(\text{ex(gate},0) \to H_{\text{pre}}(W) = H_{\text{post}}(W))$,
+- $\varphi_{\text{glue}} = \mathbf{G}(\text{done} \to \delta^0 y = 0)$,
+
+whatever the model does. Each is an Alpern–Schneider safety property, so a monitor can enforce it (Schneider's security automata); the projector, gate, and installer are those monitors. The static dominance checks (gate post-dominates every mutator, and projector pre-dominates every mutator, both in `dominator_orthogonality`) give conformance: an agent that follows the compiled graph cannot reach a state whose only continuation violates a property. `DONE` certifies only the gate's checks.
+
+### 4.2 The concrete term, and why the guarantees must hold every round
+
+§4.1 proves its properties for the wiring graph that `compose_skills.py` emits, and that graph's nodes are abstract members and subskills. A forge then rewrites `SKILL.md` and adds scripts for fifty rounds. None of those edits touches the graph, so `dominator_orthogonality` keeps passing on a description of a package that no longer exists. The guarantee holds at round 0 and is unchecked afterwards.
+
+**The concrete term.** Let $\tau(P)$ be the term the package $P$ actually runs, read from its files by `scripts/concrete_term.py`:
+
+- components are the scripts `SKILL.md` invokes, in document order; a script that calls other package scripts (a runner) is expanded into them and its own writes, interleaved by source line;
+- each component's interface is $\iota(f) = (\mathcal{A}_f, W_f, E_f)$: $\mathcal{A}_f$ and $E_f$ from `script_signature`, and $W_f$ the write sites in the AST (a write to the script's declared report, such as `--out`, is its declared write and leaves it an observer);
+- roles are projector, gate, mutator ($W_f$ beyond the report) and observer, overridable in `references/term_roles.json`;
+- the trace graph is linear in the document order, and `DONE` is reached only from a gate (T2).
+
+**Contract potential.** $\Phi_c(P) \in \mathbb{N}$ counts the failed obligations on $\tau(P)$:
+
+1. closure: every invoked script exists (Prop. 3.2(2));
+2. signature: each invocation passes only flags in $\mathcal{A}_f$ and every required one (T-Script);
+3. verdicts: some gate exists and can fail, and the projector can abstain (§4.1 verdict maps);
+4. $\varphi_{\text{ro}}$: no gate writes;
+5. $\varphi_{\text{gate}}$: no mutator runs after the last gate;
+6. $\varphi_{\text{abs}}$: no mutator runs before the first projector;
+7. `verify_graph` type safety and DPI grounding on the trace graph;
+8. carrier: every member script the atlas carried is still present (Prop. 3.2(2));
+9. interface: every argument of $\mathcal{A}_{\mathcal{M}}(D)$ is still named in `SKILL.md` (Cor. 3.1).
+
+`references/concrete_term.json` records $\tau(P)$. Composition writes it and refuses to finish unless $\Phi_c = 0$.
+
+**Vector Lyapunov descent.** `information_gain.py` gives a debt vector $d(P) = (d_0, \dots, d_5)$ with $d_0 = \min(1, \Phi_c/4)$, the most upstream component. Its weighted sum $\Phi = \sum_k w_k d_k$ is not a sound ratchet. Paying a downstream debt (evals, an awesome proof) can lower $\Phi$ while an upstream one rises, so a scalar decrease hides a contract regression. The forge therefore requires componentwise descent, $d(P_{r}) \le d(P_{r-1})$.
+
+**Ratchet.** Round $r$ with commits $P_{r-1} \to P_r$ is admitted only if
+
+$$\Phi_c(P_r) \le \Phi_c(P_{r-1}), \qquad d(P_r) \le d(P_{r-1}) \text{ componentwise}, \qquad r > 10 \Rightarrow \Phi_c(P_r) = 0 \land \texttt{concrete\_term.json} = \tau(P_r).$$
+
+`forge_round.sh` runs `concrete_term.py ratchet` before logging and refuses a violating round. `forge_log.py validate --fork` recomputes the ratchet from the commits for any round logged without it. `ship_check.py` requires $\Phi_c = 0$ and a current artifact at the end.
+
+**Proposition 4.2 (invariance).** Under T1 to T3, for every logged round $r \ge 11$ of a forge that passes validation, the protocol that $P_r$'s `SKILL.md` documents satisfies $\varphi_{\text{abs}}$, $\varphi_{\text{gate}}$ and $\varphi_{\text{ro}}$ along its trace graph. Every script it invokes exists and accepts the flags it is given, and every carried member channel and composed argument survives.
+
+*Proof sketch.* Validation requires $\Phi_c(P_r) = 0$ for $r \ge 11$, so every obligation holds at each such $P_r$. Obligations 5 and 6 are the dominance conditions of §4.1 on the linear trace graph, where pre-dominance is "occurs earlier" and post-dominance on paths to `DONE` is "a gate occurs later". Obligation 4 gives $\varphi_{\text{ro}}$ for the gates that admit `DONE`. The soundness argument of §4.1 then applies to $\tau(P_r)$ in place of the composed graph. $\square$
+
+The proposition is only as strong as the extraction. Prose steps that write files without a script, writes through subprocesses, and dynamically built paths are not seen. The term covers what `SKILL.md` invokes, not what an agent improvises. The replay of the fantasy forge (`PROOF.md`) shows what this catches in practice. Round 10 added a chapter writer that runs before the projector. $\Phi_c$ went from 0 to 1 and stayed there for forty rounds, while the scalar $\Phi$ fell from 2.4 to 1.0 because downstream debts were paid.
+
 ---
 
 ## 5. Mapping Theory to Executable `/skillcompose` Scripts & Proof Suites
@@ -149,5 +274,9 @@ Each module inside the manifold-parameterized workflow remains an **Open Effectf
 | Guarded Markov kernels over 648 structured outputs, Conditional Fisher–Rao metric $G_F$, Galois conormal core, Plotkin–Reynolds anti-unification $\sqcup_{\text{lgg}}$, Čech cocycle checker | `scripts/manifold_engine.py` | `metrics/manifold-lift/measure.py` |
 | Query-conditioned submodular Noisy-OR $p(u \mid s, Q)$ + Log-Det Fisher volume $V_{\text{Fisher}}(S)$ + JSD/NCD anti-redundancy + exemplar conflict penalty + Nemhauser–Wolsey certificate | `scripts/submodular_select.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
 | 6-operator Kleisli + Sheaf wiring compiler & 6-theorem static verifier (`type_safety`, `separation_logic`, `dpi_exogenous_grounding`, `dominator_orthogonality`, `parnas_encapsulation`, `manifold_sheaf_exactness`) | `scripts/wiring_compiler.py` | `metrics/principled-lift/measure.py`, `metrics/manifold-lift/measure.py` |
+| Composed argument interface $\mathcal{A}_{\mathcal{M}}(D)$: arguments the final skill takes ($T_\cap \cup D_{\text{take}}$) and is able to take ($B_\cup \cup D_{\text{able}}$); empty $D$ is anti-unification of member signatures | `scripts/parse_args.py` (`--args` → `desired_interface`) | Corollary 3.1; `/skillcompose … --args "--author-persona, take:--premise"` |
+| Hybrid contract calculus: script signatures $\operatorname{sig}(f)$, per-component verdict maps, projector pre-dominance, LTL safety under T1–T3 (§4.1) | `scripts/compose_skills.py` (`script_interfaces`), `scripts/wiring_compiler.py` (`dominator_orthogonality`) | `metrics/carrier-closure/measure.py` (`check_signatures`), `paper/main.tex` Theorem 5 |
+| Contract ratchet on the concrete term $\tau(P)$: $\Phi_c$, componentwise Lyapunov descent, invariance at every round $r \ge 11$ (§4.2, Prop. 4.2) | `scripts/concrete_term.py`, `scripts/forge_round.sh`, `scripts/forge_log.py`, `scripts/ship_check.py` | `metrics/contract-ratchet/measure.py` |
+| Carrier closure $\operatorname{cl}(s_i)$ of member channels and modules (kernel-exact pullback) and installation as join in $\sqsubseteq$ (Proposition 3.2) | `scripts/compose_skills.py` (`carrier` in `manifold_atlas.json`), `scripts/install_skill_dual.sh` (`install_would_lose_files`) | `metrics/carrier-closure/measure.py` |
 | End-to-end composite manifold compiler emitting `MANIFOLD_ATLAS.md`, standalone `project_manifold.py`, & sheaf/SHA-256 `verify_dominator_gate.py` (+ 4-platform manifests) | `scripts/compose_skills.py`, `scripts/export_platform_targets.py` | `metrics/manifold-lift/measure.py`, `metrics/principled-lift/measure.py` |
 | Conditional DEFLATE/LZ novelty, Attention Channel SNR, & Lyapunov debt $\Phi$ | `scripts/information_gain.py` | `metrics/principled-lift/measure.py` |

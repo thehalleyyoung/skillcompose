@@ -1,6 +1,6 @@
 # Pipeline cheat sheet
 
-Assume `SCRIPTS=~/.gemini/config/skills/skillremix/scripts` and `WIP=…/skillremix-wip-ID`.
+Assume `SCRIPTS=~/.gemini/config/skills/skillcompose/scripts` and `WIP=…/skillremix-wip-ID`.
 
 ```bash
 # 0 args
@@ -58,5 +58,5 @@ python3 $SCRIPTS/ship_check.py --fork $PKG --rounds 50 --min-chars 1000 --json
 
 ```bash
 python3 $SCRIPTS/resume_forge.py status --wip $WIP --json
-/skillremix --resume --wip $WIP
+/skillcompose --resume --wip $WIP
 ```

@@ -1,6 +1,6 @@
 # Adoption floor (no popularity ceiling)
 
-Highly popular skills are **first-class**. There is **no default ceiling** on installs or stars. `/skillremix` upgrades and remixes any marketplace skill that clears a minimum adoption signal — including mega skills with hundreds of thousands of installs.
+Highly popular skills are **first-class**. There is **no default ceiling** on installs or stars. `/skillcompose` upgrades and remixes any marketplace skill that clears a minimum adoption signal — including mega skills with hundreds of thousands of installs.
 
 Do **not** describe picks as “middling examples.” Prefer: *eligible* / *adoption-floor* / *marketplace skill*.
 

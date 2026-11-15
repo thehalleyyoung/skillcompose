@@ -1,10 +1,10 @@
 {
   "metric_id": "principled-lift",
   "title": "Principled submodular + Kleisli wiring + MDL gates",
-  "at": "2026-11-12T01:04:45.774015+00:00",
-  "ts": 1794445485.774037,
+  "at": "2026-11-12T03:31:55.600586+00:00",
+  "ts": 1794454315.6005952,
   "values": {
-    "skill_root": "/home/antigravity/thehalleyyoung/skillcompose",
+    "skill_root": "/tmp/skillcompose-src/skillcompose",
     "cases": [
       {
         "name": "submodular_beats_github_top_n",
@@ -60,7 +60,7 @@
         "name": "compose_and_dominator_gate_enforces_separation_logic",
         "ok": true,
         "nemhauser_wolsey_ratio": 0.8235,
-        "parnas_ratio": 0.9261
+        "parnas_ratio": 0.9285
       }
     ],
     "passed": 6,

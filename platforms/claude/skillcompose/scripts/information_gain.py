@@ -192,15 +192,27 @@ def package_telemetry(pkg: Path) -> dict[str, Any]:
     has_metrics = (pkg / "METRICS.md").is_file()
     has_awesome = (pkg / "AWESOME_PROOF.md").is_file()
 
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from concrete_term import check as contract_check
+
+        contract = contract_check(pkg) if skill_bytes else {"phi": 0, "roles": {}}
+    except Exception as e:  # a package the extractor cannot read carries full debt
+        contract = {"phi": 4, "roles": {}, "error": f"{type(e).__name__}: {e}"}
+    gate_in_term = bool(contract.get("roles", {}).get("gate"))
     debts = {
+        # the theory's obligations on the term the package actually runs (concrete_term.py)
+        "d0_concrete_contract": round(min(1.0, contract["phi"] / 4.0), 4),
         "d1_interface_and_wiring": 0.0 if (skill_bytes >= 800 and has_wiring) else (0.5 if skill_bytes >= 800 else 1.0),
-        "d2_exogenous_grounding": round(max(0.0, 0.22 - grounding_ratio) / 0.22, 4) if not has_exec_verify else 0.0,
+        "d2_exogenous_grounding": 0.0 if (has_exec_verify and gate_in_term)
+        else round(max(0.0, 0.22 - grounding_ratio) / 0.22, 4) if not has_exec_verify else 0.5,
         "d3_context_snr_encapsulation": round(max(0.0, 0.70 - snr_score) / 0.70, 4),
         "d4_reproducible_evals_metrics": 0.0 if (has_evals and has_metrics) else (0.4 if has_evals else 1.0),
         "d5_awesome_world_proof": 0.0 if has_awesome else 1.0,
     }
     # Upstream DAG weights > downstream weights
     weights = {
+        "d0_concrete_contract": 4.0,
         "d1_interface_and_wiring": 3.0,
         "d2_exogenous_grounding": 2.5,
         "d3_context_snr_encapsulation": 1.8,
@@ -226,6 +238,7 @@ def package_telemetry(pkg: Path) -> dict[str, Any]:
             "debts": debts,
             "next_upstream_target": next_priority,
             "at_fixpoint": phi_total == 0.0,
+            "concrete_contract_phi": contract["phi"],
         },
     }
 

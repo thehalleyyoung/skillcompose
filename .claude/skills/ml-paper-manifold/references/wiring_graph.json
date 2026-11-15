@@ -1,5 +1,5 @@
 {
-  "schema": "skillremix.wiring_graph.v3",
+  "schema": "skillcompose.wiring_graph.v3",
   "package_name": "ml-paper-manifold",
   "domain": "research",
   "nodes": [

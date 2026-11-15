@@ -1,5 +1,5 @@
 {
-  "protocol": "Smoke checks for skillremix helpers. Run scripts directly; no network required except discover_skills.",
+  "protocol": "Smoke checks for skillcompose helpers. Run scripts directly; no network required except discover_skills.",
   "cases": [
     {
       "id": "parse-args",

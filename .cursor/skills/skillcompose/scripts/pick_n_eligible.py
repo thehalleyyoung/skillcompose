@@ -198,7 +198,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--candidates", type=Path, required=True)
     ap.add_argument("--n", type=int, required=True)
-    ap.add_argument("--seed", default="skillremix")
+    ap.add_argument("--seed", default="skillcompose")
     ap.add_argument("--exclude", action="append", default=[])
     ap.add_argument("--min-installs", type=int, default=80)
     ap.add_argument(

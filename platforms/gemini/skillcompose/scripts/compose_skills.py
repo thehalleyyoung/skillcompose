@@ -15,8 +15,10 @@ Takes a candidate pool (JSONL/JSON with materialized `local_dir` or `--upstreams
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -161,10 +163,33 @@ def main() -> int:
     ap.add_argument("--atlas", type=Path, default=default_atlas)
     ap.add_argument("--input", required=True, help="Task prompt string or path to task file")
     ap.add_argument("--require", action="append", default=[], help="Optional axis=value override")
+    ap.add_argument("--arg", action="append", default=[], help="Interface argument name=value (see SKILL.md Arguments)")
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
 
     atlas = json.loads(args.atlas.read_text(encoding="utf-8"))
+
+    iface = atlas.get("argument_interface") or {"take": [], "able": []}
+    bound = {}
+    for item in args.arg:
+        k, _, v = item.partition("=")
+        bound[k.strip().lstrip("-")] = v.strip()
+    missing = [a for a in iface.get("take", []) if not bound.get(a)]
+    unknown = sorted(k for k in bound if k not in iface.get("able", []))
+    if missing or unknown:
+        rep = {
+            "ok": False,
+            "decision": "ABSTAIN_OFF_MANIFOLD",
+            "domain": atlas.get("domain"),
+            "reasons": [f"argument_interface_rejected: missing_required={missing}, not_in_interface={unknown}"],
+            "argument_interface": iface,
+        }
+        if args.out:
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            args.out.write_text(json.dumps(rep, indent=2) + "\\n", encoding="utf-8")
+        print(json.dumps(rep, indent=2))
+        return 2
+    omitted = [a for a in iface.get("able", []) if a not in bound]
     inp = Path(args.input)
     text = inp.read_text(encoding="utf-8", errors="replace") if inp.is_file() else args.input
     toks = set(tokenize(text))
@@ -266,6 +291,9 @@ def main() -> int:
         "admissible_output_fiber_cardinality": len(valid),
         "map_structured_output": {axes_order[j]: space[ranked[0][1]][j] for j in range(len(axes_order))} if ranked else {},
         "sheaf_gluing_obligations": atlas["sheaf_nerve"]["overlaps"],
+        "argument_interface": iface,
+        "bound_arguments": bound,
+        "omitted_optional_arguments": omitted,
     }
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -439,6 +467,183 @@ def strip_frontmatter(md_text: str) -> str:
     return md_text.strip()
 
 
+CARRIER_REF_RE = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_./-]*\.(?:py|sh|bash|mjs|cjs|js|ts|md|json|ya?ml|toml|txt|csv)\b")
+CARRIER_EXEC = {".py", ".sh", ".bash", ".mjs", ".cjs", ".js", ".ts"}
+CARRIER_MAX_FILES = 200
+CARRIER_MAX_BYTES = 2_000_000
+CARRIER_MAX_DEPTH = 3
+
+
+def member_repo_root(ldir: Path) -> Path:
+    for anc in [ldir, *ldir.parents]:
+        if (anc / ".git").exists():
+            return anc
+    return ldir
+
+
+def resolve_carrier_ref(token: str, base: Path, ldir: Path, root: Path) -> Path | None:
+    """Resolve a referenced path against base, then ldir and its ancestors up to the repo root."""
+    if token.startswith(("http", "/")) or ".." in Path(token).parts:
+        return None
+    anchors = [base, ldir, *[a for a in ldir.parents if root == a or root in a.parents]]
+    for anc in anchors:
+        cand = (anc / token).resolve()
+        if cand.is_file() and (cand == root or root in cand.parents) and cand.stat().st_size <= CARRIER_MAX_BYTES:
+            return cand
+    return None
+
+
+def member_carrier(ldir: Path) -> list[tuple[Path, str]]:
+    """Carrier closure C(s): the member's scripts/ and references/ trees plus the transitive
+    closure of files its SKILL.md (and those files) reference inside the member repo."""
+    root = member_repo_root(ldir).resolve()
+    ldir = ldir.resolve()
+    found: dict[Path, str] = {}
+    for sub, via in (("scripts", "skill_scripts"), ("references", "skill_references")):
+        d = ldir / sub
+        if d.is_dir():
+            for f in sorted(d.rglob("*")):
+                if f.is_file() and "__pycache__" not in f.parts and f.stat().st_size <= CARRIER_MAX_BYTES:
+                    found.setdefault(f.resolve(), via)
+    frontier = [ldir / "SKILL.md"] + list(found)
+    for _ in range(CARRIER_MAX_DEPTH):
+        nxt: list[Path] = []
+        for src in frontier:
+            if not src.is_file() or src.suffix not in CARRIER_EXEC | {".md", ".txt", ".yaml", ".yml", ".json", ".toml"}:
+                continue
+            text = src.read_text(encoding="utf-8", errors="replace")
+            for tok in sorted(set(CARRIER_REF_RE.findall(text))):
+                hit = resolve_carrier_ref(tok, src.parent, ldir, root)
+                if hit is None or hit in found or hit == (ldir / "SKILL.md").resolve():
+                    continue
+                if len(found) >= CARRIER_MAX_FILES:
+                    break
+                found[hit] = "referenced"
+                nxt.append(hit)
+        frontier = nxt
+        if not frontier:
+            break
+    return [(p, found[p]) for p in sorted(found)]
+
+
+def carrier_dest(src: Path, ldir: Path, root: Path, slug: str) -> str:
+    try:
+        rel = src.relative_to(ldir.resolve())
+    except ValueError:
+        rel = Path("_repo") / src.relative_to(root.resolve())
+    top = "scripts" if src.suffix in CARRIER_EXEC else "references"
+    return (Path(top) / "members" / slug / rel).as_posix()
+
+
+def script_signature(path: Path) -> dict[str, Any]:
+    """Static interface of a script component: interpreter, argv schema, and literal exit codes.
+
+    Python is parsed with ast (argparse add_argument calls, sys.exit/SystemExit literals);
+    other scripts get the shebang interpreter and literal `exit N` codes only.
+    """
+    import ast
+
+    text = path.read_text(encoding="utf-8", errors="replace")
+    first = text.splitlines()[0] if text else ""
+    sig: dict[str, Any] = {
+        "interpreter": first[2:].strip() if first.startswith("#!") else ("python3" if path.suffix == ".py" else path.suffix.lstrip(".")),
+        "options": [],
+        "positionals": [],
+        "required_options": [],
+        "exit_codes": [],
+        "extraction": "none",
+    }
+    codes: set[int] = set()
+    exit_fns: set[str] = set()
+    if path.suffix == ".py":
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            sig["extraction"] = "syntax_error"
+            return sig
+        sig["extraction"] = "python_ast"
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                fn = node.func
+                name = fn.attr if isinstance(fn, ast.Attribute) else getattr(fn, "id", "")
+                if name == "add_argument":
+                    strs = [a.value for a in node.args if isinstance(a, ast.Constant) and isinstance(a.value, str)]
+                    req = any(k.arg == "required" and isinstance(k.value, ast.Constant) and k.value.value is True for k in node.keywords)
+                    for s in strs:
+                        if s.startswith("-"):
+                            sig["options"].append(s)
+                            if req:
+                                sig["required_options"].append(s)
+                        else:
+                            sig["positionals"].append(s)
+                elif name in {"exit", "SystemExit"} and node.args:
+                    for a in ([node.args[0].body, node.args[0].orelse]
+                              if isinstance(node.args[0], ast.IfExp) else [node.args[0]]):
+                        if isinstance(a, ast.Constant) and isinstance(a.value, int) and not isinstance(a.value, bool):
+                            codes.add(a.value)
+                        elif isinstance(a, ast.Call) and isinstance(a.func, ast.Name):
+                            exit_fns.add(a.func.id)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.name in exit_fns:
+                for r in ast.walk(node):
+                    if not isinstance(r, ast.Return) or r.value is None:
+                        continue
+                    vals = [r.value.body, r.value.orelse] if isinstance(r.value, ast.IfExp) else [r.value]
+                    for v in vals:
+                        if isinstance(v, ast.Constant) and isinstance(v.value, int) and not isinstance(v.value, bool):
+                            codes.add(v.value)
+    else:
+        sig["extraction"] = "exit_literals"
+        codes.update(int(m) for m in re.findall(r"\bexit\s+(\d+)\b", text))
+    sig["exit_codes"] = sorted(codes)
+    return sig
+
+
+def argument_interface(desired: dict[str, list[str]] | None) -> dict[str, list[str]]:
+    """A_M(D) = (T_cap | D_take, B_cup | D_able), theory.md §3.5.
+
+    Landmark signatures (T_cap, B_cup) are not extracted from member SKILL.md
+    yet, so they enter as empty and the interface is D itself.
+    """
+    d = desired or {}
+
+    def names(xs: list[str] | None) -> list[str]:
+        out: list[str] = []
+        for x in xs or []:
+            n = str(x).strip().lstrip("-")
+            if n and n not in out:
+                out.append(n)
+        return out
+
+    take = names(d.get("take"))
+    able = names(d.get("able"))
+    for t in take:
+        if t not in able:
+            able.append(t)
+    return {"take": take, "able": able}
+
+
+def render_arguments_md(iface: dict[str, list[str]], skill_rel_base: str, skill_name: str) -> str:
+    if not iface["able"]:
+        return ""
+    rows = "\n".join(
+        f"| `--{a}` | {'takes (required)' if a in iface['take'] else 'able to take (optional)'} |"
+        for a in iface["able"]
+    )
+    flags = " ".join(f'--arg {a}="<value>"' for a in iface["able"])
+    return f"""
+## Arguments
+
+Composed interface $\\mathcal{{A}}_{{\\mathcal{{M}}}}(D)$ (`references/theory.md` §3.5 in skillcompose):
+
+| Argument | Role |
+|---|---|
+{rows}
+
+Bind supplied arguments at Stage 1 with `{flags}` on `project_manifold.py`. A missing required argument, or a name outside this table, exits `2`. An omitted optional argument is a legal chart point: derive it from the task instead of inventing a caller value.
+"""
+
+
 def compose_package(
     candidates_path: Path,
     *,
@@ -449,7 +654,9 @@ def compose_package(
     skill_name: str = "domain-pack",
     upstreams_root: Path | None = None,
     seed: str = "skillcompose",
+    desired_interface: dict[str, list[str]] | None = None,
 ) -> dict[str, Any]:
+    iface = argument_interface(desired_interface)
     raw = candidates_path.read_text(encoding="utf-8").strip()
     rows: list[dict[str, Any]] = (
         json.loads(raw)
@@ -501,6 +708,7 @@ def compose_package(
         query=query,
         skill_name=skill_name,
     )
+    manifold_atlas["argument_interface"] = iface
     gen_proof = evaluate_generalization_over_union(manifold_atlas)
     graph = compile_wiring(ordered_members, audits, domain=domain, package_name=skill_name)
 
@@ -521,6 +729,7 @@ def compose_package(
     landmark_by_slug = {lm["slug"]: lm for lm in (manifold_atlas.get("landmarks") or [])}
     stage_lines: list[str] = []
     oracle_scripts: list[str] = []
+    carrier_manifest: dict[str, list[dict[str, str]]] = {}
 
     for idx, m in enumerate(ordered_members, start=1):
         sid = str(m.get("id") or "")
@@ -535,26 +744,42 @@ def compose_package(
         if (ldir / "SKILL.md").is_file():
             body = strip_frontmatter((ldir / "SKILL.md").read_text(encoding="utf-8", errors="replace"))
 
+        member_scripts: list[str] = []
+        carried: list[dict[str, str]] = []
+        if (ldir / "SKILL.md").is_file():
+            root = member_repo_root(ldir)
+            for src, via in member_carrier(ldir):
+                dest_rel = carrier_dest(src, ldir, root, slug)
+                dst = out_dir / dest_rel
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
+                if src.suffix in CARRIER_EXEC:
+                    os.chmod(dst, 0o755)
+                    oracle_scripts.append(dest_rel.removeprefix("scripts/"))
+                    member_scripts.append(f"`{dest_rel}`")
+                carried.append({
+                    "source": src.relative_to(root.resolve()).as_posix(),
+                    "dest": dest_rel,
+                    "via": via,
+                    "sha256": hashlib.sha256(src.read_bytes()).hexdigest(),
+                })
+        carrier_manifest[slug] = carried
+
+        carrier_md = ""
+        if carried:
+            carrier_md = "\n## Carried files\n\nPaths in the body below are relative to the upstream skill folder; packaged copies:\n\n" + "\n".join(
+                f"- `{c['source']}` → [`{c['dest']}`](../../{c['dest']})" for c in carried
+            ) + "\n"
         ref_rel = f"references/members/{slug}.md"
         (out_dir / ref_rel).write_text(
             f"# Landmark Anchor on $\\mathcal{{M}}$: `{slug}`\n"
             f"- **Upstream ID**: `{sid}`\n"
             f"- **Primary Kleisli Role**: `{top_role}`\n"
-            f"- **Fisher–Rao Tangent Coordinates $\\theta^{{({idx})}}$**: `[{coords_str}]`\n\n"
+            f"- **Fisher–Rao Tangent Coordinates $\\theta^{{({idx})}}$**: `[{coords_str}]`\n"
+            f"{carrier_md}\n"
             f"{body}\n",
             encoding="utf-8",
         )
-
-        member_scripts: list[str] = []
-        sdir = ldir / "scripts"
-        if sdir.is_dir():
-            for sf in sorted(sdir.iterdir()):
-                if sf.is_file() and sf.name not in {"project_manifold.py", "verify_dominator_gate.py"}:
-                    dst_sf = out_dir / "scripts" / sf.name
-                    shutil.copy2(sf, dst_sf)
-                    os.chmod(dst_sf, 0o755)
-                    oracle_scripts.append(sf.name)
-                    member_scripts.append(f"`scripts/{sf.name}`")
 
         oracle_hint = f" *(Exogenous helper: {', '.join(member_scripts)})*" if member_scripts else ""
         stage_lines.append(
@@ -571,6 +796,8 @@ def compose_package(
     )
     if helper_block:
         helper_block = "\n" + helper_block
+    arguments_md = render_arguments_md(iface, skill_rel_base, skill_name)
+    arg_flags = "".join(f' \\\n       --arg {a}="<value>"' for a in iface["able"])
 
     skill_md = f"""---
 name: {skill_name}
@@ -587,14 +814,14 @@ This skill is **not** a prompt concatenation ($\\bigwedge_i Q_i$) nor a discrete
 {chr(10).join(stage_lines)}
 
 Manifold atlas & chart equations: [MANIFOLD_ATLAS.md](./references/MANIFOLD_ATLAS.md) · Wiring contract: [WIRING_CONTRACT.md](./references/WIRING_CONTRACT.md).
-
+{arguments_md}
 ## Mandatory Execution Protocol
 
 1. **Stage 1 — Chart Projection & Contradiction-Free Fiber Lock ($\\sigma^* : \\mathcal{{X}} \\to \\Theta$)**:
    - Project the user's task onto the manifold before writing deliverables:
      ```bash
      python3 {skill_rel_base}/scripts/project_manifold.py \\
-       --input "<task_summary_or_prompt_file>" \\
+       --input "<task_summary_or_prompt_file>"{arg_flags} \\
        --out "/tmp/manifold_section_{skill_name}_$$.json"
      ```
    - If `project_manifold.py` exits `2` (`ABSTAIN_OFF_MANIFOLD`), halt cleanly, do **not** generate off-domain deliverables, and report refusal.
@@ -617,6 +844,12 @@ Manifold atlas & chart equations: [MANIFOLD_ATLAS.md](./references/MANIFOLD_ATLA
 """
     (out_dir / "SKILL.md").write_text(skill_md, encoding="utf-8")
 
+    manifold_atlas["carrier"] = carrier_manifest
+    manifold_atlas["script_interfaces"] = {
+        f.relative_to(out_dir).as_posix(): script_signature(f)
+        for f in sorted((out_dir / "scripts").rglob("*"))
+        if f.is_file() and f.suffix in CARRIER_EXEC
+    }
     # Write references metadata AFTER SKILL.md so verify_graph measures exact Parnas encapsulation ratio!
     (out_dir / "references" / "MANIFOLD_ATLAS.md").write_text(render_manifold_md(manifold_atlas), encoding="utf-8")
     (out_dir / "references" / "manifold_atlas.json").write_text(
@@ -633,11 +866,21 @@ Manifold atlas & chart equations: [MANIFOLD_ATLAS.md](./references/MANIFOLD_ATLA
 
     stamp_in_place(out_dir, skill_name)
 
+    # Round 0 of the forge ratchet: the term the composed package runs, and its obligations (theory.md §4.2).
+    from concrete_term import ARTIFACT, check as contract_check, extract as extract_term
+
+    (out_dir / ARTIFACT).write_text(json.dumps(extract_term(out_dir), indent=2) + "\n", encoding="utf-8")
+    contract = contract_check(out_dir, require_artifact=True)
+
     return {
-        "ok": graph["verification"]["decision"] == "PASS",
+        "ok": graph["verification"]["decision"] == "PASS" and contract["decision"] == "PASS",
+        "concrete_contract": {"decision": contract["decision"], "phi": contract["phi"],
+                              "obligations": contract["obligations"], "roles": contract["roles"]},
         "skill_dir": str(out_dir),
         "skill_md_bytes": (out_dir / "SKILL.md").stat().st_size,
         "chosen_ids": [m.get("id") for m in ordered_members],
+        "argument_interface": iface,
+        "carrier_files": {slug: len(files) for slug, files in carrier_manifest.items()},
         "oracle_scripts": oracle_scripts + ["project_manifold.py", "verify_dominator_gate.py"],
         "nemhauser_wolsey_certificate": sel_report["nemhauser_wolsey_certificate"],
         "lift_over_popularity_top_n": sel_report["lift_over_popularity_top_n"],
@@ -667,7 +910,16 @@ def main() -> int:
     ap.add_argument("--skill-name", default="domain-pack")
     ap.add_argument("--upstreams-root", type=Path, default=None)
     ap.add_argument("--seed", default="skillcompose")
+    ap.add_argument(
+        "--args-json",
+        type=Path,
+        default=None,
+        help="parse_args.py output; its desired_interface becomes the composed skill's arguments",
+    )
     args = ap.parse_args()
+    desired = None
+    if args.args_json is not None:
+        desired = json.loads(args.args_json.read_text(encoding="utf-8")).get("desired_interface")
 
     res = compose_package(
         args.candidates,
@@ -678,6 +930,7 @@ def main() -> int:
         skill_name=args.skill_name,
         upstreams_root=args.upstreams_root,
         seed=args.seed,
+        desired_interface=desired,
     )
     print(json.dumps(res, indent=2))
     return 0 if res["ok"] else 2

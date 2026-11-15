@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Busy-lock for skillremix forge so 90s wakes skip while the agent is mid-round.
+"""Busy-lock for skillcompose forge so 90s wakes skip while the agent is mid-round.
 
 Lock path: $WIP_DIR/forge/agent_busy.lock
 
